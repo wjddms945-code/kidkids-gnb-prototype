@@ -99,10 +99,43 @@
       font-size: 13px;
     }
 
+    /* 2안 선택 상태 */
+    .card--selected {
+      position: relative;
+      border: 2px solid #2a8a4a;
+      box-shadow: 0 8px 28px rgba(42, 138, 74, 0.13);
+    }
+
+    .card--selected:hover {
+      border-color: #1e6e3c;
+      box-shadow: 0 14px 36px rgba(42, 138, 74, 0.2);
+    }
+
+    .chip-selected {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: #2a8a4a;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 11px;
+      border-radius: 100px;
+      letter-spacing: 0.04em;
+      line-height: 1.6;
+      white-space: nowrap;
+    }
+
     @media (max-width: 720px) {
       .wrap { padding: 48px 20px; }
       .grid { grid-template-columns: 1fr; }
       h1 { font-size: 28px; }
+      .chip-selected {
+        top: 14px;
+        right: 14px;
+        font-size: 10px;
+        padding: 3px 9px;
+      }
     }
   </style>
 </head>
@@ -119,10 +152,11 @@
       <a class="card" href="./gnb1/index.html">
         <div class="num">01</div>
         <div class="title">GNB 1안</div>
-        <div class="text">기존(초록색) 등록 시안. 4가지 메뉴로 구성 </div>
+        <div class="text">기존 등록 시안. 메가메뉴 중심 구조.</div>
       </a>
 
-      <a class="card" href="./gnb2/index.html">
+      <a class="card card--selected" href="./gnb2/index.html">
+        <span class="chip-selected">선택</span>
         <div class="num">02</div>
         <div class="title">GNB 2안</div>
         <div class="text">SSF레퍼-깔끔한 브랜드형 디자인으로 정리하고, 프로그램은 전체보기 페이지로 연결되는 안입니다.</div>
@@ -131,13 +165,13 @@
       <a class="card" href="./gnb3/index.html">
         <div class="num">03</div>
         <div class="title">GNB 3안</div>
-        <div class="text">교사 업무 흐름을 기준으로 메뉴를 새롭게 재구성한 시안</div>
+        <div class="text">신규 시안. 제작 예정.</div>
       </a>
 
       <a class="card" href="./gnb4/index.html">
         <div class="num">04</div>
         <div class="title">GNB 4안</div>
-        <div class="text">기존 메뉴 체계는 그대로 두고, 컬러 블록과 추천 콘텐츠 영역으로 메뉴 구분감을 높인 안</div>
+        <div class="text">추가 확장 시안. 제작 예정.</div>
       </a>
     </section>
 
