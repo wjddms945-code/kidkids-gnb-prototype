@@ -171,20 +171,20 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
 
         // 2. 보조 메뉴 스타일 주입
-        var style = document.createElement('style');
-        style.textContent =
-          '#gnbSecondary{display:flex;align-items:center;margin-left:0;' +
-          'position:relative;padding-left:28px;}' +
-          '#gnbSecondary::before{content:"";position:absolute;left:0;top:50%;' +
-          'transform:translateY(-50%);width:1px;height:22px;' +
-          'background:var(--hair,#e9e9e6);}' +
-          '.gnb-sub{display:inline-flex;align-items:center;padding:0 11px;' +
-          'font-size:14px;font-weight:500;color:var(--ink-2,#52524e);' +
-          'letter-spacing:-0.02em;cursor:pointer;height:100%;white-space:nowrap;' +
-          'text-decoration:none;background:transparent;border:none;' +
-          'font-family:inherit;transition:color .15s;}' +
-          '.gnb-sub:hover{color:var(--brand,#2e7a45);}';
-        document.head.appendChild(style);
+var style = document.createElement('style');
+style.textContent =
+  '#gnbSecondary{display:flex;align-items:center;margin-left:18px;' +
+  'position:relative;padding-left:18px;height:100%;}' +
+  '#gnbSecondary::before{content:"";position:absolute;left:0;top:50%;' +
+  'transform:translateY(-50%);width:1px;height:22px;' +
+  'background:var(--hair,#e9e9e6);}' +
+  '.gnb-sub{display:inline-flex;align-items:center;padding:0 10px;' +
+  'font-size:14px;font-weight:600;color:var(--ink-2,#52524e);' +
+  'letter-spacing:-0.02em;cursor:pointer;height:100%;white-space:nowrap;' +
+  'text-decoration:none;background:transparent;border:none;' +
+  'font-family:inherit;transition:color .15s;}' +
+  '.gnb-sub:hover{color:var(--brand,#2e7a45);}';
+document.head.appendChild(style);
 
         // 3. 보조 메뉴 DOM 생성
         var gnbList = document.getElementById('gnbList');
