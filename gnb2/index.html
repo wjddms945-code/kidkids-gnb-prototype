@@ -183,7 +183,21 @@ style.textContent =
   'letter-spacing:-0.02em;cursor:pointer;height:100%;white-space:nowrap;' +
   'text-decoration:none;background:transparent;border:none;' +
   'font-family:inherit;transition:color .15s;}' +
-  '.gnb-sub:hover{color:var(--brand,#2e7a45);}';
+  '.gnb-sub:hover{color:var(--brand,#2e7a45);}' +
+  '@keyframes gnbShimmer{from{background-position:100% center}to{background-position:0% center}}' +
+  '#gnbSecondary .gnb-license{' +
+    'background:linear-gradient(90deg,#52524e 0%,#52524e 36%,#7aaa82 46%,#b4d8bc 50%,#7aaa82 54%,#52524e 64%,#52524e 100%);' +
+    'background-size:300% 100%;' +
+    '-webkit-background-clip:text;background-clip:text;' +
+    '-webkit-text-fill-color:transparent;' +
+    'animation:gnbShimmer 4.5s linear infinite;transition:none;}' +
+  '#gnbSecondary .gnb-license:hover,' +
+  '#gnbSecondary .gnb-license.mp-active{' +
+    'background:linear-gradient(90deg,#2e7a45 0%,#2e7a45 36%,#5fc07a 46%,#a8e8bc 50%,#5fc07a 54%,#2e7a45 64%,#2e7a45 100%)!important;' +
+    'background-size:300% 100%!important;' +
+    '-webkit-background-clip:text!important;background-clip:text!important;' +
+    '-webkit-text-fill-color:transparent!important;' +
+    'animation:gnbShimmer 4.5s linear infinite;}';
 document.head.appendChild(style);
 
         // 3. 보조 메뉴 DOM 생성
@@ -196,12 +210,14 @@ document.head.appendChild(style);
           { label:'월간유아',  type:'a',   href:'https://iyua.kidkids.net/' },
          
           { label:'구인구직',  type:'a',   href:'https://job.kidkids.net/' },
-          { label:'쇼핑몰',   type:'a',   href:'https://mall.kidkids.net/' }
+          { label:'쇼핑몰',   type:'a',   href:'https://mall.kidkids.net/' },
+          { label:'멤버십 전용관', type:'btn', action:'showMembershipPage(event)' }
         ];
         secondary.innerHTML = items.map(function(it) {
+          var extraCls = (it.label === '멤버십 전용관') ? ' gnb-license' : '';
           return it.type === 'btn'
-            ? '<button class="gnb-sub" onclick="' + it.action + '">' + it.label + '</button>'
-            : '<a class="gnb-sub" href="' + it.href + '" target="_blank">' + it.label + '</a>';
+            ? '<button class="gnb-sub' + extraCls + '" onclick="' + it.action + '">' + it.label + '</button>'
+            : '<a class="gnb-sub' + extraCls + '" href="' + it.href + '" target="_blank">' + it.label + '</a>';
         }).join('');
         gnbList.appendChild(secondary);
 
@@ -463,6 +479,815 @@ document.head.appendChild(aiStyle);
     }, 100);
 
 
+    // ── 멤버십 전용관 페이지 패치 ──
+    setTimeout(function() {
+      try {
+        // 0. 회원 타입 (프로토타입용 임시 변수)
+        // 'general' = 일반회원(프로모 띠배너 노출)
+        // 'regular' = 정회원 / 'multi' = 멀티회원 (노출 안 함)
+        var userMembershipType = 'general';
+
+        // 1. CSS 주입
+        var mpStyle = document.createElement('style');
+        mpStyle.textContent =
+          /* 페이지 래퍼 */
+          '#pageMembership{display:none;position:fixed;left:0;right:0;bottom:0;overflow-y:auto;z-index:200;background:#f4f6f1;}' +
+
+          /* ── 히어로 ── */
+          '.mp-hero-section{background:linear-gradient(118deg,#16422d 0%,#1d5a36 28%,#2e7a45 62%,#379452 100%);padding:56px 0 54px;position:relative;overflow:hidden;}' +
+          '.mp-hero-bg-c{position:absolute;border-radius:50%;pointer-events:none;}' +
+          '.mp-hero-blob{position:absolute;pointer-events:none;opacity:.07;}' +
+          '.mp-hero-inner{max-width:1440px;margin:0 auto;padding:0 56px;display:flex;align-items:center;justify-content:space-between;gap:48px;position:relative;z-index:1;}' +
+          '.mp-hero-text{flex:1;max-width:540px;}' +
+          '.mp-hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:#f7d77a;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:22px;background:rgba(255,224,150,.12);padding:7px 16px;border-radius:100px;border:1px solid rgba(245,196,85,.55);text-shadow:0 0 12px rgba(245,196,85,.22);}' +
+          '.mp-hero-title{font-size:44px;font-weight:900;color:#fff;letter-spacing:-0.045em;line-height:1.07;margin-bottom:18px;text-shadow:0 2px 16px rgba(0,0,0,.18);}' +
+          '.mp-hero-title .gold{background:linear-gradient(95deg,#ffe4a0 0%,#f5c455 55%,#d4a030 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none;}' +
+          '.mp-hero-sub{font-size:15px;color:rgba(255,255,255,.88);line-height:1.75;letter-spacing:-0.01em;}' +
+          '.mp-hero-visual{flex-shrink:0;display:flex;align-items:center;position:relative;}' +
+          '.mp-device-wrap{position:relative;margin-right:24px;}' +
+          '.mp-float-tag{position:absolute;background:#fff;border-radius:14px;padding:10px 15px;display:flex;align-items:center;gap:10px;box-shadow:0 10px 28px rgba(0,0,0,.22);white-space:nowrap;z-index:10;}' +
+          '.mp-float-tag .ft-ico{font-size:20px;}' +
+          '.mp-float-tag .ft-t{font-size:12px;font-weight:700;color:#1a1a18;}' +
+          '.mp-float-tag .ft-s{font-size:10.5px;color:#7b7e76;}' +
+
+          /* ── 레이아웃 ── */
+          '.mp-body-wrap{max-width:1440px;margin:0 auto;padding:28px 48px 80px;display:flex;gap:24px;}' +
+
+          /* ── 사이드바 ── */
+          '.mp-sidebar{width:224px;flex-shrink:0;display:flex;flex-direction:column;gap:12px;}' +
+
+          /* 유저 카드 */
+          '.mp-user-card{background:#fff;border:1px solid #e6e8e2;border-radius:16px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,.04);}' +
+          '.mp-user-top{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #f0f0ec;}' +
+          '.mp-user-avatar{width:46px;height:46px;border-radius:50%;background:linear-gradient(140deg,#c8e6c9,#81c784);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}' +
+          '.mp-user-name{font-size:14px;font-weight:700;color:#0e0f0d;letter-spacing:-0.02em;margin-bottom:4px;}' +
+          '.mp-user-bdg{display:inline-block;font-size:10px;font-weight:700;background:#e8f5ee;color:#2e7a45;padding:2px 8px;border-radius:100px;}' +
+          '.mp-user-plan{font-size:12.5px;font-weight:700;color:#1a1a18;margin-bottom:3px;letter-spacing:-0.02em;}' +
+          '.mp-user-date{font-size:11px;color:#8a8d85;}' +
+          '.mp-user-divider{height:1px;background:#f0f0ec;margin:12px 0;}' +
+          '.mp-status-rows{}' +
+          '.mp-status-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f5f5f2;}' +
+          '.mp-status-row:last-child{border-bottom:none;}' +
+          '.mp-status-label{font-size:12.5px;color:#52524e;font-weight:500;}' +
+          '.mp-status-on{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:700;background:#e8f5ee;color:#2e7a45;border-radius:100px;padding:3px 9px;}' +
+          '.mp-status-off{display:inline-flex;align-items:center;gap:3px;font-size:10.5px;font-weight:700;background:#f4f4f2;color:#b0b0a8;border-radius:100px;padding:3px 9px;}' +
+          '.mp-view-btn{display:block;width:100%;margin-top:14px;padding:10px 0;background:#2e7a45;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s;text-align:center;}' +
+          '.mp-view-btn:hover{background:#1f5a31;}' +
+
+          /* 사이드 내비 */
+          '.mp-sidenav{background:#fff;border:1px solid #e6e8e2;border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.04);}' +
+          '.mp-nav-item{display:flex;align-items:center;gap:10px;padding:12px 16px;font-size:13px;font-weight:500;color:#52524e;cursor:pointer;transition:all .15s;text-decoration:none;border-bottom:1px solid #f5f5f2;}' +
+          '.mp-nav-item:last-child{border-bottom:none;}' +
+          '.mp-nav-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0;}' +
+          '.mp-nav-item:hover{background:#f4faf6;color:#2e7a45;}' +
+          '.mp-nav-item.mpnav-active{background:#eaf6ef;color:#2e7a45;font-weight:700;}' +
+
+          /* 도움말 카드 */
+          '.mp-help-card{background:#fff;border:1px solid #e6e8e2;border-radius:14px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.04);}' +
+          '.mp-help-title{font-size:12px;font-weight:700;color:#1a1a18;margin-bottom:10px;}' +
+          '.mp-help-item{display:flex;align-items:center;gap:8px;font-size:12px;color:#52524e;padding:5px 0;cursor:pointer;border-radius:6px;}' +
+          '.mp-help-item:hover{color:#2e7a45;}' +
+          '.mp-help-ico{font-size:14px;width:18px;text-align:center;}' +
+
+          /* 프로모 박스 */
+          '.mp-promo-box{background:linear-gradient(145deg,#e8f5ee,#d4edd9);border:1px solid #c0ddc9;border-radius:14px;padding:18px;}' +
+          '.mp-promo-ico{font-size:22px;margin-bottom:8px;}' +
+          '.mp-promo-t{font-size:12px;font-weight:700;color:#1a4731;margin-bottom:4px;line-height:1.45;}' +
+          '.mp-promo-s{font-size:11px;color:#3a6b4a;margin-bottom:10px;}' +
+          '.mp-promo-btn{display:block;padding:7px 0;background:#2e7a45;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-align:center;width:100%;transition:background .15s;}' +
+          '.mp-promo-btn:hover{background:#1f5a31;}' +
+
+          /* ── 메인 ── */
+          '.mp-main{flex:1;min-width:0;}' +
+
+          /* 자료 구분 카드 — 숨김 처리 (탐색 카드 필터로 대체) */
+          '.mp-type-cards{display:none!important;}' +
+
+          /* 탐색형 필터 카드 */
+          '.mp-filter-section{margin-bottom:20px;}' +
+          '.mp-filter-heading{font-size:15px;font-weight:700;color:#0e1a0f;margin-bottom:4px;letter-spacing:-0.02em;}' +
+          '.mp-filter-sub{font-size:13px;color:#7a8a7c;margin-bottom:16px;letter-spacing:-0.01em;}' +
+          '.mp-filter-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}' +
+          '@media(max-width:900px){.mp-filter-cards{grid-template-columns:repeat(2,1fr);}}' +
+          '.mp-fcard{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;border:1.5px solid #e2e8e2;border-radius:16px;padding:16px 18px;cursor:pointer;transition:border-color .18s,box-shadow .18s,transform .18s;text-align:left;font-family:inherit;box-shadow:0 2px 8px rgba(0,0,0,.04);}' +
+          '.mp-fcard:hover{border-color:#b4dfc4;box-shadow:0 6px 20px rgba(46,122,69,.10);transform:translateY(-2px);}' +
+          '.mp-fcard.mp-tab-active{border-color:#2e7a45!important;background:#f2fbf5!important;box-shadow:0 4px 16px rgba(46,122,69,.13)!important;}' +
+          '.mp-fcard.fc-pur:hover{border-color:#c4b5fd;box-shadow:0 6px 20px rgba(139,92,246,.10);}' +
+          '.mp-fcard.fc-pur.mp-tab-active{border-color:#7c3aed!important;background:#f8f5ff!important;box-shadow:0 4px 16px rgba(124,58,237,.12)!important;}' +
+          '.mp-fcard.fc-gld:hover{border-color:#fcd34d;box-shadow:0 6px 20px rgba(217,119,6,.10);}' +
+          '.mp-fcard.fc-gld.mp-tab-active{border-color:#d97706!important;background:#fffbeb!important;box-shadow:0 4px 16px rgba(217,119,6,.12)!important;}' +
+          '.mp-fcard-text{flex:1;min-width:0;}' +
+          '.mp-fcard-name{font-size:14px;font-weight:700;color:#0e1a0f;letter-spacing:-0.02em;margin-bottom:4px;}' +
+          '.mp-fcard-desc{font-size:11px;color:#8a9a8c;line-height:1.45;letter-spacing:-0.01em;}' +
+          '.mp-fcard-ico{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}' +
+          '.mp-fcard-ico.ico-all{background:#e8f5ee;}' +
+          '.mp-fcard-ico.ico-multi{background:#f3f0ff;}' +
+          '.mp-fcard-ico.ico-reg{background:#e8f5ee;}' +
+          '.mp-fcard-ico.ico-new{background:#fef9e7;}' +
+
+          /* 기존 pill 탭 — 숨김 (탐색 카드 필터로 대체, JS 쿼리 유지용으로 DOM만 존재) */
+          '.mp-tabs{display:none!important;}' +
+
+          /* 섹션 */
+          '.mp-section{margin-bottom:40px;}' +
+          '.mp-sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}' +
+          '.mp-sec-title{font-size:20px;font-weight:800;color:#0e0f0d;letter-spacing:-0.04em;}' +
+          '.mp-sec-sub{font-size:13px;color:#8a8d85;font-weight:400;margin-left:10px;}' +
+          '.mp-sec-more{font-size:12.5px;color:#2e7a45;font-weight:600;cursor:pointer;}' +
+          '.mp-sec-more:hover{text-decoration:underline;}' +
+
+          /* 카드 그리드 */
+          '.mp-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:20px;}' +
+          '@media(max-width:1100px){.mp-cards{grid-template-columns:repeat(3,1fr);gap:16px;}}' +
+          '@media(max-width:680px){.mp-cards{grid-template-columns:repeat(2,1fr);gap:12px;}}' +
+          '.mp-card{background:#fff;border:1px solid #e8eae4;border-radius:16px;overflow:hidden;transition:box-shadow .2s,border-color .2s,transform .2s;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.04);}' +
+          '.mp-card:hover{box-shadow:0 12px 28px rgba(0,0,0,.11);border-color:#b8bcb4;transform:translateY(-4px);}' +
+          '.mp-thumb{height:140px;position:relative;overflow:hidden;}' +
+          '.mp-thumb-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:36px;}' +
+          '.mp-thumb.tg .mp-thumb-bg{background:linear-gradient(145deg,#b8ecd0,#72c898);}' +
+          '.mp-thumb.tp .mp-thumb-bg{background:linear-gradient(145deg,#d4c8ff,#a888f0);}' +
+          '.mp-thumb.tb .mp-thumb-bg{background:linear-gradient(145deg,#b0d8ff,#68b0f0);}' +
+          '.mp-thumb.ta .mp-thumb-bg{background:linear-gradient(145deg,#ffe090,#f0b030);}' +
+          '.mp-thumb.tr .mp-thumb-bg{background:linear-gradient(145deg,#ffbccc,#f08098);}' +
+          '.mp-thumb.tl .mp-thumb-bg{background:linear-gradient(145deg,#c8f890,#8cd850);}' +
+          '.mp-thumb.to .mp-thumb-bg{background:linear-gradient(145deg,#ffd098,#f09040);}' +
+          '.mp-thumb.ts .mp-thumb-bg{background:linear-gradient(145deg,#e8c0ff,#c070e8);}' +
+          '.mp-thumb-circle{position:absolute;border-radius:50%;opacity:.2;}' +
+          '.mp-badge{position:absolute;top:10px;left:10px;z-index:5;display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:4px 9px;border-radius:6px;color:#fff;letter-spacing:.02em;}' +
+          '.mp-badge.bg{background:rgba(30,90,50,.88);backdrop-filter:blur(4px);}' +
+          '.mp-badge.bp{background:rgba(104,38,217,.85);backdrop-filter:blur(4px);}' +
+          '.mp-badge.bm{background:rgba(30,64,175,.88);backdrop-filter:blur(4px);}' +
+          '.mp-card-body{padding:14px 15px 15px;}' +
+          '.mp-card-name{font-size:13px;font-weight:700;color:#1a1a18;letter-spacing:-0.02em;margin-bottom:4px;line-height:1.4;}' +
+          '.mp-card-desc{font-size:11.5px;color:#8a8d85;line-height:1.55;margin-bottom:11px;}' +
+          '.mp-card-btn{display:block;width:100%;padding:8px 0;background:#f7f8f4;color:#52524e;border:1px solid #e8eae4;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-align:center;transition:all .18s;}' +
+          '.mp-card-btn:hover{background:#eaf6ef;color:#2e7a45;border-color:#a8d4b8;}' +
+
+          /* 하단 안내 배너 - CTA 개편 */
+          '.mp-info-banner{display:flex;align-items:center;justify-content:space-between;gap:40px;' +
+            'background:linear-gradient(112deg,#f2faf5 0%,#eaf6ef 55%,#f0f0fb 100%);' +
+            'border:1px solid #cde8d8;border-radius:20px;padding:32px 36px;margin-bottom:28px;' +
+            'box-shadow:0 2px 16px rgba(30,100,55,.07),0 1px 4px rgba(0,0,0,.04);position:relative;overflow:hidden;}' +
+          '.mp-info-banner::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;' +
+            'background:linear-gradient(90deg,#6dcf96 0%,#a8e6c2 40%,#c4b5fd 75%,#a5b4fc 100%);border-radius:20px 20px 0 0;}' +
+          '.mp-info-banner-left{flex:1;min-width:0;}' +
+          '.mp-info-banner-title{font-size:17px;font-weight:800;color:#0e2318;letter-spacing:-0.03em;margin-bottom:8px;}' +
+          '.mp-info-banner-desc{font-size:13px;color:#3a5a44;line-height:1.75;margin-bottom:20px;}' +
+          '.mp-info-cta-btn{display:inline-flex;align-items:center;gap:6px;background:#2e7a45;color:#fff;' +
+            'font-size:13px;font-weight:700;padding:10px 22px;border-radius:10px;border:none;cursor:pointer;' +
+            'font-family:inherit;letter-spacing:-0.01em;box-shadow:0 3px 10px rgba(46,122,69,.25);transition:all .15s;}' +
+          '.mp-info-cta-btn:hover{background:#256638;box-shadow:0 4px 14px rgba(46,122,69,.35);}' +
+          '.mp-info-banner-cards{display:flex;gap:10px;flex-shrink:0;}' +
+          '.mp-icard{display:flex;flex-direction:column;align-items:flex-start;gap:6px;background:#fff;' +
+            'border-radius:14px;padding:16px 14px;border:1px solid #e2ede6;box-shadow:0 1px 8px rgba(0,0,0,.06);width:108px;}' +
+          '.mp-icard-icon{font-size:20px;line-height:1;margin-bottom:2px;}' +
+          '.mp-icard-name{font-size:12px;font-weight:800;color:#0e2318;letter-spacing:-0.02em;line-height:1.4;}' +
+          '.mp-icard-sub{font-size:11px;color:#6b8070;letter-spacing:-0.01em;line-height:1.45;}' +
+
+          /* 하단 안내 CTA */
+          '.mp-bottom-cta{background:linear-gradient(135deg,#eaf5ee,#d8edd4);border:1px solid #b8d8c0;border-radius:16px;padding:26px 32px;display:flex;align-items:center;gap:20px;margin-bottom:48px;}' +
+          '.mp-cta-ico{font-size:32px;flex-shrink:0;}' +
+          '.mp-cta-body{flex:1;}' +
+          '.mp-cta-text{font-size:15px;font-weight:800;color:#1a4731;letter-spacing:-0.03em;}' +
+          '.mp-cta-sub{font-size:12.5px;color:#3a6b4a;margin-top:5px;line-height:1.5;}' +
+          '.mp-cta-btn{padding:10px 22px;background:#2e7a45;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s;white-space:nowrap;}' +
+          '.mp-cta-btn:hover{background:#1f5a31;}' +
+
+          /* GNB active */
+          '.gnb-sub.mp-active{color:var(--brand,#2e7a45)!important;}' +
+
+          /* ── 추천 콘텐츠 가로 스크롤 트랙 ── */
+          '.mp-rec-track{display:flex;gap:16px;overflow-x:auto;padding:6px 0 14px;scrollbar-width:none;-ms-overflow-style:none;}' +
+          '.mp-rec-track::-webkit-scrollbar{display:none;}' +
+          '.mp-rec-track>.mp-card{flex:0 0 auto;width:calc((100% - 5*16px)/6);min-width:172px;max-width:232px;}' +
+
+          /* ── 멀티 전용 카드 gradient-border animation ── */
+          /* CSS Houdini @property: conic-gradient 각도 애니메이션용 */
+          '@property --mpBa{syntax:"<angle>";initial-value:0deg;inherits:false;}' +
+          '@keyframes mpBaFlow{to{--mpBa:360deg;}}' +
+
+          /* 콘텐츠 카드 — 멀티 전용 배지 (data-cat="bp") */
+          /* 기본: 빛 스팟 약 80deg, rgba 최대 0.52 — 흐르는 보라 테두리가 명확하게 보임 */
+          '.mp-card[data-cat="bp"]{' +
+            'border:3px solid transparent;' +
+            'background:linear-gradient(#fff,#fff) padding-box,' +
+              'conic-gradient(from var(--mpBa),' +
+                'transparent 0deg,' +
+                'rgba(168,85,247,.42) 40deg,' +
+                'rgba(124,58,237,.52) 70deg,' +
+                'rgba(168,85,247,.42) 100deg,' +
+                'transparent 140deg,' +
+                'transparent 360deg) border-box;' +
+            'animation:mpBaFlow 6s linear infinite;' +
+            'transition:box-shadow .25s,transform .22s;' +
+          '}' +
+          /* hover: rgba 최대 0.88, box-shadow로 발광 보강 */
+          '.mp-card[data-cat="bp"]:hover{' +
+            'border-color:transparent;' +
+            'background:linear-gradient(#fff,#fff) padding-box,' +
+              'conic-gradient(from var(--mpBa),' +
+                'transparent 0deg,' +
+                'rgba(168,85,247,.68) 35deg,' +
+                'rgba(124,58,237,.88) 65deg,' +
+                'rgba(168,85,247,.68) 95deg,' +
+                'transparent 135deg,' +
+                'transparent 360deg) border-box;' +
+            'box-shadow:0 10px 28px rgba(124,58,237,.18),0 0 0 1px rgba(168,85,247,.14);' +
+            'transform:translateY(-4px);' +
+          '}' +
+
+          /* 타입 소개 카드 — 멀티 회원 콘텐츠 (.mp-type-card.pur) */
+          '.mp-type-card.pur{' +
+            'border:3px solid transparent;' +
+            'background:linear-gradient(130deg,#f6f2ff 0%,#ede6ff 100%) padding-box,' +
+              'conic-gradient(from var(--mpBa),' +
+                'transparent 0deg,' +
+                'rgba(168,85,247,.42) 40deg,' +
+                'rgba(124,58,237,.52) 70deg,' +
+                'rgba(168,85,247,.42) 100deg,' +
+                'transparent 140deg,' +
+                'transparent 360deg) border-box;' +
+            'animation:mpBaFlow 6s linear infinite;' +
+          '}' +
+          '.mp-type-card.pur:hover{' +
+            'border-color:transparent;' +
+            'background:linear-gradient(130deg,#f6f2ff 0%,#ede6ff 100%) padding-box,' +
+              'conic-gradient(from var(--mpBa),' +
+                'transparent 0deg,' +
+                'rgba(168,85,247,.68) 35deg,' +
+                'rgba(124,58,237,.88) 65deg,' +
+                'rgba(168,85,247,.68) 95deg,' +
+                'transparent 135deg,' +
+                'transparent 360deg) border-box;' +
+            'box-shadow:0 16px 40px rgba(124,58,237,.2),0 0 0 1px rgba(168,85,247,.16);' +
+            'transform:translateY(-3px);' +
+          '}' +
+          /* ── 연령 칩 (썸네일 우상단) ── */
+          '.mp-age-chip{position:absolute;top:10px;right:10px;z-index:5;display:inline-flex;align-items:center;height:22px;font-size:10px;font-weight:700;padding:0 8px;border-radius:100px;white-space:nowrap;letter-spacing:-0.01em;backdrop-filter:blur(4px);}' +
+          '.mp-age-chip.inf{background:#fff2c7;color:#9a5b00;border:1px solid #ffd36a;}' +
+          '.mp-age-chip.tod{background:#dff8f5;color:#1b6b77;border:1px solid #9be1d8;}' +
+          /* ── 2뎁스 연령 필터칩 (멀티회원 선택 시에만 노출) ── */
+          '.mp-age-tabs{display:flex;gap:8px;padding:4px 0 18px;}' +
+          '.mp-age-tab{font-size:12px;font-weight:600;padding:5px 14px;border-radius:100px;border:1px solid #dde0d8;background:#fff;color:#5a5d56;cursor:pointer;transition:all .15s;font-family:inherit;}' +
+          '.mp-age-tab.mp-age-active{background:#e8f5ee;color:#1a5c32;border-color:#b4dfc4;}' +
+          /* ── 프로그램 전체보기 연령 칩 ── */
+          '.prog-age-chip{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;white-space:nowrap;letter-spacing:-0.01em;margin-left:auto;}' +
+          '.prog-age-chip.inf{background:rgba(255,243,200,.9);color:#7a4a00;border:1px solid rgba(255,200,50,.5);}' +
+          '.prog-age-chip.tod{background:rgba(210,238,255,.9);color:#00449a;border:1px solid rgba(100,180,255,.5);}';
+        document.head.appendChild(mpStyle);
+
+        // 2. 카드 빌더 — isNew=true 면 data-new="1" 속성 부여 (신규 필터용)
+        // _mpIdx: 렌더링 순서를 보존해 필터 전환 후 원상 복원에 사용
+        var _mpIdx = 0;
+        var _mpNorm = function(v) { return String(v || '').replace(/\s+/g, '').toLowerCase(); };
+        var MP_INFANT_NORM = ['베베toy','베베tv','베베놀이터','오감놀이','배변훈련','영아인성교육'];
+        var _mpResolveAge = function(name) {
+          return MP_INFANT_NORM.indexOf(_mpNorm(name)) !== -1 ? '영아' : '유아';
+        };
+        function mpCard(emoji, thumbCls, bdgCls, bdg, name, desc, isNew, age) {
+          var resolvedAge = _mpResolveAge(name);
+          var isM = bdgCls === 'bp';
+          // 정회원 이상: 기울어진 종이 레이어 + 텍스트 라인 힌트
+          var decoGrn =
+            '<div style="position:absolute;width:48px;height:60px;background:rgba(255,255,255,.2);border-radius:5px;top:8px;right:12px;transform:rotate(9deg);"></div>' +
+            '<div style="position:absolute;width:48px;height:60px;background:rgba(255,255,255,.13);border-radius:5px;top:10px;right:8px;transform:rotate(3deg);"></div>' +
+            '<div style="position:absolute;bottom:18px;left:9px;display:flex;flex-direction:column;gap:5px;">' +
+              '<div style="width:36px;height:4px;background:rgba(255,255,255,.45);border-radius:2px;"></div>' +
+              '<div style="width:26px;height:4px;background:rgba(255,255,255,.3);border-radius:2px;"></div>' +
+            '</div>' +
+            '<div style="position:absolute;bottom:-14px;left:-14px;width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.12);"></div>' +
+            '<div style="position:absolute;top:-10px;left:-10px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.1);"></div>';
+          // 멀티 전용: 플레이 원형 + 파동 레이어
+          var decoMul =
+            '<div style="position:absolute;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.1);top:50%;left:50%;transform:translate(-50%,-50%);"></div>' +
+            '<div style="position:absolute;width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.14);top:50%;left:50%;transform:translate(-50%,-50%);"></div>' +
+            '<div style="position:absolute;bottom:10px;right:10px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;">' +
+              '<div style="width:0;height:0;border-top:5px solid transparent;border-bottom:5px solid transparent;border-left:9px solid rgba(255,255,255,.85);margin-left:2px;"></div>' +
+            '</div>' +
+            '<div style="position:absolute;top:8px;left:9px;width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.3);"></div>' +
+            '<div style="position:absolute;top:22px;left:8px;width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2);"></div>' +
+            '<div style="position:absolute;top:-12px;right:-12px;width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.1);"></div>';
+
+          return '<div class="mp-card" data-cat="' + bdgCls + '" data-age="' + resolvedAge + '" data-idx="' + (_mpIdx++) + '"' + (isNew ? ' data-new="1"' : '') + '>' +
+            '<div class="mp-thumb ' + thumbCls + '">' +
+              '<span class="mp-badge ' + bdgCls + '">' + bdg + '</span>' +
+              '<span class="mp-age-chip ' + (resolvedAge === '영아' ? 'inf' : 'tod') + '">' + resolvedAge + '</span>' +
+              '<div class="mp-thumb-bg">' +
+                (isM ? decoMul : decoGrn) +
+                emoji +
+              '</div>' +
+            '</div>' +
+            '<div class="mp-card-body">' +
+              '<div class="mp-card-name">' + name + '</div>' +
+              '<div class="mp-card-desc">' + desc + '</div>' +
+              '<button class="mp-card-btn">자료 보기</button>' +
+            '</div>' +
+          '</div>';
+        }
+
+        var recCards =
+          mpCard('🦺','tg','bg','정회원 이상','안전교육','2026년 필수 안전교육 자료를 주제별로 확인할 수 있어요.',true) +
+          mpCard('🤝','tp','bg','정회원 이상','사회정서학습 SEL','감정 이해와 관계 형성을 돕는 사회정서학습 콘텐츠입니다.',true) +
+          mpCard('📋','tb','bg','정회원 이상','티칭보드','수업 화면 구성과 판서 활용을 지원하는 교사용 도구입니다.',true) +
+          mpCard('📚','ta','bg','정회원 이상','문해력','명작·독서·사고력 활동을 연계한 문해력 콘텐츠입니다.',true) +
+          mpCard('🎮','ts','bp','멀티 전용','디지털 놀이','디지털 기반의 참여형 놀이 콘텐츠를 제공합니다.',true) +
+          mpCard('🤖','to','bp','멀티 전용','모아이 AI','AI를 활용한 수업·놀이 콘텐츠를 확인할 수 있어요.',true);
+
+        var allCards =
+          // ── 멀티 전용 8종 ──
+          mpCard('🎮','ts','bp','멀티 전용','디지털 놀이','디지털 기반의 참여형 놀이 콘텐츠입니다.',true) +
+          mpCard('🤖','to','bp','멀티 전용','모아이 AI','AI를 활용한 수업·놀이 콘텐츠입니다.',true) +
+          mpCard('💬','tl','bp','멀티 전용','매일언어','매일 활용 가능한 언어발달 멀티 콘텐츠입니다.') +
+          mpCard('💻','tp','bp','멀티 전용','모아이 코딩','코딩 개념을 쉽게 배우는 멀티 전용 콘텐츠입니다.') +
+          mpCard('🔍','ta','bp','멀티 전용','탐정수학','스토리와 추리로 배우는 수학 콘텐츠입니다.') +
+          mpCard('📖','tg','bp','멀티 전용','스토리텔링수학','이야기로 배우는 수 개념 멀티 콘텐츠입니다.') +
+          mpCard('🎭','tr','bp','멀티 전용','그림자극놀이','그림자를 활용한 표현놀이 멀티 콘텐츠입니다.') +
+          mpCard('🌈','tb','bp','멀티 전용','멀티누리','누리과정과 연계한 멀티 전용 콘텐츠입니다.') +
+          // ── 멤버십 1종 ──
+          mpCard('🇬🇧','tb','bm','멤버십','키드키즈 잉글리시','영어 수업에 활용할 수 있는 멤버십 전용 콘텐츠입니다.') +
+          // ── 정회원 이상 44종 ──
+          mpCard('🦺','tg','bg','정회원 이상','안전교육','필수 안전교육 자료를 주제별로 제공합니다.',true) +
+          mpCard('🤝','tp','bg','정회원 이상','사회정서학습 SEL','감정 이해와 관계 형성을 돕는 학습 자료입니다.',true) +
+          mpCard('📋','tb','bg','정회원 이상','티칭보드','수업 화면 구성을 지원하는 교사용 도구입니다.',true) +
+          mpCard('📚','ta','bg','정회원 이상','문해력','명작·독서·사고력 활동을 연계한 콘텐츠입니다.',true) +
+          mpCard('🧸','tr','bg','정회원 이상','베베TOY','영아를 위한 장난감 놀이 활동 자료입니다.',true) +
+          mpCard('🎯','tl','bg','정회원 이상','게이미피케이션','게임 요소로 배우는 수업 활동 자료입니다.') +
+          mpCard('🎙️','to','bg','정회원 이상','쇼앤텔','발표력과 표현력을 키우는 활동 콘텐츠입니다.') +
+          mpCard('📱','ts','bg','정회원 이상','인터렉티브클립','수업에 활용하는 인터랙티브 영상 클립입니다.') +
+          mpCard('📺','tg','bg','정회원 이상','베베TV','영아를 위한 영상 콘텐츠 모음입니다.') +
+          mpCard('🧪','tp','bg','정회원 이상','놀이랩','탐색과 실험 중심의 놀이 활동 자료입니다.') +
+          mpCard('🛝','tb','bg','정회원 이상','베베놀이터','영아 놀이환경에 맞춘 활동 자료입니다.') +
+          mpCard('🏗️','ta','bg','정회원 이상','놀이프로젝트','주제별 프로젝트 놀이 활동 자료입니다.') +
+          mpCard('🧩','tr','bg','정회원 이상','놀이몬테소리','몬테소리 기반의 자율 놀이 자료입니다.') +
+          mpCard('💝','tl','bg','정회원 이상','마음놀이','감정과 마음을 다루는 정서 활동 자료입니다.') +
+          mpCard('🌟','to','bg','정회원 이상','인성교육','바른 인성과 사회성을 키우는 교육 자료입니다.') +
+          mpCard('🎨','ts','bg','정회원 이상','미술놀이','다양한 재료로 표현하는 미술 활동 자료입니다.') +
+          mpCard('🌿','tg','bg','정회원 이상','자연친화놀이','자연을 탐색하는 야외 활동 자료입니다.') +
+          mpCard('✏️','tp','bg','정회원 이상','언어놀이','언어발달을 돕는 놀이형 학습 자료입니다.') +
+          mpCard('🍳','tb','bg','정회원 이상','요리놀이','요리 활동으로 배우는 교육 콘텐츠입니다.') +
+          mpCard('👃','ta','bg','정회원 이상','오감놀이','오감 자극으로 배우는 탐색 활동 자료입니다.') +
+          mpCard('🚿','tr','bg','정회원 이상','배변훈련','배변 습관 형성을 돕는 교육 자료입니다.') +
+          mpCard('🎊','tl','bg','정회원 이상','특별한날/절기','명절·기념일 등 특별한 날 활동 자료입니다.') +
+          mpCard('🏫','to','bg','정회원 이상','예비초등','초등 입학 준비를 위한 교육 자료입니다.') +
+          mpCard('🔷','ts','bg','정회원 이상','가베놀이','가베를 활용한 수학적 사고력 자료입니다.') +
+          mpCard('🔗','tg','bg','정회원 이상','통합교육','여러 영역을 아우르는 통합 교육 자료입니다.') +
+          mpCard('🦋','tp','bg','정회원 이상','티파하파 자연관찰','자연 생태를 관찰하는 활동 자료입니다.') +
+          mpCard('🎵','tb','bg','정회원 이상','키드키즈 창작동요','어린이 창작 동요 활동 자료입니다.') +
+          mpCard('🎪','ta','bg','정회원 이상','스페셜행사','특별 행사에 활용하는 이벤트 자료입니다.') +
+          mpCard('🌱','tr','bg','정회원 이상','창의자람','창의적 사고력을 키우는 활동 자료입니다.') +
+          mpCard('🎻','tl','bg','정회원 이상','클래식음악감상','클래식 감상과 음악 교육 자료입니다.') +
+          mpCard('🐾','to','bg','정회원 이상','꼬마펫톡','반려동물 이야기로 배우는 교육 자료입니다.') +
+          mpCard('📗','ts','bg','정회원 이상','동화','다양한 이야기로 배우는 동화 콘텐츠입니다.') +
+          mpCard('✂️','tg','bg','정회원 이상','크래프트','손으로 만들며 배우는 창작 활동 자료입니다.') +
+          mpCard('✈️','tp','bg','정회원 이상','랜선여행','화면으로 떠나는 세계 문화 여행 자료입니다.') +
+          mpCard('💪','tb','bg','정회원 이상','튼튼자람','건강한 신체 발달을 돕는 활동 자료입니다.') +
+          mpCard('♻️','ta','bg','정회원 이상','환경교육','지구와 환경을 배우는 교육 자료입니다.') +
+          mpCard('🔭','tr','bg','정회원 이상','아동관찰','유아 발달을 관찰·기록하는 평가 자료입니다.') +
+          mpCard('🌅','tl','bg','정회원 이상','기본생활습관','일상 속 기본 습관 형성 교육 자료입니다.') +
+          mpCard('🦁','to','bg','정회원 이상','놀이자신감','자신감 있는 놀이 참여를 돕는 활동 자료입니다.') +
+          mpCard('🖼️','ts','bg','정회원 이상','명화감상','명화를 활용한 감상·표현 활동 자료입니다.') +
+          mpCard('🎯','tg','bg','정회원 이상','주의집중','집중력 향상을 위한 활동 자료입니다.') +
+          mpCard('☀️','tp','bg','정회원 이상','오늘하루','하루 일과와 연계한 일상 교육 자료입니다.') +
+          mpCard('👑','tb','bg','정회원 이상','꼬마대장','리더십과 자기주도성을 기르는 자료입니다.') +
+          mpCard('📅','ta','bg','정회원 이상','교육계획안','연간·월간·주간 교육계획 자료입니다.');
+
+        // 3. 페이지 HTML
+        var mpHtml =
+
+          // ── 히어로: 전체 폭 그린 그라디언트 ──
+          '<div class="mp-hero-section">' +
+            // 장식 원형 레이어
+            '<div class="mp-hero-bg-c" style="width:400px;height:400px;top:-160px;right:260px;background:rgba(245,196,85,.10);"></div>' +
+            '<div class="mp-hero-bg-c" style="width:220px;height:220px;bottom:-80px;left:100px;background:rgba(255,222,130,.08);"></div>' +
+            '<div class="mp-hero-bg-c" style="width:140px;height:140px;top:10px;left:420px;background:rgba(212,165,55,.10);"></div>' +
+            '<div class="mp-hero-bg-c" style="width:280px;height:280px;top:-60px;right:40px;background:rgba(245,196,85,.07);"></div>' +
+            '<div class="mp-hero-inner">' +
+              '<div class="mp-hero-text">' +
+                '<div class="mp-hero-eyebrow">✦ 멤버십 전용관</div>' +
+                '<div class="mp-hero-title">정·멀티 회원 전용<br><span class="gold">프리미엄 콘텐츠관</span></div>' +
+                '<div class="mp-hero-sub">오직 멤버십 회원만 이용할 수 있습니다.</div>' +
+              '</div>' +
+              // SVG 디바이스 일러스트 + 데코
+              '<div class="mp-hero-visual">' +
+                '<div class="mp-device-wrap">' +
+                  // 태블릿/디바이스 SVG
+                  '<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'310\' height=\'210\' viewBox=\'0 0 310 210\' style=\'filter:drop-shadow(0 20px 48px rgba(0,0,0,.45));display:block;\'>' +
+                    // 외부 프레임
+                    '<rect x=\'2\' y=\'4\' width=\'306\' height=\'202\' rx=\'18\' fill=\'#0c2e1c\'/>' +
+                    // 스크린 영역
+                    '<rect x=\'10\' y=\'12\' width=\'290\' height=\'178\' rx=\'12\' fill=\'#163d25\'/>' +
+                    // 메인 비디오 영역 (좌측 60%)
+                    '<rect x=\'14\' y=\'16\' width=\'176\' height=\'118\' rx=\'10\' fill=\'#2e7a45\'/>' +
+                    // 비디오 그라디언트 오버레이
+                    '<rect x=\'14\' y=\'16\' width=\'176\' height=\'118\' rx=\'10\' fill=\'url(#vg1)\' opacity=\'.6\'/>' +
+                    // 재생 버튼 외곽
+                    '<circle cx=\'102\' cy=\'75\' r=\'28\' fill=\'rgba(255,255,255,0.15)\'/>' +
+                    // 재생 버튼 내부
+                    '<circle cx=\'102\' cy=\'75\' r=\'18\' fill=\'rgba(255,255,255,0.92)\'/>' +
+                    '<polygon points=\'97,68 97,82 113,75\' fill=\'#2e7a45\'/>' +
+                    // 프로그레스 바 배경
+                    '<rect x=\'14\' y=\'140\' width=\'176\' height=\'5\' rx=\'2.5\' fill=\'rgba(255,255,255,0.12)\'/>' +
+                    // 프로그레스 바 진행 (골드 포인트)
+                    '<rect x=\'14\' y=\'140\' width=\'90\' height=\'5\' rx=\'2.5\' fill=\'rgba(245,196,85,0.82)\'/>' +
+                    // 우측 사이드 패널 배경
+                    '<rect x=\'198\' y=\'16\' width=\'96\' height=\'174\' rx=\'8\' fill=\'rgba(255,255,255,0.04)\'/>' +
+                    // 사이드 아이템 1 (활성)
+                    '<rect x=\'204\' y=\'24\' width=\'84\' height=\'28\' rx=\'7\' fill=\'rgba(46,200,100,0.22)\'/>' +
+                    '<rect x=\'210\' y=\'31\' width=\'50\' height=\'7\' rx=\'3.5\' fill=\'rgba(80,220,120,0.75)\'/>' +
+                    // 사이드 아이템 2
+                    '<rect x=\'204\' y=\'58\' width=\'84\' height=\'24\' rx=\'7\' fill=\'rgba(255,255,255,0.07)\'/>' +
+                    '<rect x=\'210\' y=\'65\' width=\'40\' height=\'6\' rx=\'3\' fill=\'rgba(255,255,255,0.22)\'/>' +
+                    // 사이드 아이템 3
+                    '<rect x=\'204\' y=\'88\' width=\'84\' height=\'24\' rx=\'7\' fill=\'rgba(255,255,255,0.07)\'/>' +
+                    '<rect x=\'210\' y=\'95\' width=\'52\' height=\'6\' rx=\'3\' fill=\'rgba(255,255,255,0.22)\'/>' +
+                    // 사이드 아이템 4
+                    '<rect x=\'204\' y=\'118\' width=\'84\' height=\'24\' rx=\'7\' fill=\'rgba(255,255,255,0.07)\'/>' +
+                    '<rect x=\'210\' y=\'125\' width=\'44\' height=\'6\' rx=\'3\' fill=\'rgba(255,255,255,0.22)\'/>' +
+                    // 하단 액션 바
+                    '<rect x=\'14\' y=\'152\' width=\'276\' height=\'32\' rx=\'7\' fill=\'rgba(255,255,255,0.06)\'/>' +
+                    '<rect x=\'22\' y=\'160\' width=\'56\' height=\'10\' rx=\'5\' fill=\'rgba(245,196,85,0.62)\'/>' +
+                    '<rect x=\'86\' y=\'160\' width=\'44\' height=\'10\' rx=\'5\' fill=\'rgba(255,255,255,0.15)\'/>' +
+                    '<rect x=\'138\' y=\'160\' width=\'44\' height=\'10\' rx=\'5\' fill=\'rgba(255,255,255,0.15)\'/>' +
+                    // 하단 홈 인디케이터
+                    '<rect x=\'125\' y=\'192\' width=\'60\' height=\'5\' rx=\'2.5\' fill=\'rgba(255,255,255,0.2)\'/>' +
+                    // 그라디언트 정의
+                    '<defs>' +
+                      '<linearGradient id=\'vg1\' x1=\'0\' y1=\'0\' x2=\'1\' y2=\'1\'>' +
+                        '<stop offset=\'0%\' stop-color=\'rgba(0,60,20,0)\'/>' +
+                        '<stop offset=\'100%\' stop-color=\'rgba(0,30,10,0.4)\'/>' +
+                      '</linearGradient>' +
+                    '</defs>' +
+                  '</svg>' +
+                  // 데코 이모지
+                  '<span style="position:absolute;font-size:52px;bottom:-22px;left:-58px;filter:drop-shadow(0 6px 12px rgba(0,0,0,.35));transform:rotate(-12deg);pointer-events:none;">✏️</span>' +
+                  '<span style="position:absolute;font-size:44px;top:-18px;right:-52px;filter:drop-shadow(0 6px 12px rgba(0,0,0,.3));transform:rotate(15deg);pointer-events:none;">🌿</span>' +
+                  '<span style="position:absolute;font-size:36px;top:20px;left:-42px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.25));pointer-events:none;">🍃</span>' +
+                  // 플로팅 배지
+                  '<div class="mp-float-tag" style="top:-24px;left:-60px;">' +
+                    '<span class="ft-ico">📚</span>' +
+                    '<div><div class="ft-t">정회원 자료</div><div class="ft-s">수업·활동·클립자료</div></div>' +
+                  '</div>' +
+                  '<div class="mp-float-tag" style="bottom:-22px;right:-52px;">' +
+                    '<span class="ft-ico">🎬</span>' +
+                    '<div><div class="ft-t">멀티 자료</div><div class="ft-s">영상·음원·디지털</div></div>' +
+                  '</div>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+
+          // ── 본문: 사이드바 + 메인 콘텐츠 ──
+          '<div class="mp-body-wrap">' +
+
+            // 사이드바
+            '<aside class="mp-sidebar">' +
+
+              // 유저 상태 카드
+              '<div class="mp-user-card">' +
+                '<div class="mp-user-top">' +
+                  '<div class="mp-user-avatar">👩‍🏫</div>' +
+                  '<div>' +
+                    '<div class="mp-user-name">김키즈 선생님</div>' +
+                    '<div class="mp-user-bdg">정회원·프리미엄</div>' +
+                  '</div>' +
+                '</div>' +
+                '<div class="mp-user-plan">정회원 12개월</div>' +
+                '<div class="mp-user-date">2025.08.01 ~ 2026.07.31</div>' +
+                '<div class="mp-user-divider"></div>' +
+                '<div class="mp-status-rows">' +
+                  '<div class="mp-status-row">' +
+                    '<span class="mp-status-label">정회원</span>' +
+                    '<span class="mp-status-on">✓ 이용중</span>' +
+                  '</div>' +
+                  '<div class="mp-status-row">' +
+                    '<span class="mp-status-label">멀티회원</span>' +
+                    '<span class="mp-status-off">미이용</span>' +
+                  '</div>' +
+                '</div>' +
+                '<button class="mp-view-btn">멤버십 관리</button>' +
+              '</div>' +
+
+              // 내비게이션
+              '<nav class="mp-sidenav">' +
+                '<a class="mp-nav-item mpnav-active" onclick="mpNavClick(this)"><span class="mp-nav-icon">🏠</span>이용권 전용관</a>' +
+                '<a class="mp-nav-item" onclick="mpNavClick(this)"><span class="mp-nav-icon">💾</span>다운로드 보관함</a>' +
+                '<a class="mp-nav-item" onclick="mpNavClick(this)"><span class="mp-nav-icon">🕐</span>최근 본 콘텐츠</a>' +
+                '<a class="mp-nav-item" onclick="mpNavClick(this)"><span class="mp-nav-icon">❤️</span>찜한 콘텐츠</a>' +
+              '</nav>' +
+
+              // 도움말
+              '<div class="mp-help-card">' +
+                '<div class="mp-help-title">도움이 필요하신가요?</div>' +
+                '<div class="mp-help-item"><span class="mp-help-ico">❓</span>이용 FAQ</div>' +
+                '<div class="mp-help-item"><span class="mp-help-ico">💬</span>1:1 문의</div>' +
+                '<div class="mp-help-item"><span class="mp-help-ico">📖</span>사용 가이드</div>' +
+              '</div>' +
+
+              // 프로모 박스
+              '<div class="mp-promo-box">' +
+                '<div class="mp-promo-ico">👑</div>' +
+                '<div class="mp-promo-t">지금 바로 KidKids 멤버십의<br>특별함을 경험하세요!</div>' +
+                '<button class="mp-promo-btn">멤버십 안내 보기</button>' +
+              '</div>' +
+
+            '</aside>' +
+
+            // 메인 콘텐츠
+            '<main class="mp-main">' +
+
+              // 탐색형 필터 카드
+              '<div class="mp-filter-section">' +
+                '<div class="mp-filter-heading">콘텐츠 탐색하기</div>' +
+                '<div class="mp-filter-cards" id="mpTabsEl">' +
+                  '<button class="mp-fcard mp-tab mp-tab-active" onclick="mpTabClick(0)">' +
+                    '<div class="mp-fcard-text">' +
+                      '<div class="mp-fcard-name">전체</div>' +
+                      '<div class="mp-fcard-desc">모든 회원 전용 콘텐츠</div>' +
+                    '</div>' +
+                    '<div class="mp-fcard-ico ico-all">🗂️</div>' +
+                  '</button>' +
+                  '<button class="mp-fcard mp-tab fc-pur" onclick="mpTabClick(1)">' +
+                    '<div class="mp-fcard-text">' +
+                      '<div class="mp-fcard-name">멀티회원</div>' +
+                      '<div class="mp-fcard-desc">정회원 콘텐츠 + 멀티 전용</div>' +
+                    '</div>' +
+                    '<div class="mp-fcard-ico ico-multi">🎬</div>' +
+                  '</button>' +
+                  '<button class="mp-fcard mp-tab" onclick="mpTabClick(2)">' +
+                    '<div class="mp-fcard-text">' +
+                      '<div class="mp-fcard-name">정회원</div>' +
+                      '<div class="mp-fcard-desc">수업자료·활동자료 중심</div>' +
+                    '</div>' +
+                    '<div class="mp-fcard-ico ico-reg">📚</div>' +
+                  '</button>' +
+                '</div>' +
+              '</div>' +
+
+              // 2뎁스 연령 필터 (멀티회원 선택 시에만 노출)
+              '<div class="mp-age-tabs" id="mpAgeTabsEl">' +
+                '<button class="mp-age-tab mp-age-active" onclick="mpAgeClick(\'all\',this)">전체</button>' +
+                '<button class="mp-age-tab" onclick="mpAgeClick(\'영아\',this)">영아</button>' +
+                '<button class="mp-age-tab" onclick="mpAgeClick(\'유아\',this)">유아</button>' +
+              '</div>' +
+
+              // 추천 콘텐츠 (가로 슬라이더)
+              '<div class="mp-section" id="mpSecRec">' +
+                '<div class="mp-sec-hdr">' +
+                  '<div class="mp-sec-title">추천 콘텐츠 <span class="mp-sec-sub">선생님들이 많이 찾는 인기 콘텐츠를 추천해드려요.</span></div>' +
+                  '<span class="mp-sec-more">더보기 →</span>' +
+                '</div>' +
+                '<div class="mp-rec-track" id="mpRecGrid">' + recCards + '</div>' +
+              '</div>' +
+
+              // 전체 콘텐츠
+              '<div class="mp-section" id="mpSecAll">' +
+                '<div class="mp-sec-hdr">' +
+                  '<div class="mp-sec-title">전체 콘텐츠 <span class="mp-sec-sub">다양한 주제의 콘텐츠를 탐색해보세요.</span></div>' +
+                  '<span class="mp-sec-more">최신순 ▾</span>' +
+                '</div>' +
+                '<div class="mp-cards" id="mpAllGrid">' + allCards + '</div>' +
+              '</div>' +
+
+              // 하단 안내 배너 - CTA 개편
+              '<div class="mp-info-banner">' +
+                '<div class="mp-info-banner-left">' +
+                  '<div class="mp-info-banner-title">회원 전용 콘텐츠를 더 넓게 이용해보세요</div>' +
+                  '<div class="mp-info-banner-desc">정회원·멀티회원에게 제공되는 수업자료, 활동자료,<br>디지털·AI 콘텐츠를 계속 확대하고 있습니다.</div>' +
+                  '<button class="mp-info-cta-btn">멤버십 신청하기 →</button>' +
+                '</div>' +
+                '<div class="mp-info-banner-cards">' +
+                  '<div class="mp-icard">' +
+                    '<div class="mp-icard-icon">✨</div>' +
+                    '<div class="mp-icard-name">디지털·AI<br>콘텐츠</div>' +
+                    '<div class="mp-icard-sub">멀티 활용 콘텐츠 확대</div>' +
+                  '</div>' +
+                  '<div class="mp-icard">' +
+                    '<div class="mp-icard-icon">📚</div>' +
+                    '<div class="mp-icard-name">수업자료</div>' +
+                    '<div class="mp-icard-sub">정회원 자료 지속 보강</div>' +
+                  '</div>' +
+                  '<div class="mp-icard">' +
+                    '<div class="mp-icard-icon">🧩</div>' +
+                    '<div class="mp-icard-name">주제별<br>콘텐츠</div>' +
+                    '<div class="mp-icard-sub">시즌·주제별 업데이트</div>' +
+                  '</div>' +
+                '</div>' +
+              '</div>' +
+
+              // 하단 CTA
+              '<div class="mp-bottom-cta">' +
+                '<div class="mp-cta-ico">❓</div>' +
+                '<div class="mp-cta-body">' +
+                  '<div class="mp-cta-text">궁금한 점이 있으신가요?</div>' +
+                  '<div class="mp-cta-sub">원하는 주제의 자료가 없다면 요청해주세요. 키드키즈에서 검토 후 제공해드립니다.</div>' +
+                '</div>' +
+                '<button class="mp-cta-btn">✉ 자료 요청하기</button>' +
+              '</div>' +
+
+            '</main>' +
+          '</div>';
+
+        // 4. 페이지 DOM 생성 (pageHome 형제로 삽입)
+        var mpPage = document.createElement('div');
+        mpPage.id = 'pageMembership';
+        mpPage.innerHTML = mpHtml;
+        var ph = document.getElementById('pageHome');
+        if (ph && ph.parentNode) {
+          ph.parentNode.insertBefore(mpPage, ph.nextSibling);
+        } else {
+          document.body.appendChild(mpPage);
+        }
+
+        // 5. 필터 상태 변수
+        var _mpTabIdx = 0;
+        var _mpAge = 'all';
+
+        // 1뎁스 + 2뎁스 조합 필터 적용
+        function mpApplyFilters() {
+          document.querySelectorAll('#pageMembership .mp-card').forEach(function(c) {
+            var cat   = c.getAttribute('data-cat');
+            var isNew = c.getAttribute('data-new') === '1';
+            var age   = c.getAttribute('data-age') || '유아';
+            var showTab;
+            switch (_mpTabIdx) {
+              case 1: showTab = (cat === 'bg' || cat === 'bp'); break; // 멀티회원
+              case 2: showTab = (cat === 'bg');                 break; // 정회원
+              default: showTab = true;                                  // 전체
+            }
+            var showAge = (_mpAge === 'all') || (age === _mpAge);
+            c.style.display = (showTab && showAge) ? '' : 'none';
+          });
+          ['mpSecRec','mpSecAll'].forEach(function(id) {
+            var sec = document.getElementById(id);
+            if (!sec) return;
+            sec.style.display = Array.prototype.filter.call(
+              sec.querySelectorAll('.mp-card'),
+              function(c) { return c.style.display !== 'none'; }
+            ).length ? '' : 'none';
+          });
+        }
+
+        // 1뎁스 탭 클릭
+        // idx: 0=전체 / 1=멀티회원(정회원이상+멀티전용) / 2=정회원(정회원이상만) / 3=신규콘텐츠
+        window.mpTabClick = function(idx) {
+          _mpTabIdx = idx;
+
+          // 탭 active 전환
+          document.querySelectorAll('#mpTabsEl .mp-tab').forEach(function(t, i) {
+            t.classList.toggle('mp-tab-active', i === idx);
+          });
+
+          // 연령 필터는 모든 탭에서 유지 (초기화하지 않음)
+
+          // 필터 적용
+          mpApplyFilters();
+
+          // 멀티회원 필터: 추천 콘텐츠 그리드에서 멀티 전용(bp) 카드를 앞으로 재정렬
+          var recGrid = document.getElementById('mpRecGrid');
+          if (recGrid) {
+            var recCardEls = Array.prototype.slice.call(recGrid.querySelectorAll('.mp-card'));
+            if (idx === 1) {
+              recCardEls.sort(function(a, b) {
+                var aw = a.getAttribute('data-cat') === 'bp' ? 0 : 1;
+                var bw = b.getAttribute('data-cat') === 'bp' ? 0 : 1;
+                if (aw !== bw) return aw - bw;
+                return parseInt(a.getAttribute('data-idx')) - parseInt(b.getAttribute('data-idx'));
+              });
+            } else {
+              recCardEls.sort(function(a, b) {
+                return parseInt(a.getAttribute('data-idx')) - parseInt(b.getAttribute('data-idx'));
+              });
+            }
+            recCardEls.forEach(function(c) { recGrid.appendChild(c); });
+            recGrid.scrollLeft = 0;
+          }
+        };
+
+        // 2뎁스 연령 칩 클릭 (멀티회원 필터 안에서만 동작)
+        window.mpAgeClick = function(age, el) {
+          _mpAge = age;
+          document.querySelectorAll('#mpAgeTabsEl .mp-age-tab').forEach(function(t) {
+            t.classList.remove('mp-age-active');
+          });
+          el.classList.add('mp-age-active');
+          mpApplyFilters();
+        };
+
+        // 6. 사이드 내비 클릭 핸들러
+        window.mpNavClick = function(el) {
+          document.querySelectorAll('.mp-nav-item').forEach(function(a) {
+            a.classList.remove('mpnav-active');
+          });
+          el.classList.add('mpnav-active');
+        };
+
+        // 7. 멤버십 전용관 열기 (position:fixed 오버레이 방식)
+        window.showMembershipPage = function(e) {
+          if (e) e.preventDefault();
+
+          // GNB 보조 메뉴 active 처리
+          document.querySelectorAll('.gnb-sub').forEach(function(b) {
+            b.classList.remove('mp-active');
+          });
+          if (e && e.currentTarget) e.currentTarget.classList.add('mp-active');
+
+          // 프로모 띠배너: 일반회원일 때만 노출 (정회원/멀티회원은 숨김)
+          var promoBarEl = document.getElementById('mp-promo-topbar');
+          if (promoBarEl) {
+            promoBarEl.style.display = (userMembershipType === 'general') ? 'flex' : 'none';
+          }
+
+          // 카운트다운: 오늘 23:59:59까지 남은 시간을 1초마다 갱신
+          if (userMembershipType === 'general' && !window._mpPromoTimerInterval) {
+            var timerEl = document.getElementById('mp-promo-timer');
+            var _mpUpdateTimer = function() {
+              if (!timerEl) { timerEl = document.getElementById('mp-promo-timer'); }
+              if (!timerEl) return;
+              var now = new Date();
+              var end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+              var diff = Math.max(0, Math.floor((end - now) / 1000));
+              var hh = Math.floor(diff / 3600);
+              var mm = Math.floor((diff % 3600) / 60);
+              var ss = diff % 60;
+              timerEl.textContent =
+                String(hh).padStart(2,'0') + ':' +
+                String(mm).padStart(2,'0') + ':' +
+                String(ss).padStart(2,'0');
+            };
+            _mpUpdateTimer();
+            window._mpPromoTimerInterval = setInterval(_mpUpdateTimer, 1000);
+          }
+
+          // GNB 하단 위치를 동적으로 계산해 오버레이 top 설정
+          // (topbar가 먼저 표시된 뒤 계산해야 정확한 위치를 얻음)
+          var mpEl = document.getElementById('pageMembership');
+          var gnbEl = document.getElementById('gnbList');
+          var topPx = 160; // 기본 폴백값
+          if (gnbEl) {
+            // gnbList의 조상 중 높이가 있는 nav/gnb 컨테이너를 찾아 하단 좌표 사용
+            var p = gnbEl.parentElement;
+            while (p && p !== document.body) {
+              var r = p.getBoundingClientRect();
+              if (r.height > 10 && r.height < 300) { topPx = Math.round(r.bottom); break; }
+              p = p.parentElement;
+            }
+          }
+          mpEl.style.top = topPx + 'px';
+
+          // 헤더/GNB는 그대로 유지 — body나 pageHome에 일절 손대지 않음
+          mpEl.style.display = 'block';
+          mpEl.scrollTop = 0;
+        };
+
+        // 8. 로고 클릭(backToHome) 패치: 오버레이만 닫기 + 프로모 띠배너 숨김
+        var _origBTH = window.backToHome;
+        window.backToHome = function() {
+          var mp = document.getElementById('pageMembership');
+          if (mp) mp.style.display = 'none';
+          var pb = document.getElementById('mp-promo-topbar');
+          if (pb) pb.style.display = 'none';
+          document.querySelectorAll('.gnb-sub').forEach(function(b) {
+            b.classList.remove('mp-active');
+          });
+          if (typeof _origBTH === 'function') _origBTH();
+        };
+
+        // 9. 메인 GNB 클릭 시 전용관 오버레이 닫기
+        setTimeout(function() {
+          var gnbList = document.getElementById('gnbList');
+          if (gnbList) {
+            gnbList.addEventListener('mousedown', function(ev) {
+              if (ev.target.closest && ev.target.closest('#gnbSecondary')) return;
+              var mp = document.getElementById('pageMembership');
+              if (mp && mp.style.display !== 'none') {
+                mp.style.display = 'none';
+                document.querySelectorAll('.gnb-sub').forEach(function(b) {
+                  b.classList.remove('mp-active');
+                });
+              }
+            });
+          }
+        }, 100);
+
+        // 10. showProgramsFull 래핑: 전용관 오버레이가 열려있으면 먼저 닫고 실행
+        setTimeout(function() {
+          if (typeof window.showProgramsFull === 'function') {
+            var _origSPF = window.showProgramsFull;
+            window.showProgramsFull = function(e) {
+              var mp = document.getElementById('pageMembership');
+              if (mp) mp.style.display = 'none';
+              document.querySelectorAll('.gnb-sub').forEach(function(b) {
+                b.classList.remove('mp-active');
+              });
+              _origSPF.call(this, e);
+            };
+          }
+        }, 300);
+
+      } catch(mpErr) { console.error('[mp-patch]', mpErr); }
+    }, 200);
+
+
     // ── 헤더 영역 패치: 유틸 메뉴 + 로고 + 검색창 + 프로모 배너 ──
     setTimeout(function() {
       try {
@@ -500,8 +1325,35 @@ document.head.appendChild(aiStyle);
           '.mega-desc{display:none!important;}' +
           '#pageHome .home-eyebrow,#pageHome .home-title,#pageHome .home-sub,#pageHome .home-grid{display:none!important;}' +
           '#pageHome .home{padding:0!important;min-height:0!important;}' +
-          '#pageHome{min-height:0!important;}';
+          '#pageHome{min-height:0!important;}' +
+          /* ── 멤버십 전용관 프로모 띠배너 ── */
+          '.mp-promo-topbar{display:none;width:100%;height:42px;background:#e5092f;color:#fff;align-items:center;justify-content:center;box-sizing:border-box;}' +
+          '.mp-promo-topbar-inner{display:flex;align-items:center;justify-content:center;gap:10px;white-space:nowrap;font-size:13px;font-weight:600;}' +
+          '.mp-promo-topbar .promo-cta{font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer;opacity:.92;}' +
+          '.mp-promo-topbar .promo-dot{opacity:.35;font-size:11px;}' +
+          '.mp-promo-topbar .promo-timer{font-weight:700;letter-spacing:.4px;font-variant-numeric:tabular-nums;}' +
+          '.mp-promo-topbar .promo-arrow{opacity:.7;margin-left:2px;font-size:12px;}';
         document.head.appendChild(hdrStyle);
+
+        // 1-b. 프로모 띠배너 DOM 생성 (초기 hidden,  전용관 진입 시에만 display:flex)
+        if (!document.getElementById('mp-promo-topbar')) {
+          var promoBar = document.createElement('div');
+          promoBar.className = 'mp-promo-topbar';
+          promoBar.id = 'mp-promo-topbar';
+          promoBar.innerHTML =
+            '<div class="mp-promo-topbar-inner">' +
+              '🎁 일반회원 특별혜택 받고 멤버십 신청하기' +
+              '<span class="promo-dot">·</span>' +
+              '<span class="promo-timer" id="mp-promo-timer">00:00:00</span>' +
+              '<span class="promo-arrow">›</span>' +
+            '</div>';
+          var utilEl = document.querySelector('.util');
+          if (utilEl && utilEl.parentNode) {
+            utilEl.parentNode.insertBefore(promoBar, utilEl);
+          } else {
+            document.body.prepend(promoBar);
+          }
+        }
 
         // 2. Util bar 재구성
         var utilCont = document.querySelector('.util .container');
@@ -571,7 +1423,7 @@ document.head.appendChild(aiStyle);
   </script>
 
   <script type="__bundler/template">
-"<!DOCTYPE html>\n<html lang=\"ko\"><head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=1600\">\n<title>KIDKIDS · GNB 2안 · 미니멀<\u002Ftitle>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin=\"\">\n<style>/* cyrillic-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 400;\n  font-display: swap;\n  src: url(\"7c89b559-9e1d-49fc-bdf5-677708431ef5\") format('woff2');\n  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;\n}\n/* cyrillic */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 400;\n  font-display: swap;\n  src: url(\"95057c5c-6304-49d1-8546-c1946e042255\") format('woff2');\n  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;\n}\n/* greek-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 400;\n  font-display: swap;\n  src: url(\"32f49d8f-c6f3-4378-97c6-ebe0ef2c0090\") format('woff2');\n  unicode-range: U+1F00-1FFF;\n}\n/* greek */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 400;\n  font-display: swap;\n  src: url(\"3db142e8-9685-4836-8308-6b1f5b5b068d\") format('woff2');\n  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;\n}\n/* vietnamese */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 400;\n  font-display: swap;\n  src: url(\"4611ff2e-51d8-4e86-babe-67dc82923f78\") format('woff2');\n  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;\n}\n/* latin-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 400;\n  font-display: swap;\n  src: url(\"a04859dd-8dc6-439b-bdae-1001afe0bf26\") format('woff2');\n  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;\n}\n/* latin */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 400;\n  font-display: swap;\n  src: url(\"a466e1d1-a002-4ab6-8b03-f725bddd787b\") format('woff2');\n  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;\n}\n/* cyrillic-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 500;\n  font-display: swap;\n  src: url(\"7c89b559-9e1d-49fc-bdf5-677708431ef5\") format('woff2');\n  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;\n}\n/* cyrillic */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 500;\n  font-display: swap;\n  src: url(\"95057c5c-6304-49d1-8546-c1946e042255\") format('woff2');\n  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;\n}\n/* greek-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 500;\n  font-display: swap;\n  src: url(\"32f49d8f-c6f3-4378-97c6-ebe0ef2c0090\") format('woff2');\n  unicode-range: U+1F00-1FFF;\n}\n/* greek */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 500;\n  font-display: swap;\n  src: url(\"3db142e8-9685-4836-8308-6b1f5b5b068d\") format('woff2');\n  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;\n}\n/* vietnamese */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 500;\n  font-display: swap;\n  src: url(\"4611ff2e-51d8-4e86-babe-67dc82923f78\") format('woff2');\n  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;\n}\n/* latin-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 500;\n  font-display: swap;\n  src: url(\"a04859dd-8dc6-439b-bdae-1001afe0bf26\") format('woff2');\n  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;\n}\n/* latin */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 500;\n  font-display: swap;\n  src: url(\"a466e1d1-a002-4ab6-8b03-f725bddd787b\") format('woff2');\n  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;\n}\n/* cyrillic-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 600;\n  font-display: swap;\n  src: url(\"7c89b559-9e1d-49fc-bdf5-677708431ef5\") format('woff2');\n  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;\n}\n/* cyrillic */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 600;\n  font-display: swap;\n  src: url(\"95057c5c-6304-49d1-8546-c1946e042255\") format('woff2');\n  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;\n}\n/* greek-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 600;\n  font-display: swap;\n  src: url(\"32f49d8f-c6f3-4378-97c6-ebe0ef2c0090\") format('woff2');\n  unicode-range: U+1F00-1FFF;\n}\n/* greek */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 600;\n  font-display: swap;\n  src: url(\"3db142e8-9685-4836-8308-6b1f5b5b068d\") format('woff2');\n  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;\n}\n/* vietnamese */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 600;\n  font-display: swap;\n  src: url(\"4611ff2e-51d8-4e86-babe-67dc82923f78\") format('woff2');\n  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;\n}\n/* latin-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 600;\n  font-display: swap;\n  src: url(\"a04859dd-8dc6-439b-bdae-1001afe0bf26\") format('woff2');\n  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;\n}\n/* latin */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 600;\n  font-display: swap;\n  src: url(\"a466e1d1-a002-4ab6-8b03-f725bddd787b\") format('woff2');\n  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;\n}\n/* cyrillic-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 700;\n  font-display: swap;\n  src: url(\"7c89b559-9e1d-49fc-bdf5-677708431ef5\") format('woff2');\n  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;\n}\n/* cyrillic */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 700;\n  font-display: swap;\n  src: url(\"95057c5c-6304-49d1-8546-c1946e042255\") format('woff2');\n  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;\n}\n/* greek-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 700;\n  font-display: swap;\n  src: url(\"32f49d8f-c6f3-4378-97c6-ebe0ef2c0090\") format('woff2');\n  unicode-range: U+1F00-1FFF;\n}\n/* greek */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 700;\n  font-display: swap;\n  src: url(\"3db142e8-9685-4836-8308-6b1f5b5b068d\") format('woff2');\n  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;\n}\n/* vietnamese */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 700;\n  font-display: swap;\n  src: url(\"4611ff2e-51d8-4e86-babe-67dc82923f78\") format('woff2');\n  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;\n}\n/* latin-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 700;\n  font-display: swap;\n  src: url(\"a04859dd-8dc6-439b-bdae-1001afe0bf26\") format('woff2');\n  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;\n}\n/* latin */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 700;\n  font-display: swap;\n  src: url(\"a466e1d1-a002-4ab6-8b03-f725bddd787b\") format('woff2');\n  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;\n}\n<\u002Fstyle>\n<style>\n  :root {\n    --ink:        #0e0f0d;\n    --ink-2:      #2c2e2a;\n    --text:       #3a3d36;\n    --sub:        #7b7e76;\n    --mute:       #a8aaa3;\n    --hair:       #ececea;\n    --hair-2:     #f3f3f1;\n    --paper:      #fafaf8;\n    --bg:         #ffffff;\n    --green:      #2e7a45;\n    --green-deep: #1f5a31;\n    --green-soft: #e6f0e8;\n    --green-tint: #f4f8f4;\n    --paper-2:    #f1f5ed;\n    --green-mid:  #cadbb8;\n    --hot:        #c0392b;\n    --new:        #b65015;\n    --container:  1440px;\n    --pad-x:      40px;\n  }\n  *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }\n  html,body {\n    background: var(--bg); color: var(--ink);\n    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;\n    -webkit-font-smoothing: antialiased;\n    letter-spacing: -0.015em;\n    font-feature-settings: \"ss06\",\"tnum\";\n  }\n  a { color: inherit; text-decoration: none; }\n  button { font-family: inherit; }\n  .container { max-width: var(--container); margin: 0 auto; padding: 0 var(--pad-x); }\n\n  /* ── UTILITY BAR ── */\n  .util { border-bottom: 1px solid var(--hair-2); height: 34px; }\n  .util .container { height: 100%; display: flex; align-items: center; justify-content: flex-end; gap: 22px; }\n  .util a { font-size: 11.5px; color: var(--sub); transition: color .15s; }\n  .util a:hover { color: var(--ink); }\n  .util a.strong { color: var(--ink); font-weight: 500; }\n  .util .sep { width: 1px; height: 9px; background: #e0e0dc; }\n\n  /* ── HEADER ── */\n  .header { background: var(--bg); }\n  .header .container {\n    height: 84px;\n    display: grid; grid-template-columns: 220px 1fr 320px;\n    align-items: center; gap: 40px;\n  }\n  .logo { display: flex; align-items: baseline; gap: 8px; cursor: pointer; }\n  .logo-mark {\n    font-family: 'Inter', sans-serif; font-weight: 800; font-size: 26px;\n    letter-spacing: -0.05em; color: var(--ink); line-height: 1;\n  }\n  .logo-mark .dot { color: var(--green); }\n  .logo-sub {\n    font-size: 10px; color: var(--mute); letter-spacing: 0.16em;\n    text-transform: uppercase; font-weight: 500;\n  }\n  .search {\n    height: 44px; display: flex; align-items: center; gap: 12px;\n    border: 1px solid var(--hair); padding: 0 16px; background: var(--bg);\n    transition: border-color .15s;\n  }\n  .search:hover, .search:focus-within { border-color: var(--ink-2); }\n  .search svg { color: var(--sub); flex-shrink: 0; }\n  .search input {\n    flex: 1; border: none; outline: none; background: transparent;\n    font-size: 13.5px; color: var(--ink); font-family: inherit; letter-spacing: -0.015em;\n  }\n  .search input::placeholder { color: var(--mute); }\n  .search .hot {\n    display: flex; align-items: center; gap: 8px;\n    font-size: 12px; color: var(--sub);\n    padding-left: 12px; border-left: 1px solid var(--hair);\n  }\n  .search .hot b { color: var(--ink); font-weight: 600; }\n  .actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }\n  .btn {\n    display: inline-flex; align-items: center; gap: 8px;\n    height: 44px; padding: 0 18px; font-size: 13px; font-weight: 600;\n    letter-spacing: -0.02em; border: 1px solid var(--hair);\n    background: var(--bg); color: var(--ink); cursor: pointer;\n    transition: all .15s; font-family: inherit;\n  }\n  .btn:hover { border-color: var(--ink); }\n  .btn .ico { font-size: 13px; color: var(--sub); }\n  .btn-primary { background: var(--ink); color: #fff; border-color: var(--ink); }\n  .btn-primary:hover { background: var(--green-deep); border-color: var(--green-deep); }\n  .btn-primary .ico { color: #c9d8cc; }\n\n  /* ── GNB ── */\n  .gnb { border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); background: var(--bg); position: relative; z-index: 20; }\n  .gnb .container { display: flex; align-items: stretch; height: 56px; }\n  .gnb-item {\n    position: relative; display: inline-flex; align-items: center;\n    padding: 0 24px; font-size: 15.5px; font-weight: 500;\n    color: var(--ink-2); letter-spacing: -0.025em; cursor: pointer;\n    transition: color .15s; height: 100%; background: transparent; border: none;\n    font-family: inherit;\n  }\n  .gnb-item:first-child { padding-left: 0; }\n  .gnb-item:hover { color: var(--ink); }\n  .gnb-item.active { color: var(--ink); font-weight: 700; }\n  .gnb-item.active::after {\n    content: ''; position: absolute; left: 24px; right: 24px;\n    bottom: -1px; height: 2px; background: var(--green);\n  }\n  .gnb-item:first-child.active::after { left: 0; }\n\n  /* ── MEGA ── */\n  .mega-host {\n    position: absolute; left: 0; right: 0; top: 100%;\n    background: var(--bg); border-bottom: 1px solid var(--hair);\n    box-shadow: 0 24px 40px -20px rgba(0,0,0,0.10);\n    z-index: 15;\n    display: none;\n  }\n  .gnb.has-mega .mega-host { display: block; animation: fd .18s ease-out; }\n  @keyframes fd { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }\n  .mega-inner { max-width: var(--container); margin: 0 auto; padding: 40px var(--pad-x) 44px; }\n  .mega-eyebrow {\n    display: flex; align-items: baseline; gap: 16px;\n    margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--hair-2);\n  }\n  .mega-title {\n    font-size: 22px; font-weight: 800; color: var(--ink);\n    letter-spacing: -0.04em; line-height: 1;\n  }\n  .mega-desc { font-size: 13px; color: var(--sub); letter-spacing: -0.01em; }\n  .mega-all {\n    margin-left: auto; display: inline-flex; align-items: center; gap: 6px;\n    font-size: 12px; font-weight: 600; color: var(--ink);\n    border-bottom: 1px solid var(--ink); padding-bottom: 2px; cursor: pointer;\n  }\n  .mega-cols { display: grid; gap: 40px; }\n  .col-title {\n    font-size: 14px; font-weight: 700; color: var(--ink);\n    letter-spacing: -0.025em; margin-bottom: 20px;\n    display: flex; align-items: baseline; gap: 8px;\n  }\n  .col-title .num {\n    font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500;\n    color: var(--mute); letter-spacing: 0.06em;\n  }\n  .col-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }\n  .col-list a {\n    font-size: 13.5px; color: var(--text); letter-spacing: -0.02em;\n    transition: color .12s; display: inline-flex; align-items: center; gap: 8px;\n    line-height: 1.3; cursor: pointer;\n  }\n  .col-list a:hover { color: var(--green); }\n  .tag {\n    font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 700;\n    color: var(--green-deep); background: var(--green-soft);\n    padding: 2px 6px; border-radius: 999px; letter-spacing: 0.04em;\n  }\n  .tag.hot { color: #fff; background: var(--hot); }\n  .tag.new { color: var(--new); background: #fdf0e6; }\n\n  /* AI grid */\n  .ai-grid {\n    display: grid; grid-template-columns: repeat(4, 1fr);\n    gap: 1px; background: var(--hair); border: 1px solid var(--hair);\n  }\n  .ai-card {\n    background: var(--bg); padding: 22px 22px 24px;\n    display: flex; flex-direction: column; gap: 10px;\n    cursor: pointer; transition: background .15s; min-height: 132px;\n  }\n  .ai-card:hover { background: var(--green-tint); }\n  .ai-card-top { display: flex; align-items: center; justify-content: space-between; }\n  .ai-icon {\n    width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;\n    border: 1px solid var(--hair); color: var(--ink); background: var(--bg);\n  }\n  .ai-card:hover .ai-icon { border-color: var(--green); color: var(--green-deep); }\n  .ai-num { font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500; color: var(--mute); letter-spacing: 0.08em; }\n  .ai-name { font-size: 14px; font-weight: 700; color: var(--ink); letter-spacing: -0.025em; margin-top: 4px; }\n  .ai-card-desc { font-size: 12px; color: var(--sub); line-height: 1.55; letter-spacing: -0.005em; }\n\n  /* program 전체보기 inline link variant */\n  .mega-all.allview {\n    background: var(--ink); color: #fff;\n    padding: 10px 16px; border-bottom: none;\n    font-size: 12px;\n  }\n  .mega-all.allview:hover { background: var(--green-deep); }\n\n  /* ── PAGE BODIES ── */\n  main { min-height: 60vh; }\n\n  .home {\n    max-width: var(--container); margin: 0 auto;\n    padding: 80px var(--pad-x) 100px;\n  }\n  .home-eyebrow {\n    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;\n    color: var(--green); font-weight: 700; margin-bottom: 24px;\n  }\n  .home-title {\n    font-family: 'Pretendard', sans-serif;\n    font-size: 56px; font-weight: 800; line-height: 1.1;\n    letter-spacing: -0.04em; color: var(--ink);\n  }\n  .home-sub {\n    margin-top: 22px; max-width: 560px;\n    font-size: 15px; line-height: 1.7; color: var(--ink-2); letter-spacing: -0.01em;\n  }\n  .home-grid {\n    margin-top: 72px;\n    display: grid; grid-template-columns: repeat(4, 1fr);\n    gap: 1px; background: var(--hair); border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair);\n  }\n  .home-cell {\n    background: var(--bg); padding: 32px 28px;\n    display: flex; flex-direction: column; gap: 12px; cursor: pointer; transition: background .15s;\n  }\n  .home-cell:hover { background: var(--paper); }\n  .home-cell .num { font-family: 'Inter', sans-serif; font-size: 10px; color: var(--mute); letter-spacing: 0.08em; }\n  .home-cell .ti { font-size: 16px; font-weight: 700; color: var(--ink); letter-spacing: -0.03em; }\n  .home-cell .ds { font-size: 12.5px; color: var(--sub); line-height: 1.55; letter-spacing: -0.005em; }\n\n  /* ── PROGRAMS FULL PAGE (synced with 시안 02) ── */\n  .prog-page { background: var(--bg); }\n  .prog-hero {\n    background: var(--paper-2);\n    border-bottom: 1px solid var(--hair);\n  }\n  .prog-head {\n    max-width: var(--container); margin: 0 auto;\n    padding: 56px var(--pad-x) 40px;\n    display: flex; align-items: flex-end; gap: 36px;\n  }\n  .prog-eyebrow {\n    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;\n    color: var(--sub); font-weight: 600; margin-bottom: 14px;\n    display: inline-flex; align-items: center; gap: 8px; cursor: pointer;\n  }\n  .prog-eyebrow:hover { color: var(--green-deep); }\n  .prog-title { font-size: 40px; font-weight: 800; color: var(--ink); letter-spacing: -0.04em; line-height: 1.1; }\n  .prog-desc {\n    margin-top: 14px; max-width: 540px;\n    font-size: 14px; line-height: 1.65; color: var(--text); letter-spacing: -0.01em;\n  }\n  .prog-search-wrap { flex-shrink: 0; width: 340px; margin-left: auto; }\n  .prog-search {\n    height: 48px; display: flex; align-items: center; gap: 12px;\n    border: 1px solid var(--green); padding: 0 20px; border-radius: 999px;\n    background: var(--bg); box-shadow: 0 0 0 4px rgba(46,122,69,0.08);\n  }\n  .prog-search svg { color: var(--green); }\n  .prog-search input {\n    flex: 1; border: none; outline: none; background: transparent;\n    font-size: 14px; font-family: inherit; letter-spacing: -0.015em;\n  }\n  .prog-search input::placeholder { color: var(--mute); }\n\n  .prog-tabs {\n    max-width: var(--container); margin: 0 auto;\n    padding: 0 var(--pad-x) 32px;\n    display: flex; gap: 8px; flex-wrap: wrap;\n  }\n  .prog-tab {\n    padding: 9px 16px; font-size: 13px; font-weight: 500;\n    color: var(--text); letter-spacing: -0.025em; cursor: pointer;\n    background: var(--bg); border: 1px solid var(--hair);\n    border-radius: 999px; font-family: inherit;\n    transition: all .15s;\n    display: inline-flex; align-items: center; gap: 6px;\n  }\n  .prog-tab:hover { border-color: var(--green); color: var(--green-deep); }\n  .prog-tab.active {\n    background: var(--green-deep); color: #fff; border-color: var(--green-deep); font-weight: 600;\n  }\n  .prog-tab .ct {\n    font-family: 'Inter', sans-serif; font-size: 11px;\n    color: var(--mute); letter-spacing: 0.02em;\n  }\n  .prog-tab.active .ct { color: var(--green-mid); }\n\n  .prog-meta {\n    max-width: var(--container); margin: 0 auto;\n    padding: 28px var(--pad-x) 20px;\n    display: flex; align-items: center; gap: 12px;\n    font-size: 12px; color: var(--sub);\n  }\n  .prog-meta b { color: var(--ink); font-weight: 700; }\n  .prog-meta .sort { margin-left: auto; display: flex; gap: 14px; }\n  .prog-meta .sort span { cursor: pointer; }\n  .prog-meta .sort .on { color: var(--green-deep); font-weight: 700; }\n\n  .prog-grid {\n    max-width: var(--container); margin: 0 auto;\n    padding: 0 var(--pad-x) 100px;\n    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;\n  }\n  .prog-card {\n    background: var(--bg); border: 1px solid var(--hair); border-radius: 14px;\n    padding: 22px 22px 20px;\n    display: flex; flex-direction: column; min-height: 200px;\n    transition: all .15s; cursor: pointer;\n  }\n  .prog-card:hover {\n    border-color: var(--green); transform: translateY(-3px);\n    box-shadow: 0 8px 22px -10px rgba(20,60,30,0.18);\n  }\n  .prog-card-top {\n    display: flex; align-items: center; justify-content: space-between;\n    margin-bottom: 16px;\n  }\n  .prog-card .badge {\n    font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 700;\n    letter-spacing: 0.04em; padding: 3px 8px; border-radius: 999px;\n    color: var(--green-deep); background: var(--green-soft);\n  }\n  .prog-card .badge.hot { color: #fff; background: var(--hot); }\n  .prog-card .badge.new { color: var(--new); background: #fdf0e6; }\n  .prog-card .badge.ess { color: #fff; background: var(--ink); }\n  .prog-card .badge.ai  { color: #fff; background: var(--green); }\n  .prog-card .target {\n    font-size: 11px; color: var(--sub);\n    background: var(--paper); padding: 3px 8px; border-radius: 999px;\n  }\n  .prog-card .name { font-size: 17px; font-weight: 700; color: var(--ink); letter-spacing: -0.03em; line-height: 1.25; margin-bottom: 6px; }\n  .prog-card .desc { font-size: 13px; color: var(--sub); line-height: 1.55; flex: 1; }\n  .prog-card .go {\n    margin-top: 18px; display: inline-flex; align-items: center; gap: 6px;\n    font-size: 12px; font-weight: 600; color: var(--green-deep);\n    padding: 8px 14px; background: var(--green-tint);\n    border-radius: 999px; align-self: flex-start;\n    transition: all .15s;\n  }\n  .prog-card .go::after { content: '→'; }\n  .prog-card:hover .go { background: var(--green-deep); color: #fff; }\n\n  /* footer hint */\n  .hint {\n    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);\n    background: rgba(14,15,13,0.92); color: #fff;\n    font-size: 11.5px; padding: 9px 16px; border-radius: 999px;\n    backdrop-filter: blur(8px); z-index: 9999;\n    letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px;\n  }\n  .hint .pulse { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; animation: pulse 1.5s infinite; }\n  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }\n<\u002Fstyle>\n\n\n<\u002Fhead>\n<body>\n\n<!-- UTILITY -->\n<div class=\"util\">\n  <div class=\"container\">\n    <a>구독<\u002Fa><span class=\"sep\"><\u002Fspan>\n    <a>고객센터<\u002Fa><span class=\"sep\"><\u002Fspan>\n    <a>마이페이지<\u002Fa><span class=\"sep\"><\u002Fspan>\n    <a class=\"strong\">로그인<\u002Fa>\n  <\u002Fdiv>\n<\u002Fdiv>\n\n<!-- HEADER -->\n<header class=\"header\">\n  <div class=\"container\">\n    <a class=\"logo\" onclick=\"backToHome()\">\n      <span class=\"logo-mark\">KIDKIDS<span class=\"dot\">.<\u002Fspan><\u002Fspan>\n      <span class=\"logo-sub\">for teachers<\u002Fspan>\n    <\u002Fa>\n    <div class=\"search\">\n      <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"11\" cy=\"11\" r=\"7\"><\u002Fcircle><path d=\"m20 20-3.5-3.5\"><\u002Fpath><\u002Fsvg>\n      <input type=\"text\" placeholder=\"활동·놀이·계획안을 검색해 보세요\">\n      <div class=\"hot\">실시간 <b>봄 텃밭놀이<\u002Fb><\u002Fdiv>\n    <\u002Fdiv>\n    <div class=\"actions\">\n      <button class=\"btn\"><span class=\"ico\">◉<\u002Fspan> 쇼핑몰<\u002Fbutton>\n      <button class=\"btn btn-primary\"><span class=\"ico\">◆<\u002Fspan> 프리미엄 멤버십<\u002Fbutton>\n    <\u002Fdiv>\n  <\u002Fdiv>\n<\u002Fheader>\n\n<!-- GNB (rendered by JS into .container) -->\n<nav class=\"gnb\" id=\"gnb\">\n  <div class=\"container\" id=\"gnbList\"><\u002Fdiv>\n  <div class=\"mega-host\" id=\"megaHost\"><\u002Fdiv>\n<\u002Fnav>\n\n<!-- HOME PAGE -->\n<main id=\"pageHome\">\n  <section class=\"home\">\n    <div class=\"home-eyebrow\">FOR TEACHERS · MAY 2026<\u002Fdiv>\n    <h1 class=\"home-title\">교사의 하루,<br>한 페이지로 정리됩니다.<\u002Fh1>\n    <p class=\"home-sub\">\n      영아·유아 발달별 콘텐츠부터 AI 수업 도구, 학급운영과 교사성장까지 —\n      상단 메뉴에 마우스를 올리거나 클릭하면 메가메뉴가 펼쳐집니다.\n    <\u002Fp>\n    <div class=\"home-grid\" id=\"homeGrid\"><\u002Fdiv>\n  <\u002Fsection>\n<\u002Fmain>\n\n<!-- PROGRAMS FULL PAGE -->\n<main id=\"pageProgramsFull\" class=\"prog-page\" hidden=\"\">\n  <div class=\"prog-hero\">\n    <div class=\"prog-head\">\n      <div>\n        <div class=\"prog-eyebrow\" onclick=\"backToHome()\">← 돌아가기<\u002Fdiv>\n        <h2 class=\"prog-title\">프로그램 전체보기<\u002Fh2>\n        <p class=\"prog-desc\">키드키즈의 수업, 생활지도, 기관운영 프로그램을 한곳에서 확인해 보세요.<\u002Fp>\n      <\u002Fdiv>\n      <div class=\"prog-search-wrap\">\n        <div class=\"prog-search\">\n          <svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\"><circle cx=\"11\" cy=\"11\" r=\"7\"><\u002Fcircle><path d=\"m20 20-3.5-3.5\"><\u002Fpath><\u002Fsvg>\n          <input id=\"progSearch\" type=\"text\" placeholder=\"프로그램명을 검색하세요\">\n        <\u002Fdiv>\n      <\u002Fdiv>\n    <\u002Fdiv>\n    <div class=\"prog-tabs\" id=\"progTabs\"><\u002Fdiv>\n  <\u002Fdiv>\n  <div class=\"prog-meta\">\n    <span>총 <b id=\"progCount\">0<\u002Fb>개의 프로그램<\u002Fspan>\n    <div class=\"sort\">\n      <span class=\"on\">추천순<\u002Fspan>\n      <span>최신순<\u002Fspan>\n      <span>이름순<\u002Fspan>\n    <\u002Fdiv>\n  <\u002Fdiv>\n  <div class=\"prog-grid\" id=\"progGrid\"><\u002Fdiv>\n<\u002Fmain>\n\n<div class=\"hint\"><span class=\"pulse\"><\u002Fspan> 상단 GNB 메뉴를 hover/click 해보세요 · 프로그램의 [전체보기]는 별도 페이지로 이동<\u002Fdiv>\n\n<script>// Shared navigation data for both 1안 (minimal) and 2안 (curation).\n// Each design renders this data its own way; structure stays identical.\n\nwindow.NAV = [\n  { id: 'ai',         label: 'AI존' },\n  { id: 'infant',     label: '영아' },\n  { id: 'kids',       label: '유아' },\n  { id: 'materials',  label: '클립자료' },\n  { id: 'programs',   label: '프로그램' },\n  { id: 'growth',     label: '교사성장' },\n  { id: 'community',  label: '커뮤니티' },\n  { id: 'shop',       label: '쇼핑몰' },\n];\n\n// ── Mega menus ───────────────────────────────────────────────────────\nwindow.MEGA = {\n\n  // AI 존 — 8 tools (icon + name + desc)\n  ai: {\n    desc: '키드키즈가 만든 AI 수업 도구 · 프리미엄 전용',\n    tools: [\n      { icon: '◰', name: '티칭보드',       desc: 'AI 수업 보드 자동 구성' },\n      { icon: '◈', name: 'AI 추천 자료',   desc: '수업 상황에 맞는 자료 추천' },\n      { icon: '◐', name: '게이미피케이션', desc: '놀이로 배우는 참여형 수업' },\n      { icon: '◭', name: '디지털리터러시', desc: '미래 역량 디지털 교육' },\n      { icon: '▤', name: '디자인에디터',   desc: '우리 반 맞춤 콘텐츠 제작' },\n      { icon: '◇', name: '아동관찰 AI',    desc: '관찰 기록 자동화' },\n      { icon: '✺', name: '멀티누리',       desc: '누리과정 멀티미디어 통합' },\n      { icon: '◉', name: '놀이랩',         desc: 'AI가 제안하는 놀이 활동' },\n    ],\n  },\n\n  infant: {\n    desc: '0–2세 발달에 맞춘 놀이·자료·프로그램',\n    cols: [\n      { title: '놀이계획안',    items: ['0세','1세','2세','활동계획안'] },\n      { title: '클립자료',      items: ['동요·음원','활동지','크래프트'] },\n      { title: '프로그램',   items: ['베베놀이터','베베TV','베베토이','오감'] },\n      { title: '생활·안전교육',      items: ['안전교육','기본생활', '오감교육', ['배변훈련','NEW']] },\n      { title: '평가·운영·부모', items: ['관찰일지','부모교육','가정통신문','어린이집 평가'] },\n    ],\n    picks: [\n      { tag: '인기', title: '오감놀이 키트',     sub: '주간 다운로드 1,284회' },\n      { tag: '신규', title: '베베TV 봄편 업데이트', sub: '에디터 PICK' },\n      { tag: '추천', title: '영아 인성 동화 모음',  sub: '교사 평점 4.9' },\n    ],\n  },\n\n  kids: {\n    desc: '3–5세 누리과정과 생활지도까지',\n    cols: [\n      { title: '놀이계획안',     items: ['3세','4세','5세','활동계획안'] },\n      { title: '클립자료',       items: ['동요/음원','영상','슬라이드','활동지'] },\n      { title: '프로그램',  items: ['사회정서학습','문해력','이음교육','인성교육'] },\n      { title: '디지털·미래교육',       items: ['티칭보드','디지털리터러시','게이미피케이션'] },\n      { title: '멀티수업자료',       items: ['명화','클래식','안전교육',['주제별 이야기나누기','NEW']] },\n    ],\n    picks: [\n      { tag: '인기', title: '봄 텃밭놀이 패키지', sub: '이번 주 다운로드 3,041회' },\n      { tag: '추천', title: '누리과정 자연탐구',   sub: '5월 추천 흐름' },\n      { tag: 'HOT', title: '안전교육 5월 특집',    sub: '필수 교육 자료' },\n    ],\n  },\n\n  materials: {\n    desc: '수업에 바로 쓰는 멀티미디어·인쇄·운영 자료',\n    cols: [\n      { title: '다운로드',       items: ['활동지','컷/도안','크래프트','사진','예문/서식'] },\n      { title: '미디어',       items: ['영상','슬라이드','동요/음원','오디오클립'] },\n      { title: '추천자료',       items: ['추천자료'] },\n      ],\n    picks: [\n      { tag: '오늘', title: '오늘의 추천 자료',  sub: '봄 · 자연탐구 모음' },\n      { tag: '신규', title: '신규 콘텐츠 124건', sub: '지난 7일' },\n      { tag: '인기', title: '많이 찾는 자료',    sub: '주간 TOP 20' },\n    ],\n  },\n\n  // 프로그램 — 일부 대표만 + 전체보기\n  programs: {\n    desc: '수업·생활지도·기관운영 프로그램을 빠르게 확인하세요',\n    cols: [\n      { title: '추천 프로그램',    items: ['티칭보드','놀이프로젝트','안전교육','기본생활습관'] },\n      { title: 'AI·디지털 프로그램', items: ['AI 추천 자료','디자인에디터','디지털리터러시','게이미피케이션'] },\n      { title: '기관·교사 지원',   items: ['아동기질검사','아동관찰','교실영어','키드키즈 잉글리시'] },\n    ],\n    // For 2안 — card-style featured programs\n    cards: [\n      { name: '티칭보드',       desc: 'AI 수업 보드 자동 구성',   badge: '추천' },\n      { name: '놀이프로젝트',   desc: '주제별 놀이 활동 구성',     badge: 'HOT' },\n      { name: '안전교육',       desc: '연령별 안전교육 자료',      badge: null },\n      { name: '기본생활습관',   desc: '생활지도 자료 제공',        badge: null },\n      { name: '키드키즈 잉글리시', desc: '영어 수업 콘텐츠',        badge: '특화' },\n      { name: '아동기질검사',   desc: '원아 이해·상담 지원',       badge: '추천' },\n      { name: '디자인에디터',   desc: '우리 반 맞춤 콘텐츠 제작',  badge: null },\n      { name: '놀이랩',         desc: '놀이 활동 아이디어 추천',   badge: null },\n    ],\n    hasFullView: true,\n  },\n\n  growth: {\n    desc: '연수·자격증·검사·제작 도구로 교사 성장 지원',\n    cols: [\n      { title: '직무연수',   items: ['필수의무교육','자율직무연수','자격증과정',['5분 클래스','NEW']] },\n      { title: '평생교육원',   items: ['온라인 보수교육','역량강화교육','국민내일배움카드', '나의강의실'] },\n      { title: '상담·검사',  items: ['아동기질검사','교사인성검사','아동관찰'] },\n  ],\n    picks: [\n      { tag: '필수', title: '5월 보수교육 안내',  sub: '신청 마감 D-12' },\n      { tag: '추천', title: '교사 인성검사 무료', sub: '이번 달 한정' },\n      { tag: '신규', title: '자격증 과정 OPEN',   sub: '방과후 지도사' },\n    ],\n  },\n\n  community: {\n    desc: '함께 나누는 자료·소통·구인구직 공간',\n    cols: [\n      { title: '도란도란',  items: ['이야기마당','함께하는 자료실','사진갤러리','웹툰','사고팔고'] },\n      { title: '구인구직', items: ['채용정보','인재정보','구인등록','이력서등록'] },\n      { title: '고객소통',  items: ['고객센터','공지사항','이벤트'] },\n    ],\n    picks: [\n      { tag: '인기', title: '함께하는 자료실',    sub: '교사가 공유한 1,840개' },\n      { tag: '진행', title: '5월 이벤트',          sub: '응모 D-7' },\n      { tag: '구인', title: '신규 채용 24건',      sub: '서울·경기' },\n    ],\n  },\n\n  shop: {\n    desc: '교실에 필요한 모든 것을 한 자리에',\n    cols: [\n      { title: '카테고리',  items: ['키드키즈몰','교구','수업자료 상품','행사·환경구성'] },\n      { title: '기획·인기', items: [['기획전','HOT'],'인기상품','신상품','베스트셀러'] },\n      { title: '브랜드',    items: ['키드키즈 PICK','월간유아','베베','마음자람'] },\n    ],\n    picks: [\n      { tag: '기획', title: '5월 환경구성 페어',  sub: '최대 40% 할인' },\n      { tag: '인기', title: '교구 BEST 50',       sub: '주간 인기' },\n      { tag: '신규', title: '신상품 248건',        sub: '이번 주' },\n    ],\n  },\n};\n\n// ── 프로그램 전체보기 데이터 ──────────────────────────────────────────\nwindow.PROGRAMS = [\n  { name: '티칭보드',         desc: 'AI 수업 보드 자동 구성',            target: '영유아 공통', cat: 'ai',       badge: 'AI' },\n  { name: '놀이프로젝트',     desc: '주제별 놀이 활동 구성',              target: '유아',         cat: 'play',     badge: 'HOT' },\n  { name: '안전교육',         desc: '연령별 안전 교육 자료',              target: '영유아',       cat: 'life',     badge: '필수' },\n  { name: '기본생활습관',     desc: '생활지도 자료 제공',                 target: '영유아',       cat: 'life',     badge: null },\n  { name: '인성교육',         desc: '인성 함양 활동',                     target: '영유아',       cat: 'life',     badge: null },\n  { name: '마음자람',         desc: '정서·사회성 프로그램',               target: '영유아',       cat: 'life',     badge: '추천' },\n\n  { name: '키드키즈 잉글리시', desc: '영어 수업 콘텐츠 제공',              target: '유아',         cat: 'english',  badge: '특화' },\n  { name: '교실영어',          desc: '교실에서 쓰는 영어 활동',            target: '유아',         cat: 'english',  badge: null },\n  { name: 'Alphabet',          desc: '알파벳 인지 콘텐츠',                  target: '유아',         cat: 'english',  badge: null },\n  { name: 'Word Family',       desc: '영어 단어 가족 학습',                target: '유아',         cat: 'english',  badge: null },\n\n  { name: 'AI 추천 자료',      desc: '수업 상황에 맞는 자료 추천',         target: '교사',         cat: 'ai',       badge: 'AI' },\n  { name: '디자인에디터',      desc: '우리 반 맞춤 콘텐츠 제작',           target: '교사',         cat: 'make',     badge: null },\n  { name: '디지털리터러시',    desc: '미래 역량 디지털 교육',              target: '유아',         cat: 'ai',       badge: 'AI' },\n  { name: '게이미피케이션',    desc: '놀이로 배우는 참여형 수업',           target: '유아',         cat: 'ai',       badge: 'AI' },\n  { name: '아동관찰 AI',       desc: '관찰 기록 자동화 AI',                target: '영유아',       cat: 'ai',       badge: 'AI' },\n  { name: '멀티누리',          desc: '누리과정 멀티미디어 통합',           target: '유아',         cat: 'class',    badge: null },\n  { name: '놀이랩',            desc: 'AI가 제안하는 놀이 활동',            target: '영유아',       cat: 'ai',       badge: '추천' },\n\n  { name: '아동기질검사',      desc: '원아 이해와 상담 지원',              target: '영유아',       cat: 'class',    badge: '추천' },\n  { name: '아동관찰',          desc: '관찰 기록 도우미',                   target: '영유아',       cat: 'class',    badge: null },\n  { name: '교사인성검사',      desc: '교사 자기이해·역량 진단',            target: '교사',         cat: 'class',    badge: null },\n\n  { name: '베베TOY',           desc: '영아 발달 놀이 가이드',               target: '영아',         cat: 'play',     badge: null },\n  { name: '베베TV',            desc: '영아 영상 콘텐츠',                    target: '영아',         cat: 'play',     badge: null },\n  { name: '오감놀이',          desc: '영아 감각 놀이',                      target: '영아',         cat: 'play',     badge: null },\n  { name: '베베놀이터',        desc: '영아 통합 놀이 공간',                 target: '영아',         cat: 'play',     badge: null },\n\n  { name: '어린이집평가',      desc: '평가지원 자료 모음',                 target: '기관',         cat: 'office',   badge: null },\n  { name: '운영서식',          desc: '기관 운영 서식 패키지',              target: '기관',         cat: 'office',   badge: null },\n  { name: '재무회계',          desc: '재무·회계 자료',                     target: '기관',         cat: 'office',   badge: null },\n  { name: '안내문 제작',       desc: '가정통신문·안내문 생성',             target: '교사',         cat: 'make',     badge: null },\n  { name: '환경구성 자료',     desc: '교실 환경구성 자료',                  target: '기관',         cat: 'make',     badge: null },\n\n  { name: '자격증과정',        desc: '보육·유아교사 자격',                 target: '교사',         cat: 'class',    badge: null },\n  { name: '보수교육',          desc: '직무 향상 교육',                     target: '교사',         cat: 'class',    badge: 'NEW' },\n];\n\nwindow.PROGRAM_CATS = [\n  { id: 'all',     label: '전체' },\n  { id: 'pick',    label: '추천' },\n  { id: 'class',   label: '수업지원' },\n  { id: 'play',    label: '놀이·활동' },\n  { id: 'life',    label: '생활지도' },\n  { id: 'ai',      label: 'AI·디지털' },\n  { id: 'english', label: '영어·특화' },\n  { id: 'office',  label: '기관운영' },\n  { id: 'make',    label: '제작도구' },\n];\n<\u002Fscript>\n<script>\n  let activeMenu = null;\n  let activePage = 'home';\n  let activeCat = 'all';\n  let progQuery = '';\n\n  // ── Render GNB ──\n  function renderGNB() {\n    const html = NAV.map(n =>\n      `<button class=\"gnb-item\" data-id=\"${n.id}\">${n.label}<\u002Fbutton>`\n    ).join('');\n    document.getElementById('gnbList').innerHTML = html;\n    document.querySelectorAll('.gnb-item').forEach(btn => {\n      btn.addEventListener('mouseenter', () => openMenu(btn.dataset.id));\n      btn.addEventListener('click', (e) => { e.stopPropagation(); toggleMenu(btn.dataset.id); });\n    });\n  }\n\n  function openMenu(id) {\n    if (activePage !== 'home') { activePage = 'home'; }\n    activeMenu = id;\n    update();\n  }\n  function toggleMenu(id) {\n    activeMenu = activeMenu === id ? null : id;\n    if (activePage !== 'home') activePage = 'home';\n    update();\n  }\n  function closeMenu() {\n    if (!activeMenu) return;\n    activeMenu = null;\n    update();\n  }\n\n  // ── Render Mega ──\n  function renderMega(id) {\n    const m = MEGA[id];\n    const label = NAV.find(n => n.id === id).label;\n    if (id === 'ai') return aiPanel(m);\n    return colPanel(id, m, label);\n  }\n\n  function aiPanel(m) {\n    return `\n      <div class=\"mega-inner\">\n        <div class=\"mega-eyebrow\">\n          <div class=\"mega-title\">AI 존<\u002Fdiv>\n          <div class=\"mega-desc\">${m.desc}<\u002Fdiv>\n          <a class=\"mega-all\">AI 존 전체 보기 →<\u002Fa>\n        <\u002Fdiv>\n        <div class=\"ai-grid\">\n          ${m.tools.map((t,i) => `\n            <div class=\"ai-card\">\n              <div class=\"ai-card-top\">\n                <div class=\"ai-icon\">${t.icon}<\u002Fdiv>\n                <div class=\"ai-num\">${String(i+1).padStart(2,'0')}<\u002Fdiv>\n              <\u002Fdiv>\n              <div class=\"ai-name\">${t.name}<\u002Fdiv>\n              <div class=\"ai-card-desc\">${t.desc}<\u002Fdiv>\n            <\u002Fdiv>`).join('')}\n        <\u002Fdiv>\n      <\u002Fdiv>`;\n  }\n\n  function colPanel(id, m, label) {\n    const isProg = id === 'programs';\n    const allBtn = isProg\n      ? `<a class=\"mega-all\" onclick=\"showProgramsFull(event)\">전체보기 →<\u002Fa>`\n      : `<a class=\"mega-all\">전체 보기 →<\u002Fa>`;\n    return `\n      <div class=\"mega-inner\">\n        <div class=\"mega-eyebrow\">\n          <div class=\"mega-title\">${label}<\u002Fdiv>\n          <div class=\"mega-desc\">${m.desc}<\u002Fdiv>\n          ${allBtn}\n        <\u002Fdiv>\n        <div class=\"mega-cols\" style=\"grid-template-columns: repeat(${m.cols.length}, 1fr)\">\n          ${m.cols.map((c,i) => `\n            <div class=\"col\">\n              <div class=\"col-title\"><span class=\"num\">${String(i+1).padStart(2,'0')}<\u002Fspan> ${c.title}<\u002Fdiv>\n              <ul class=\"col-list\">\n                ${c.items.map(it => renderItem(it)).join('')}\n              <\u002Ful>\n            <\u002Fdiv>\n          `).join('')}\n        <\u002Fdiv>\n      <\u002Fdiv>`;\n  }\n\n  function renderItem(it) {\n    if (Array.isArray(it)) {\n      const cls = it[1] === 'HOT' ? 'tag hot' : (it[1] === 'NEW' ? 'tag new' : 'tag');\n      return `<li><a>${it[0]} <span class=\"${cls}\">${it[1]}<\u002Fspan><\u002Fa><\u002Fli>`;\n    }\n    return `<li><a>${it}<\u002Fa><\u002Fli>`;\n  }\n\n  // ── Home grid (visual placeholder for landing) ──\n  function renderHomeGrid() {\n    const cells = [\n      ['01','오늘의 추천', 'AI가 큐레이션한 자료 12건'],\n      ['02','이번 주 계획안', '5월 셋째 주 · 영유아 통합'],\n      ['03','신규 콘텐츠 124건', '지난 7일 업데이트'],\n      ['04','교사 평점 TOP', '4.9점 이상 자료'],\n    ];\n    document.getElementById('homeGrid').innerHTML = cells.map(([n,t,d]) =>\n      `<div class=\"home-cell\">\n        <div class=\"num\">${n}<\u002Fdiv>\n        <div class=\"ti\">${t}<\u002Fdiv>\n        <div class=\"ds\">${d}<\u002Fdiv>\n      <\u002Fdiv>`).join('');\n  }\n\n  // ── State updates ──\n  function update() {\n    document.querySelectorAll('.gnb-item').forEach(b =>\n      b.classList.toggle('active', b.dataset.id === activeMenu)\n    );\n    const gnb = document.getElementById('gnb');\n    if (activeMenu) {\n      document.getElementById('megaHost').innerHTML = renderMega(activeMenu);\n      gnb.classList.add('has-mega');\n    } else {\n      gnb.classList.remove('has-mega');\n    }\n    document.getElementById('pageHome').hidden = activePage !== 'home';\n    document.getElementById('pageProgramsFull').hidden = activePage !== 'programs';\n  }\n\n  // ── Programs full page ──\n  function showProgramsFull(e) {\n    if (e) { e.stopPropagation(); e.preventDefault(); }\n    activePage = 'programs';\n    activeMenu = null;\n    update();\n    window.scrollTo({ top: 0, behavior: 'instant' });\n  }\n  function backToHome() {\n    activePage = 'home';\n    update();\n    window.scrollTo({ top: 0, behavior: 'instant' });\n  }\n\n  function renderProgTabs() {\n    const counts = {};\n    PROGRAM_CATS.forEach(c => {\n      if (c.id === 'all')  counts[c.id] = PROGRAMS.length;\n      else if (c.id === 'pick') counts[c.id] = PROGRAMS.filter(p => p.badge === '추천' || p.badge === 'HOT' || p.badge === '특화').length;\n      else counts[c.id] = PROGRAMS.filter(p => p.cat === c.id).length;\n    });\n    document.getElementById('progTabs').innerHTML = PROGRAM_CATS.map(c => `\n      <button class=\"prog-tab ${c.id === activeCat ? 'active' : ''}\" data-cat=\"${c.id}\">\n        ${c.label}<span class=\"ct\">${counts[c.id]}<\u002Fspan>\n      <\u002Fbutton>\n    `).join('');\n    document.querySelectorAll('.prog-tab').forEach(t => {\n      t.addEventListener('click', () => { activeCat = t.dataset.cat; renderProgTabs(); renderProgGrid(); });\n    });\n  }\n\n  function renderProgGrid() {\n    let list = PROGRAMS;\n    if (activeCat === 'pick') {\n      list = list.filter(p => p.badge === '추천' || p.badge === 'HOT' || p.badge === '특화');\n    } else if (activeCat !== 'all') {\n      list = list.filter(p => p.cat === activeCat);\n    }\n    if (progQuery) {\n      const q = progQuery.toLowerCase();\n      list = list.filter(p => (p.name + p.desc).toLowerCase().includes(q));\n    }\n    document.getElementById('progCount').textContent = list.length;\n    document.getElementById('progGrid').innerHTML = list.map(p => {\n      let badgeCls = 'badge';\n      if (p.badge === 'HOT') badgeCls = 'badge hot';\n      else if (p.badge === 'NEW') badgeCls = 'badge new';\n      else if (p.badge === '필수') badgeCls = 'badge ess';\n      else if (p.badge === 'AI') badgeCls = 'badge ai';\n      return `\n        <div class=\"prog-card\">\n          <div class=\"prog-card-top\">\n            ${p.badge ? `<span class=\"${badgeCls}\">${p.badge}<\u002Fspan>` : '<span><\u002Fspan>'}\n            <span class=\"target\">${p.target}<\u002Fspan>\n          <\u002Fdiv>\n          <div class=\"name\">${p.name}<\u002Fdiv>\n          <div class=\"desc\">${p.desc}<\u002Fdiv>\n          <a class=\"go\">바로가기<\u002Fa>\n        <\u002Fdiv>`;\n    }).join('');\n  }\n\n  // Init\n  renderGNB();\n  renderHomeGrid();\n  renderProgTabs();\n  renderProgGrid();\n  update();\n\n  // Outside click → close menu (except clicks inside gnb/megamenu or onclick handlers)\n  document.addEventListener('click', e => {\n    if (!e.target.closest('#gnb')) closeMenu();\n  });\n  // Search\n  document.getElementById('progSearch').addEventListener('input', e => {\n    progQuery = e.target.value;\n    renderProgGrid();\n  });\n  // Esc closes menu\n  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });\n<\u002Fscript>\n\n\n<\u002Fbody><\u002Fhtml>"
+"<!DOCTYPE html>\n<html lang=\"ko\"><head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=1600\">\n<title>KIDKIDS · GNB 2안 · 미니멀<\u002Ftitle>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin=\"\">\n<style>/* cyrillic-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 400;\n  font-display: swap;\n  src: url(\"7c89b559-9e1d-49fc-bdf5-677708431ef5\") format('woff2');\n  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;\n}\n/* cyrillic */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 400;\n  font-display: swap;\n  src: url(\"95057c5c-6304-49d1-8546-c1946e042255\") format('woff2');\n  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;\n}\n/* greek-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 400;\n  font-display: swap;\n  src: url(\"32f49d8f-c6f3-4378-97c6-ebe0ef2c0090\") format('woff2');\n  unicode-range: U+1F00-1FFF;\n}\n/* greek */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 400;\n  font-display: swap;\n  src: url(\"3db142e8-9685-4836-8308-6b1f5b5b068d\") format('woff2');\n  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;\n}\n/* vietnamese */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 400;\n  font-display: swap;\n  src: url(\"4611ff2e-51d8-4e86-babe-67dc82923f78\") format('woff2');\n  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;\n}\n/* latin-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 400;\n  font-display: swap;\n  src: url(\"a04859dd-8dc6-439b-bdae-1001afe0bf26\") format('woff2');\n  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;\n}\n/* latin */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 400;\n  font-display: swap;\n  src: url(\"a466e1d1-a002-4ab6-8b03-f725bddd787b\") format('woff2');\n  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;\n}\n/* cyrillic-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 500;\n  font-display: swap;\n  src: url(\"7c89b559-9e1d-49fc-bdf5-677708431ef5\") format('woff2');\n  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;\n}\n/* cyrillic */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 500;\n  font-display: swap;\n  src: url(\"95057c5c-6304-49d1-8546-c1946e042255\") format('woff2');\n  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;\n}\n/* greek-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 500;\n  font-display: swap;\n  src: url(\"32f49d8f-c6f3-4378-97c6-ebe0ef2c0090\") format('woff2');\n  unicode-range: U+1F00-1FFF;\n}\n/* greek */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 500;\n  font-display: swap;\n  src: url(\"3db142e8-9685-4836-8308-6b1f5b5b068d\") format('woff2');\n  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;\n}\n/* vietnamese */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 500;\n  font-display: swap;\n  src: url(\"4611ff2e-51d8-4e86-babe-67dc82923f78\") format('woff2');\n  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;\n}\n/* latin-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 500;\n  font-display: swap;\n  src: url(\"a04859dd-8dc6-439b-bdae-1001afe0bf26\") format('woff2');\n  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;\n}\n/* latin */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 500;\n  font-display: swap;\n  src: url(\"a466e1d1-a002-4ab6-8b03-f725bddd787b\") format('woff2');\n  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;\n}\n/* cyrillic-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 600;\n  font-display: swap;\n  src: url(\"7c89b559-9e1d-49fc-bdf5-677708431ef5\") format('woff2');\n  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;\n}\n/* cyrillic */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 600;\n  font-display: swap;\n  src: url(\"95057c5c-6304-49d1-8546-c1946e042255\") format('woff2');\n  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;\n}\n/* greek-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 600;\n  font-display: swap;\n  src: url(\"32f49d8f-c6f3-4378-97c6-ebe0ef2c0090\") format('woff2');\n  unicode-range: U+1F00-1FFF;\n}\n/* greek */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 600;\n  font-display: swap;\n  src: url(\"3db142e8-9685-4836-8308-6b1f5b5b068d\") format('woff2');\n  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;\n}\n/* vietnamese */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 600;\n  font-display: swap;\n  src: url(\"4611ff2e-51d8-4e86-babe-67dc82923f78\") format('woff2');\n  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;\n}\n/* latin-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 600;\n  font-display: swap;\n  src: url(\"a04859dd-8dc6-439b-bdae-1001afe0bf26\") format('woff2');\n  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;\n}\n/* latin */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 600;\n  font-display: swap;\n  src: url(\"a466e1d1-a002-4ab6-8b03-f725bddd787b\") format('woff2');\n  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;\n}\n/* cyrillic-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 700;\n  font-display: swap;\n  src: url(\"7c89b559-9e1d-49fc-bdf5-677708431ef5\") format('woff2');\n  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;\n}\n/* cyrillic */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 700;\n  font-display: swap;\n  src: url(\"95057c5c-6304-49d1-8546-c1946e042255\") format('woff2');\n  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;\n}\n/* greek-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 700;\n  font-display: swap;\n  src: url(\"32f49d8f-c6f3-4378-97c6-ebe0ef2c0090\") format('woff2');\n  unicode-range: U+1F00-1FFF;\n}\n/* greek */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 700;\n  font-display: swap;\n  src: url(\"3db142e8-9685-4836-8308-6b1f5b5b068d\") format('woff2');\n  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;\n}\n/* vietnamese */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 700;\n  font-display: swap;\n  src: url(\"4611ff2e-51d8-4e86-babe-67dc82923f78\") format('woff2');\n  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;\n}\n/* latin-ext */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 700;\n  font-display: swap;\n  src: url(\"a04859dd-8dc6-439b-bdae-1001afe0bf26\") format('woff2');\n  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;\n}\n/* latin */\n@font-face {\n  font-family: 'Inter';\n  font-style: normal;\n  font-weight: 700;\n  font-display: swap;\n  src: url(\"a466e1d1-a002-4ab6-8b03-f725bddd787b\") format('woff2');\n  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;\n}\n<\u002Fstyle>\n<style>\n  :root {\n    --ink:        #0e0f0d;\n    --ink-2:      #2c2e2a;\n    --text:       #3a3d36;\n    --sub:        #7b7e76;\n    --mute:       #a8aaa3;\n    --hair:       #ececea;\n    --hair-2:     #f3f3f1;\n    --paper:      #fafaf8;\n    --bg:         #ffffff;\n    --green:      #2e7a45;\n    --green-deep: #1f5a31;\n    --green-soft: #e6f0e8;\n    --green-tint: #f4f8f4;\n    --paper-2:    #f1f5ed;\n    --green-mid:  #cadbb8;\n    --hot:        #c0392b;\n    --new:        #b65015;\n    --container:  1440px;\n    --pad-x:      40px;\n  }\n  *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }\n  html,body {\n    background: var(--bg); color: var(--ink);\n    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;\n    -webkit-font-smoothing: antialiased;\n    letter-spacing: -0.015em;\n    font-feature-settings: \"ss06\",\"tnum\";\n  }\n  a { color: inherit; text-decoration: none; }\n  button { font-family: inherit; }\n  .container { max-width: var(--container); margin: 0 auto; padding: 0 var(--pad-x); }\n\n  /* ── UTILITY BAR ── */\n  .util { border-bottom: 1px solid var(--hair-2); height: 34px; }\n  .util .container { height: 100%; display: flex; align-items: center; justify-content: flex-end; gap: 22px; }\n  .util a { font-size: 11.5px; color: var(--sub); transition: color .15s; }\n  .util a:hover { color: var(--ink); }\n  .util a.strong { color: var(--ink); font-weight: 500; }\n  .util .sep { width: 1px; height: 9px; background: #e0e0dc; }\n\n  /* ── HEADER ── */\n  .header { background: var(--bg); }\n  .header .container {\n    height: 84px;\n    display: grid; grid-template-columns: 220px 1fr 320px;\n    align-items: center; gap: 40px;\n  }\n  .logo { display: flex; align-items: baseline; gap: 8px; cursor: pointer; }\n  .logo-mark {\n    font-family: 'Inter', sans-serif; font-weight: 800; font-size: 26px;\n    letter-spacing: -0.05em; color: var(--ink); line-height: 1;\n  }\n  .logo-mark .dot { color: var(--green); }\n  .logo-sub {\n    font-size: 10px; color: var(--mute); letter-spacing: 0.16em;\n    text-transform: uppercase; font-weight: 500;\n  }\n  .search {\n    height: 44px; display: flex; align-items: center; gap: 12px;\n    border: 1px solid var(--hair); padding: 0 16px; background: var(--bg);\n    transition: border-color .15s;\n  }\n  .search:hover, .search:focus-within { border-color: var(--ink-2); }\n  .search svg { color: var(--sub); flex-shrink: 0; }\n  .search input {\n    flex: 1; border: none; outline: none; background: transparent;\n    font-size: 13.5px; color: var(--ink); font-family: inherit; letter-spacing: -0.015em;\n  }\n  .search input::placeholder { color: var(--mute); }\n  .search .hot {\n    display: flex; align-items: center; gap: 8px;\n    font-size: 12px; color: var(--sub);\n    padding-left: 12px; border-left: 1px solid var(--hair);\n  }\n  .search .hot b { color: var(--ink); font-weight: 600; }\n  .actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }\n  .btn {\n    display: inline-flex; align-items: center; gap: 8px;\n    height: 44px; padding: 0 18px; font-size: 13px; font-weight: 600;\n    letter-spacing: -0.02em; border: 1px solid var(--hair);\n    background: var(--bg); color: var(--ink); cursor: pointer;\n    transition: all .15s; font-family: inherit;\n  }\n  .btn:hover { border-color: var(--ink); }\n  .btn .ico { font-size: 13px; color: var(--sub); }\n  .btn-primary { background: var(--ink); color: #fff; border-color: var(--ink); }\n  .btn-primary:hover { background: var(--green-deep); border-color: var(--green-deep); }\n  .btn-primary .ico { color: #c9d8cc; }\n\n  /* ── GNB ── */\n  .gnb { border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); background: var(--bg); position: relative; z-index: 20; }\n  .gnb .container { display: flex; align-items: stretch; height: 56px; }\n  .gnb-item {\n    position: relative; display: inline-flex; align-items: center;\n    padding: 0 24px; font-size: 15.5px; font-weight: 500;\n    color: var(--ink-2); letter-spacing: -0.025em; cursor: pointer;\n    transition: color .15s; height: 100%; background: transparent; border: none;\n    font-family: inherit;\n  }\n  .gnb-item:first-child { padding-left: 0; }\n  .gnb-item:hover { color: var(--ink); }\n  .gnb-item.active { color: var(--ink); font-weight: 700; }\n  .gnb-item.active::after {\n    content: ''; position: absolute; left: 24px; right: 24px;\n    bottom: -1px; height: 2px; background: var(--green);\n  }\n  .gnb-item:first-child.active::after { left: 0; }\n\n  /* ── MEGA ── */\n  .mega-host {\n    position: absolute; left: 0; right: 0; top: 100%;\n    background: var(--bg); border-bottom: 1px solid var(--hair);\n    box-shadow: 0 24px 40px -20px rgba(0,0,0,0.10);\n    z-index: 15;\n    display: none;\n  }\n  .gnb.has-mega .mega-host { display: block; animation: fd .18s ease-out; }\n  @keyframes fd { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }\n  .mega-inner { max-width: var(--container); margin: 0 auto; padding: 40px var(--pad-x) 44px; }\n  .mega-eyebrow {\n    display: flex; align-items: baseline; gap: 16px;\n    margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--hair-2);\n  }\n  .mega-title {\n    font-size: 22px; font-weight: 800; color: var(--ink);\n    letter-spacing: -0.04em; line-height: 1;\n  }\n  .mega-desc { font-size: 13px; color: var(--sub); letter-spacing: -0.01em; }\n  .mega-all {\n    margin-left: auto; display: inline-flex; align-items: center; gap: 6px;\n    font-size: 12px; font-weight: 600; color: var(--ink);\n    border-bottom: 1px solid var(--ink); padding-bottom: 2px; cursor: pointer;\n  }\n  .mega-cols { display: grid; gap: 40px; }\n  .col-title {\n    font-size: 14px; font-weight: 700; color: var(--ink);\n    letter-spacing: -0.025em; margin-bottom: 20px;\n    display: flex; align-items: baseline; gap: 8px;\n  }\n  .col-title .num {\n    font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500;\n    color: var(--mute); letter-spacing: 0.06em;\n  }\n  .col-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }\n  .col-list a {\n    font-size: 13.5px; color: var(--text); letter-spacing: -0.02em;\n    transition: color .12s; display: inline-flex; align-items: center; gap: 8px;\n    line-height: 1.3; cursor: pointer;\n  }\n  .col-list a:hover { color: var(--green); }\n  .tag {\n    font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 700;\n    color: var(--green-deep); background: var(--green-soft);\n    padding: 2px 6px; border-radius: 999px; letter-spacing: 0.04em;\n  }\n  .tag.hot { color: #fff; background: var(--hot); }\n  .tag.new { color: var(--new); background: #fdf0e6; }\n\n  /* AI grid */\n  .ai-grid {\n    display: grid; grid-template-columns: repeat(4, 1fr);\n    gap: 1px; background: var(--hair); border: 1px solid var(--hair);\n  }\n  .ai-card {\n    background: var(--bg); padding: 22px 22px 24px;\n    display: flex; flex-direction: column; gap: 10px;\n    cursor: pointer; transition: background .15s; min-height: 132px;\n  }\n  .ai-card:hover { background: var(--green-tint); }\n  .ai-card-top { display: flex; align-items: center; justify-content: space-between; }\n  .ai-icon {\n    width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;\n    border: 1px solid var(--hair); color: var(--ink); background: var(--bg);\n  }\n  .ai-card:hover .ai-icon { border-color: var(--green); color: var(--green-deep); }\n  .ai-num { font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 500; color: var(--mute); letter-spacing: 0.08em; }\n  .ai-name { font-size: 14px; font-weight: 700; color: var(--ink); letter-spacing: -0.025em; margin-top: 4px; }\n  .ai-card-desc { font-size: 12px; color: var(--sub); line-height: 1.55; letter-spacing: -0.005em; }\n\n  /* program 전체보기 inline link variant */\n  .mega-all.allview {\n    background: var(--ink); color: #fff;\n    padding: 10px 16px; border-bottom: none;\n    font-size: 12px;\n  }\n  .mega-all.allview:hover { background: var(--green-deep); }\n\n  /* ── PAGE BODIES ── */\n  main { min-height: 60vh; }\n\n  .home {\n    max-width: var(--container); margin: 0 auto;\n    padding: 80px var(--pad-x) 100px;\n  }\n  .home-eyebrow {\n    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;\n    color: var(--green); font-weight: 700; margin-bottom: 24px;\n  }\n  .home-title {\n    font-family: 'Pretendard', sans-serif;\n    font-size: 56px; font-weight: 800; line-height: 1.1;\n    letter-spacing: -0.04em; color: var(--ink);\n  }\n  .home-sub {\n    margin-top: 22px; max-width: 560px;\n    font-size: 15px; line-height: 1.7; color: var(--ink-2); letter-spacing: -0.01em;\n  }\n  .home-grid {\n    margin-top: 72px;\n    display: grid; grid-template-columns: repeat(4, 1fr);\n    gap: 1px; background: var(--hair); border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair);\n  }\n  .home-cell {\n    background: var(--bg); padding: 32px 28px;\n    display: flex; flex-direction: column; gap: 12px; cursor: pointer; transition: background .15s;\n  }\n  .home-cell:hover { background: var(--paper); }\n  .home-cell .num { font-family: 'Inter', sans-serif; font-size: 10px; color: var(--mute); letter-spacing: 0.08em; }\n  .home-cell .ti { font-size: 16px; font-weight: 700; color: var(--ink); letter-spacing: -0.03em; }\n  .home-cell .ds { font-size: 12.5px; color: var(--sub); line-height: 1.55; letter-spacing: -0.005em; }\n\n  /* ── PROGRAMS FULL PAGE (synced with 시안 02) ── */\n  .prog-page { background: var(--bg); }\n  .prog-hero {\n    background: var(--paper-2);\n    border-bottom: 1px solid var(--hair);\n  }\n  .prog-head {\n    max-width: var(--container); margin: 0 auto;\n    padding: 56px var(--pad-x) 40px;\n    display: flex; align-items: flex-end; gap: 36px;\n  }\n  .prog-eyebrow {\n    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;\n    color: var(--sub); font-weight: 600; margin-bottom: 14px;\n    display: inline-flex; align-items: center; gap: 8px; cursor: pointer;\n  }\n  .prog-eyebrow:hover { color: var(--green-deep); }\n  .prog-title { font-size: 40px; font-weight: 800; color: var(--ink); letter-spacing: -0.04em; line-height: 1.1; }\n  .prog-desc {\n    margin-top: 14px; max-width: 540px;\n    font-size: 14px; line-height: 1.65; color: var(--text); letter-spacing: -0.01em;\n  }\n  .prog-search-wrap { flex-shrink: 0; width: 340px; margin-left: auto; }\n  .prog-search {\n    height: 48px; display: flex; align-items: center; gap: 12px;\n    border: 1px solid var(--green); padding: 0 20px; border-radius: 999px;\n    background: var(--bg); box-shadow: 0 0 0 4px rgba(46,122,69,0.08);\n  }\n  .prog-search svg { color: var(--green); }\n  .prog-search input {\n    flex: 1; border: none; outline: none; background: transparent;\n    font-size: 14px; font-family: inherit; letter-spacing: -0.015em;\n  }\n  .prog-search input::placeholder { color: var(--mute); }\n\n  .prog-tabs {\n    max-width: var(--container); margin: 0 auto;\n    padding: 0 var(--pad-x) 32px;\n    display: flex; gap: 8px; flex-wrap: wrap;\n  }\n  .prog-tab {\n    padding: 9px 16px; font-size: 13px; font-weight: 500;\n    color: var(--text); letter-spacing: -0.025em; cursor: pointer;\n    background: var(--bg); border: 1px solid var(--hair);\n    border-radius: 999px; font-family: inherit;\n    transition: all .15s;\n    display: inline-flex; align-items: center; gap: 6px;\n  }\n  .prog-tab:hover { border-color: var(--green); color: var(--green-deep); }\n  .prog-tab.active {\n    background: var(--green-deep); color: #fff; border-color: var(--green-deep); font-weight: 600;\n  }\n  .prog-tab .ct {\n    font-family: 'Inter', sans-serif; font-size: 11px;\n    color: var(--mute); letter-spacing: 0.02em;\n  }\n  .prog-tab.active .ct { color: var(--green-mid); }\n\n  .prog-meta {\n    max-width: var(--container); margin: 0 auto;\n    padding: 28px var(--pad-x) 20px;\n    display: flex; align-items: center; gap: 12px;\n    font-size: 12px; color: var(--sub);\n  }\n  .prog-meta b { color: var(--ink); font-weight: 700; }\n  .prog-meta .sort { margin-left: auto; display: flex; gap: 14px; }\n  .prog-meta .sort span { cursor: pointer; }\n  .prog-meta .sort .on { color: var(--green-deep); font-weight: 700; }\n\n  .prog-grid {\n    max-width: var(--container); margin: 0 auto;\n    padding: 0 var(--pad-x) 100px;\n    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;\n  }\n  .prog-card {\n    background: var(--bg); border: 1px solid var(--hair); border-radius: 14px;\n    padding: 22px 22px 20px;\n    display: flex; flex-direction: column; min-height: 200px;\n    transition: all .15s; cursor: pointer;\n  }\n  .prog-card:hover {\n    border-color: var(--green); transform: translateY(-3px);\n    box-shadow: 0 8px 22px -10px rgba(20,60,30,0.18);\n  }\n  .prog-card-top {\n    display: flex; align-items: center; justify-content: space-between;\n    margin-bottom: 16px;\n  }\n  .prog-card .badge {\n    font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 700;\n    letter-spacing: 0.04em; padding: 3px 8px; border-radius: 999px;\n    color: var(--green-deep); background: var(--green-soft);\n  }\n  .prog-card .badge.hot { color: #fff; background: var(--hot); }\n  .prog-card .badge.new { color: var(--new); background: #fdf0e6; }\n  .prog-card .badge.ess { color: #fff; background: var(--ink); }\n  .prog-card .badge.ai  { color: #fff; background: var(--green); }\n  .prog-card .target {\n    font-size: 11px; color: var(--sub);\n    background: var(--paper); padding: 3px 8px; border-radius: 999px;\n  }\n  .prog-card .name { font-size: 17px; font-weight: 700; color: var(--ink); letter-spacing: -0.03em; line-height: 1.25; margin-bottom: 6px; }\n  .prog-card .desc { font-size: 13px; color: var(--sub); line-height: 1.55; flex: 1; }\n  .prog-card .go {\n    margin-top: 18px; display: inline-flex; align-items: center; gap: 6px;\n    font-size: 12px; font-weight: 600; color: var(--green-deep);\n    padding: 8px 14px; background: var(--green-tint);\n    border-radius: 999px; align-self: flex-start;\n    transition: all .15s;\n  }\n  .prog-card .go::after { content: '→'; }\n  .prog-card:hover .go { background: var(--green-deep); color: #fff; }\n\n  /* footer hint */\n  .hint {\n    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);\n    background: rgba(14,15,13,0.92); color: #fff;\n    font-size: 11.5px; padding: 9px 16px; border-radius: 999px;\n    backdrop-filter: blur(8px); z-index: 9999;\n    letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px;\n  }\n  .hint .pulse { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; animation: pulse 1.5s infinite; }\n  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }\n<\u002Fstyle>\n\n\n<\u002Fhead>\n<body>\n\n<!-- UTILITY -->\n<div class=\"util\">\n  <div class=\"container\">\n    <a>구독<\u002Fa><span class=\"sep\"><\u002Fspan>\n    <a>고객센터<\u002Fa><span class=\"sep\"><\u002Fspan>\n    <a>마이페이지<\u002Fa><span class=\"sep\"><\u002Fspan>\n    <a class=\"strong\">로그인<\u002Fa>\n  <\u002Fdiv>\n<\u002Fdiv>\n\n<!-- HEADER -->\n<header class=\"header\">\n  <div class=\"container\">\n    <a class=\"logo\" onclick=\"backToHome()\">\n      <span class=\"logo-mark\">KIDKIDS<span class=\"dot\">.<\u002Fspan><\u002Fspan>\n      <span class=\"logo-sub\">for teachers<\u002Fspan>\n    <\u002Fa>\n    <div class=\"search\">\n      <svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"11\" cy=\"11\" r=\"7\"><\u002Fcircle><path d=\"m20 20-3.5-3.5\"><\u002Fpath><\u002Fsvg>\n      <input type=\"text\" placeholder=\"활동·놀이·계획안을 검색해 보세요\">\n      <div class=\"hot\">실시간 <b>봄 텃밭놀이<\u002Fb><\u002Fdiv>\n    <\u002Fdiv>\n    <div class=\"actions\">\n      <button class=\"btn\"><span class=\"ico\">◉<\u002Fspan> 쇼핑몰<\u002Fbutton>\n      <button class=\"btn btn-primary\"><span class=\"ico\">◆<\u002Fspan> 프리미엄 멤버십<\u002Fbutton>\n    <\u002Fdiv>\n  <\u002Fdiv>\n<\u002Fheader>\n\n<!-- GNB (rendered by JS into .container) -->\n<nav class=\"gnb\" id=\"gnb\">\n  <div class=\"container\" id=\"gnbList\"><\u002Fdiv>\n  <div class=\"mega-host\" id=\"megaHost\"><\u002Fdiv>\n<\u002Fnav>\n\n<!-- HOME PAGE -->\n<main id=\"pageHome\">\n  <section class=\"home\">\n    <div class=\"home-eyebrow\">FOR TEACHERS · MAY 2026<\u002Fdiv>\n    <h1 class=\"home-title\">교사의 하루,<br>한 페이지로 정리됩니다.<\u002Fh1>\n    <p class=\"home-sub\">\n      영아·유아 발달별 콘텐츠부터 AI 수업 도구, 학급운영과 교사성장까지 —\n      상단 메뉴에 마우스를 올리거나 클릭하면 메가메뉴가 펼쳐집니다.\n    <\u002Fp>\n    <div class=\"home-grid\" id=\"homeGrid\"><\u002Fdiv>\n  <\u002Fsection>\n<\u002Fmain>\n\n<!-- PROGRAMS FULL PAGE -->\n<main id=\"pageProgramsFull\" class=\"prog-page\" hidden=\"\">\n  <div class=\"prog-hero\">\n    <div class=\"prog-head\">\n      <div>\n        <div class=\"prog-eyebrow\" onclick=\"backToHome()\">← 돌아가기<\u002Fdiv>\n        <h2 class=\"prog-title\">프로그램 전체보기<\u002Fh2>\n        <p class=\"prog-desc\">키드키즈의 수업, 생활지도, 기관운영 프로그램을 한곳에서 확인해 보세요.<\u002Fp>\n      <\u002Fdiv>\n      <div class=\"prog-search-wrap\">\n        <div class=\"prog-search\">\n          <svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\"><circle cx=\"11\" cy=\"11\" r=\"7\"><\u002Fcircle><path d=\"m20 20-3.5-3.5\"><\u002Fpath><\u002Fsvg>\n          <input id=\"progSearch\" type=\"text\" placeholder=\"프로그램명을 검색하세요\">\n        <\u002Fdiv>\n      <\u002Fdiv>\n    <\u002Fdiv>\n    <div class=\"prog-tabs\" id=\"progTabs\"><\u002Fdiv>\n  <\u002Fdiv>\n  <div class=\"prog-meta\">\n    <span>총 <b id=\"progCount\">0<\u002Fb>개의 프로그램<\u002Fspan>\n    <div class=\"sort\">\n      <span class=\"on\">추천순<\u002Fspan>\n      <span>최신순<\u002Fspan>\n      <span>이름순<\u002Fspan>\n    <\u002Fdiv>\n  <\u002Fdiv>\n  <div class=\"prog-grid\" id=\"progGrid\"><\u002Fdiv>\n<\u002Fmain>\n\n<div class=\"hint\"><span class=\"pulse\"><\u002Fspan> 상단 GNB 메뉴를 hover/click 해보세요 · 프로그램의 [전체보기]는 별도 페이지로 이동<\u002Fdiv>\n\n<script>// Shared navigation data for both 1안 (minimal) and 2안 (curation).\n// Each design renders this data its own way; structure stays identical.\n\nwindow.NAV = [\n  { id: 'ai',         label: 'AI존' },\n  { id: 'infant',     label: '영아' },\n  { id: 'kids',       label: '유아' },\n  { id: 'materials',  label: '클립자료' },\n  { id: 'programs',   label: '프로그램' },\n  { id: 'growth',     label: '교사성장' },\n  { id: 'community',  label: '커뮤니티' },\n  { id: 'shop',       label: '쇼핑몰' },\n];\n\n// ── Mega menus ───────────────────────────────────────────────────────\nwindow.MEGA = {\n\n  // AI 존 — 8 tools (icon + name + desc)\n  ai: {\n    desc: '키드키즈가 만든 AI 수업 도구 · 프리미엄 전용',\n    tools: [\n      { icon: '◰', name: '티칭보드',       desc: 'AI 수업 보드 자동 구성' },\n      { icon: '◈', name: 'AI 추천 자료',   desc: '수업 상황에 맞는 자료 추천' },\n      { icon: '◐', name: '게이미피케이션', desc: '놀이로 배우는 참여형 수업' },\n      { icon: '◭', name: '디지털리터러시', desc: '미래 역량 디지털 교육' },\n      { icon: '▤', name: '디자인에디터',   desc: '우리 반 맞춤 콘텐츠 제작' },\n      { icon: '◇', name: '아동관찰 AI',    desc: '관찰 기록 자동화' },\n      { icon: '✺', name: '멀티누리',       desc: '누리과정 멀티미디어 통합' },\n      { icon: '◉', name: '놀이랩',         desc: 'AI가 제안하는 놀이 활동' },\n    ],\n  },\n\n  infant: {\n    desc: '0–2세 발달에 맞춘 놀이·자료·프로그램',\n    cols: [\n      { title: '놀이계획안',    items: ['0세','1세','2세','활동계획안'] },\n      { title: '클립자료',      items: ['동요·음원','활동지','크래프트'] },\n      { title: '프로그램',   items: ['베베놀이터','베베TV','베베토이','오감'] },\n      { title: '생활·안전교육',      items: ['안전교육','기본생활', '오감교육', ['배변훈련','NEW']] },\n      { title: '평가·운영·부모', items: ['관찰일지','안전교육','부모교육','가정통신문','어린이집 평가'] },\n    ],\n    picks: [\n      { tag: '인기', title: '오감놀이 키트',     sub: '주간 다운로드 1,284회' },\n      { tag: '신규', title: '베베TV 봄편 업데이트', sub: '에디터 PICK' },\n      { tag: '추천', title: '영아 인성 동화 모음',  sub: '교사 평점 4.9' },\n    ],\n  },\n\n  kids: {\n    desc: '3–5세 누리과정과 생활지도까지',\n    cols: [\n      { title: '놀이계획안',     items: ['3세','4세','5세','활동계획안'] },\n      { title: '클립자료',       items: ['동요/음원','영상','슬라이드','활동지'] },\n      { title: '프로그램',  items: ['사회정서학습','문해력','이음교육','인성교육'] },\n      { title: '디지털·미래교육',       items: ['티칭보드','디지털리터러시','게이미피케이션'] },\n      { title: '인터렉티브',       items: ['명화','클래식','안전교육',['멀티누리자료','NEW']] },\n    ],\n    picks: [\n      { tag: '인기', title: '봄 텃밭놀이 패키지', sub: '이번 주 다운로드 3,041회' },\n      { tag: '추천', title: '누리과정 자연탐구',   sub: '5월 추천 흐름' },\n      { tag: 'HOT', title: '안전교육 5월 특집',    sub: '필수 교육 자료' },\n    ],\n  },\n\n  materials: {\n    desc: '수업에 바로 쓰는 멀티미디어·인쇄·운영 자료',\n    cols: [\n      { title: '다운로드',       items: ['활동지','컷/도안','크래프트','사진','예문/서식'] },\n      { title: '미디어',       items: ['영상','슬라이드','동요/음원','오디오클립'] },\n      { title: '추천자료',       items: ['추천자료'] },\n      ],\n    picks: [\n      { tag: '오늘', title: '오늘의 추천 자료',  sub: '봄 · 자연탐구 모음' },\n      { tag: '신규', title: '신규 콘텐츠 124건', sub: '지난 7일' },\n      { tag: '인기', title: '많이 찾는 자료',    sub: '주간 TOP 20' },\n    ],\n  },\n\n  // 프로그램 — 일부 대표만 + 전체보기\n  programs: {\n    desc: '수업·생활지도·기관운영 프로그램을 빠르게 확인하세요',\n    cols: [\n      { title: '추천 프로그램',    items: ['티칭보드','놀이프로젝트','안전교육','기본생활습관'] },\n      { title: 'AI·디지털 프로그램', items: ['AI 추천 자료','디자인에디터','디지털리터러시','게이미피케이션'] },\n      { title: '기관·교사 지원',   items: ['아동기질검사','아동관찰','교실영어','키드키즈 잉글리시'] },\n    ],\n    // For 2안 — card-style featured programs\n    cards: [\n      { name: '티칭보드',       desc: 'AI 수업 보드 자동 구성',   badge: '추천' },\n      { name: '놀이프로젝트',   desc: '주제별 놀이 활동 구성',     badge: 'HOT' },\n      { name: '안전교육',       desc: '연령별 안전교육 자료',      badge: null },\n      { name: '기본생활습관',   desc: '생활지도 자료 제공',        badge: null },\n      { name: '키드키즈 잉글리시', desc: '영어 수업 콘텐츠',        badge: '특화' },\n      { name: '아동기질검사',   desc: '원아 이해·상담 지원',       badge: '추천' },\n      { name: '디자인에디터',   desc: '우리 반 맞춤 콘텐츠 제작',  badge: null },\n      { name: '놀이랩',         desc: '놀이 활동 아이디어 추천',   badge: null },\n    ],\n    hasFullView: true,\n  },\n\n  growth: {\n    desc: '연수·자격증·검사·제작 도구로 교사 성장 지원',\n    cols: [\n      { title: '직무연수',   items: ['필수의무교육','자율직무연수','자격증과정',['5분 클래스','NEW']] },\n      { title: '평생교육원',   items: ['온라인 보수교육','역량강화교육','국민내일배움카드', '나의강의실'] },\n      { title: '상담·검사',  items: ['아동기질검사','교사인성검사','아동관찰'] },\n  ],\n    picks: [\n      { tag: '필수', title: '5월 보수교육 안내',  sub: '신청 마감 D-12' },\n      { tag: '추천', title: '교사 인성검사 무료', sub: '이번 달 한정' },\n      { tag: '신규', title: '자격증 과정 OPEN',   sub: '방과후 지도사' },\n    ],\n  },\n\n  community: {\n    desc: '함께 나누는 자료·소통·구인구직 공간',\n    cols: [\n      { title: '도란도란',  items: ['이야기마당','함께하는 자료실','사진갤러리','웹툰','사고팔고'] },\n      { title: '구인구직', items: ['채용정보','인재정보','구인등록','이력서등록'] },\n      { title: '고객소통',  items: ['고객센터','공지사항','이벤트'] },\n    ],\n    picks: [\n      { tag: '인기', title: '함께하는 자료실',    sub: '교사가 공유한 1,840개' },\n      { tag: '진행', title: '5월 이벤트',          sub: '응모 D-7' },\n      { tag: '구인', title: '신규 채용 24건',      sub: '서울·경기' },\n    ],\n  },\n\n  shop: {\n    desc: '교실에 필요한 모든 것을 한 자리에',\n    cols: [\n      { title: '카테고리',  items: ['키드키즈몰','교구','수업자료 상품','행사·환경구성'] },\n      { title: '기획·인기', items: [['기획전','HOT'],'인기상품','신상품','베스트셀러'] },\n      { title: '브랜드',    items: ['키드키즈 PICK','월간유아','베베','마음자람'] },\n    ],\n    picks: [\n      { tag: '기획', title: '5월 환경구성 페어',  sub: '최대 40% 할인' },\n      { tag: '인기', title: '교구 BEST 50',       sub: '주간 인기' },\n      { tag: '신규', title: '신상품 248건',        sub: '이번 주' },\n    ],\n  },\n};\n\n// ── 프로그램 전체보기 데이터 ──────────────────────────────────────────\nwindow.PROGRAMS = [\n  { name: '티칭보드',         desc: 'AI 수업 보드 자동 구성',            target: '영유아 공통', cat: 'ai',       badge: 'AI' },\n  { name: '놀이프로젝트',     desc: '주제별 놀이 활동 구성',              target: '유아',         cat: 'play',     badge: 'HOT' },\n  { name: '안전교육',         desc: '연령별 안전 교육 자료',              target: '영유아',       cat: 'life',     badge: '필수' },\n  { name: '기본생활습관',     desc: '생활지도 자료 제공',                 target: '영유아',       cat: 'life',     badge: null },\n  { name: '인성교육',         desc: '인성 함양 활동',                     target: '영유아',       cat: 'life',     badge: null },\n  { name: '마음자람',         desc: '정서·사회성 프로그램',               target: '영유아',       cat: 'life',     badge: '추천' },\n\n  { name: '키드키즈 잉글리시', desc: '영어 수업 콘텐츠 제공',              target: '유아',         cat: 'english',  badge: '특화' },\n  { name: '교실영어',          desc: '교실에서 쓰는 영어 활동',            target: '유아',         cat: 'english',  badge: null },\n  { name: 'Alphabet',          desc: '알파벳 인지 콘텐츠',                  target: '유아',         cat: 'english',  badge: null },\n  { name: 'Word Family',       desc: '영어 단어 가족 학습',                target: '유아',         cat: 'english',  badge: null },\n\n  { name: 'AI 추천 자료',      desc: '수업 상황에 맞는 자료 추천',         target: '교사',         cat: 'ai',       badge: 'AI' },\n  { name: '디자인에디터',      desc: '우리 반 맞춤 콘텐츠 제작',           target: '교사',         cat: 'make',     badge: null },\n  { name: '디지털리터러시',    desc: '미래 역량 디지털 교육',              target: '유아',         cat: 'ai',       badge: 'AI' },\n  { name: '게이미피케이션',    desc: '놀이로 배우는 참여형 수업',           target: '유아',         cat: 'ai',       badge: 'AI' },\n  { name: '아동관찰 AI',       desc: '관찰 기록 자동화 AI',                target: '영유아',       cat: 'ai',       badge: 'AI' },\n  { name: '멀티누리',          desc: '누리과정 멀티미디어 통합',           target: '유아',         cat: 'class',    badge: null },\n  { name: '놀이랩',            desc: 'AI가 제안하는 놀이 활동',            target: '영유아',       cat: 'ai',       badge: '추천' },\n\n  { name: '아동기질검사',      desc: '원아 이해와 상담 지원',              target: '영유아',       cat: 'class',    badge: '추천' },\n  { name: '아동관찰',          desc: '관찰 기록 도우미',                   target: '영유아',       cat: 'class',    badge: null },\n  { name: '교사인성검사',      desc: '교사 자기이해·역량 진단',            target: '교사',         cat: 'class',    badge: null },\n\n  { name: '베베TOY',           desc: '영아 발달 놀이 가이드',               target: '영아',         cat: 'play',     badge: null },\n  { name: '베베TV',            desc: '영아 영상 콘텐츠',                    target: '영아',         cat: 'play',     badge: null },\n  { name: '오감놀이',          desc: '영아 감각 놀이',                      target: '영아',         cat: 'play',     badge: null },\n  { name: '베베놀이터',        desc: '영아 통합 놀이 공간',                 target: '영아',         cat: 'play',     badge: null },\n\n  { name: '어린이집평가',      desc: '평가지원 자료 모음',                 target: '기관',         cat: 'office',   badge: null },\n  { name: '운영서식',          desc: '기관 운영 서식 패키지',              target: '기관',         cat: 'office',   badge: null },\n  { name: '재무회계',          desc: '재무·회계 자료',                     target: '기관',         cat: 'office',   badge: null },\n  { name: '안내문 제작',       desc: '가정통신문·안내문 생성',             target: '교사',         cat: 'make',     badge: null },\n  { name: '환경구성 자료',     desc: '교실 환경구성 자료',                  target: '기관',         cat: 'make',     badge: null },\n\n  { name: '자격증과정',        desc: '보육·유아교사 자격',                 target: '교사',         cat: 'class',    badge: null },\n  { name: '보수교육',          desc: '직무 향상 교육',                     target: '교사',         cat: 'class',    badge: 'NEW' },\n];\n\nwindow.PROGRAM_CATS = [\n  { id: 'all',     label: '전체' },\n  { id: 'pick',    label: '추천' },\n  { id: 'class',   label: '수업지원' },\n  { id: 'play',    label: '놀이·활동' },\n  { id: 'life',    label: '생활지도' },\n  { id: 'ai',      label: 'AI·디지털' },\n  { id: 'english', label: '영어·특화' },\n  { id: 'office',  label: '기관운영' },\n  { id: 'make',    label: '제작도구' },\n];\n<\u002Fscript>\n<script>\n  let activeMenu = null;\n  let activePage = 'home';\n  let activeCat = 'all';\n  let progQuery = '';\n\n  // ── Render GNB ──\n  function renderGNB() {\n    const html = NAV.map(n =>\n      `<button class=\"gnb-item\" data-id=\"${n.id}\">${n.label}<\u002Fbutton>`\n    ).join('');\n    document.getElementById('gnbList').innerHTML = html;\n    document.querySelectorAll('.gnb-item').forEach(btn => {\n      btn.addEventListener('mouseenter', () => openMenu(btn.dataset.id));\n      btn.addEventListener('click', (e) => { e.stopPropagation(); toggleMenu(btn.dataset.id); });\n    });\n  }\n\n  function openMenu(id) {\n    if (activePage !== 'home') { activePage = 'home'; }\n    activeMenu = id;\n    update();\n  }\n  function toggleMenu(id) {\n    activeMenu = activeMenu === id ? null : id;\n    if (activePage !== 'home') activePage = 'home';\n    update();\n  }\n  function closeMenu() {\n    if (!activeMenu) return;\n    activeMenu = null;\n    update();\n  }\n\n  // ── Render Mega ──\n  function renderMega(id) {\n    const m = MEGA[id];\n    const label = NAV.find(n => n.id === id).label;\n    if (id === 'ai') return aiPanel(m);\n    return colPanel(id, m, label);\n  }\n\n  function aiPanel(m) {\n    return `\n      <div class=\"mega-inner\">\n        <div class=\"mega-eyebrow\">\n          <div class=\"mega-title\">AI 존<\u002Fdiv>\n          <div class=\"mega-desc\">${m.desc}<\u002Fdiv>\n          <a class=\"mega-all\">AI 존 전체 보기 →<\u002Fa>\n        <\u002Fdiv>\n        <div class=\"ai-grid\">\n          ${m.tools.map((t,i) => `\n            <div class=\"ai-card\">\n              <div class=\"ai-card-top\">\n                <div class=\"ai-icon\">${t.icon}<\u002Fdiv>\n                <div class=\"ai-num\">${String(i+1).padStart(2,'0')}<\u002Fdiv>\n              <\u002Fdiv>\n              <div class=\"ai-name\">${t.name}<\u002Fdiv>\n              <div class=\"ai-card-desc\">${t.desc}<\u002Fdiv>\n            <\u002Fdiv>`).join('')}\n        <\u002Fdiv>\n      <\u002Fdiv>`;\n  }\n\n  function colPanel(id, m, label) {\n    const isProg = id === 'programs';\n    const allBtn = isProg\n      ? `<a class=\"mega-all\" onclick=\"showProgramsFull(event)\">전체보기 →<\u002Fa>`\n      : `<a class=\"mega-all\">전체 보기 →<\u002Fa>`;\n    return `\n      <div class=\"mega-inner\">\n        <div class=\"mega-eyebrow\">\n          <div class=\"mega-title\">${label}<\u002Fdiv>\n          <div class=\"mega-desc\">${m.desc}<\u002Fdiv>\n          ${allBtn}\n        <\u002Fdiv>\n        <div class=\"mega-cols\" style=\"grid-template-columns: repeat(${m.cols.length}, 1fr)\">\n          ${m.cols.map((c,i) => `\n            <div class=\"col\">\n              <div class=\"col-title\"><span class=\"num\">${String(i+1).padStart(2,'0')}<\u002Fspan> ${c.title}<\u002Fdiv>\n              <ul class=\"col-list\">\n                ${c.items.map(it => renderItem(it)).join('')}\n              <\u002Ful>\n            <\u002Fdiv>\n          `).join('')}\n        <\u002Fdiv>\n      <\u002Fdiv>`;\n  }\n\n  function renderItem(it) {\n    if (Array.isArray(it)) {\n      const cls = it[1] === 'HOT' ? 'tag hot' : (it[1] === 'NEW' ? 'tag new' : 'tag');\n      return `<li><a>${it[0]} <span class=\"${cls}\">${it[1]}<\u002Fspan><\u002Fa><\u002Fli>`;\n    }\n    return `<li><a>${it}<\u002Fa><\u002Fli>`;\n  }\n\n  // ── Home grid (visual placeholder for landing) ──\n  function renderHomeGrid() {\n    const cells = [\n      ['01','오늘의 추천', 'AI가 큐레이션한 자료 12건'],\n      ['02','이번 주 계획안', '5월 셋째 주 · 영유아 통합'],\n      ['03','신규 콘텐츠 124건', '지난 7일 업데이트'],\n      ['04','교사 평점 TOP', '4.9점 이상 자료'],\n    ];\n    document.getElementById('homeGrid').innerHTML = cells.map(([n,t,d]) =>\n      `<div class=\"home-cell\">\n        <div class=\"num\">${n}<\u002Fdiv>\n        <div class=\"ti\">${t}<\u002Fdiv>\n        <div class=\"ds\">${d}<\u002Fdiv>\n      <\u002Fdiv>`).join('');\n  }\n\n  // ── State updates ──\n  function update() {\n    document.querySelectorAll('.gnb-item').forEach(b =>\n      b.classList.toggle('active', b.dataset.id === activeMenu)\n    );\n    const gnb = document.getElementById('gnb');\n    if (activeMenu) {\n      document.getElementById('megaHost').innerHTML = renderMega(activeMenu);\n      gnb.classList.add('has-mega');\n    } else {\n      gnb.classList.remove('has-mega');\n    }\n    document.getElementById('pageHome').hidden = activePage !== 'home';\n    document.getElementById('pageProgramsFull').hidden = activePage !== 'programs';\n  }\n\n  // ── Programs full page ──\n  function showProgramsFull(e) {\n    if (e) { e.stopPropagation(); e.preventDefault(); }\n    activePage = 'programs';\n    activeMenu = null;\n    update();\n    window.scrollTo({ top: 0, behavior: 'instant' });\n  }\n  function backToHome() {\n    activePage = 'home';\n    update();\n    window.scrollTo({ top: 0, behavior: 'instant' });\n  }\n\n  function renderProgTabs() {\n    const counts = {};\n    PROGRAM_CATS.forEach(c => {\n      if (c.id === 'all')  counts[c.id] = PROGRAMS.length;\n      else if (c.id === 'pick') counts[c.id] = PROGRAMS.filter(p => p.badge === '추천' || p.badge === 'HOT' || p.badge === '특화').length;\n      else counts[c.id] = PROGRAMS.filter(p => p.cat === c.id).length;\n    });\n    document.getElementById('progTabs').innerHTML = PROGRAM_CATS.map(c => `\n      <button class=\"prog-tab ${c.id === activeCat ? 'active' : ''}\" data-cat=\"${c.id}\">\n        ${c.label}<span class=\"ct\">${counts[c.id]}<\u002Fspan>\n      <\u002Fbutton>\n    `).join('');\n    document.querySelectorAll('.prog-tab').forEach(t => {\n      t.addEventListener('click', () => { activeCat = t.dataset.cat; renderProgTabs(); renderProgGrid(); });\n    });\n  }\n\n  function renderProgGrid() {\n    let list = PROGRAMS;\n    if (activeCat === 'pick') {\n      list = list.filter(p => p.badge === '추천' || p.badge === 'HOT' || p.badge === '특화');\n    } else if (activeCat !== 'all') {\n      list = list.filter(p => p.cat === activeCat);\n    }\n    if (progQuery) {\n      const q = progQuery.toLowerCase();\n      list = list.filter(p => (p.name + p.desc).toLowerCase().includes(q));\n    }\n    document.getElementById('progCount').textContent = list.length;\n    document.getElementById('progGrid').innerHTML = list.map(p => {\n      let badgeCls = 'badge';\n      if (p.badge === 'HOT') badgeCls = 'badge hot';\n      else if (p.badge === 'NEW') badgeCls = 'badge new';\n      else if (p.badge === '필수') badgeCls = 'badge ess';\n      else if (p.badge === 'AI') badgeCls = 'badge ai';\n      return `\n        <div class=\"prog-card\">\n          <div class=\"prog-card-top\">\n            ${p.badge ? `<span class=\"${badgeCls}\">${p.badge}<\u002Fspan>` : '<span><\u002Fspan>'}\n            <span class=\"target\">${p.target}<\u002Fspan>\n          <\u002Fdiv>\n          <div class=\"name\">${p.name}<\u002Fdiv>\n          <div class=\"desc\">${p.desc}<\u002Fdiv>\n          <a class=\"go\">바로가기<\u002Fa>\n        <\u002Fdiv>`;\n    }).join('');\n  }\n\n  // Init\n  renderGNB();\n  renderHomeGrid();\n  renderProgTabs();\n  renderProgGrid();\n  update();\n\n  // Outside click → close menu (except clicks inside gnb/megamenu or onclick handlers)\n  document.addEventListener('click', e => {\n    if (!e.target.closest('#gnb')) closeMenu();\n  });\n  // Search\n  document.getElementById('progSearch').addEventListener('input', e => {\n    progQuery = e.target.value;\n    renderProgGrid();\n  });\n  // Esc closes menu\n  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });\n<\u002Fscript>\n\n\n<\u002Fbody><\u002Fhtml>"
   </script>
 </body>
 </html>
