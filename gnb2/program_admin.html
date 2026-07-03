@@ -214,19 +214,19 @@
               <label for="filterCategory">카테고리</label>
               <select id="filterCategory">
                 <option value="전체">전체</option>
-                <option>신체운동건강</option><option>의사소통</option><option>사회관계</option><option>예술경험</option><option>자연탐구</option><option>영아</option><option>안전교육</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="filterChip">칩 종류</label>
-              <select id="filterChip">
-                <option value="전체">전체</option><option value="추천">추천</option><option value="필수">필수</option><option value="HOT">HOT</option>
+                <option>개정누리과정</option><option>신체운동건강</option><option>의사소통</option><option>사회관계</option><option>예술경험</option><option>자연탐구</option><option>영아</option>
               </select>
             </div>
             <div class="field">
               <label for="filterAge">대상연령</label>
               <select id="filterAge">
                 <option value="전체">전체</option><option>영아</option><option>유아</option><option>영유아</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="filterChip">칩 종류</label>
+              <select id="filterChip">
+                <option value="전체">전체</option><option value="추천">추천</option><option value="필수">필수</option><option value="HOT">HOT</option>
               </select>
             </div>
             <div class="field search-field search-wrap">
@@ -276,7 +276,7 @@
       <div class="modal-grid">
         <div class="field">
           <label>카테고리 지정</label>
-          <select id="modalCategory"><option>안전교육</option><option>신체운동건강</option><option>의사소통</option><option>사회관계</option><option>예술경험</option><option>자연탐구</option><option>영아</option></select>
+          <select id="modalCategory"><option>개정누리과정</option><option>신체운동건강</option><option>의사소통</option><option>사회관계</option><option>예술경험</option><option>자연탐구</option><option>영아</option></select>
         </div>
         <div class="field">
           <label>대상연령</label>
@@ -315,20 +315,70 @@
   </div>
 
   <script>
-    const categories = ['안전교육','신체운동건강','의사소통','사회관계','예술경험','자연탐구','영아'];
+    const categories = ['개정누리과정','신체운동건강','의사소통','사회관계','예술경험','자연탐구','영아'];
     const programs = [
-      {order:1, category:'안전교육', name:'안전교육', subtext:'연령별 안전교육 자료', url:'/program/safety', chips:{recommend:true, required:true, hot:false}, age:'영유아', status:'노출'},
-      {order:2, category:'의사소통', name:'이야기나누기', subtext:'주제별 대화 중심 언어 활동', url:'/program/talk', chips:{recommend:true, required:false, hot:false}, age:'유아', status:'노출'},
-      {order:3, category:'예술경험', name:'조형놀이터', subtext:'감각을 키우는 만들기 활동', url:'/program/creative-play', chips:{recommend:true, required:false, hot:true}, age:'유아', status:'노출'},
-      {order:4, category:'신체운동건강', name:'놀이랩', subtext:'AI가 제안하는 놀이 활동', url:'/program/play-lab', chips:{recommend:true, required:false, hot:true}, age:'영유아', status:'노출'},
-      {order:5, category:'영아', name:'모아이', subtext:'영아를 위한 모아 활동', url:'/program/moai', chips:{recommend:false, required:false, hot:false}, age:'영아', status:'숨김'},
-      {order:6, category:'사회관계', name:'베베놀이터', subtext:'또래와 함께하는 사회성 놀이', url:'/program/bebe-play', chips:{recommend:true, required:false, hot:false}, age:'영아', status:'노출'},
-      {order:7, category:'자연탐구', name:'사계절놀이', subtext:'계절 변화로 배우는 자연탐구', url:'/program/season-play', chips:{recommend:true, required:false, hot:false}, age:'영유아', status:'노출'},
-      {order:8, category:'영아', name:'디지털놀이', subtext:'스마트 기기로 즐기는 놀이', url:'/program/digital-play', chips:{recommend:false, required:false, hot:false}, age:'영유아', status:'숨김'},
-      {order:9, category:'의사소통', name:'아트자람', subtext:'예술로 자라는 표현력', url:'/program/art-growth', chips:{recommend:true, required:true, hot:false}, age:'영유아', status:'노출'},
-      {order:10, category:'예술경험', name:'베베TV', subtext:'연령별 맞춤 영상 콘텐츠', url:'/program/bebe-tv', chips:{recommend:false, required:false, hot:false}, age:'영아', status:'숨김'},
-      {order:11, category:'사회관계', name:'월간유아', subtext:'매달 새로워지는 유아 콘텐츠', url:'/program/monthly-kids', chips:{recommend:true, required:false, hot:true}, age:'영유아', status:'노출'},
-      {order:12, category:'자연탐구', name:'자연아놀자', subtext:'자연 속에서 배우는 탐구놀이', url:'/program/nature-play', chips:{recommend:false, required:false, hot:false}, age:'영아', status:'노출'},
+      {order:1, category:'개정누리과정', name:'놀이랩', subtext:'AI가 제안하는 놀이 활동', url:'/program/play-lab', chips:{recommend:true, required:false, hot:true}, age:'영유아', status:'노출'},
+      {order:2, category:'개정누리과정', name:'키워드놀이', subtext:'키워드로 찾아보는 놀이 자료', url:'/program/keyword-play', chips:{recommend:false, required:false, hot:false}, age:'영유아', status:'노출'},
+      {order:3, category:'개정누리과정', name:'놀이프로젝트', subtext:'주제 중심 프로젝트형 놀이', url:'/program/play-project', chips:{recommend:true, required:false, hot:false}, age:'유아', status:'노출'},
+      {order:4, category:'개정누리과정', name:'티칭보드', subtext:'교사를 위한 수업 보드 자료', url:'/program/teaching-board', chips:{recommend:false, required:false, hot:false}, age:'영유아', status:'노출'},
+      {order:5, category:'개정누리과정', name:'이야기나누기', subtext:'주제별 대화 중심 언어 활동', url:'/program/talk', chips:{recommend:true, required:false, hot:false}, age:'유아', status:'노출'},
+      {order:6, category:'개정누리과정', name:'평가제', subtext:'누리과정 평가제 운영 자료', url:'/program/assessment', chips:{recommend:false, required:true, hot:false}, age:'영유아', status:'노출'},
+
+      {order:7, category:'신체운동건강', name:'안전교육', subtext:'연령별 안전교육 자료', url:'/program/safety', chips:{recommend:true, required:true, hot:false}, age:'영유아', status:'노출'},
+      {order:8, category:'신체운동건강', name:'산책바깥놀이', subtext:'바깥에서 즐기는 신체 활동', url:'/program/outdoor-walk', chips:{recommend:false, required:false, hot:false}, age:'영유아', status:'노출'},
+      {order:9, category:'신체운동건강', name:'기본생활습관', subtext:'스스로 익히는 생활 습관', url:'/program/basic-habit', chips:{recommend:false, required:true, hot:false}, age:'영아', status:'노출'},
+      {order:10, category:'신체운동건강', name:'튼튼자람', subtext:'몸과 마음이 튼튼해지는 활동', url:'/program/healthy-growth', chips:{recommend:true, required:false, hot:false}, age:'영유아', status:'노출'},
+      {order:11, category:'신체운동건강', name:'양치교육', subtext:'즐겁게 배우는 양치 습관', url:'/program/toothbrushing', chips:{recommend:false, required:false, hot:false}, age:'영아', status:'노출'},
+      {order:12, category:'신체운동건강', name:'놀이몬테소리', subtext:'몬테소리 교구로 배우는 놀이', url:'/program/play-montessori', chips:{recommend:false, required:false, hot:false}, age:'유아', status:'노출'},
+      {order:13, category:'신체운동건강', name:'가베', subtext:'프뢰벨 가베 교구 활동', url:'/program/gabe', chips:{recommend:false, required:false, hot:false}, age:'유아', status:'숨김'},
+
+      {order:14, category:'의사소통', name:'매일언어', subtext:'매일 조금씩 자라는 언어 활동', url:'/program/daily-language', chips:{recommend:true, required:false, hot:false}, age:'영유아', status:'노출'},
+      {order:15, category:'의사소통', name:'문해력동화', subtext:'문해력을 키우는 동화 자료', url:'/program/literacy-tale', chips:{recommend:false, required:false, hot:false}, age:'유아', status:'노출'},
+      {order:16, category:'의사소통', name:'그림자극놀이', subtext:'그림자로 즐기는 이야기 놀이', url:'/program/shadow-play', chips:{recommend:false, required:false, hot:true}, age:'유아', status:'노출'},
+      {order:17, category:'의사소통', name:'동화놀이터', subtext:'동화 속 이야기로 노는 시간', url:'/program/tale-playground', chips:{recommend:false, required:false, hot:false}, age:'영유아', status:'노출'},
+      {order:18, category:'의사소통', name:'쇼앤텔', subtext:'발표력을 키우는 쇼앤텔 활동', url:'/program/show-and-tell', chips:{recommend:false, required:false, hot:false}, age:'유아', status:'노출'},
+      {order:19, category:'의사소통', name:'교실영어', subtext:'교실에서 바로 쓰는 생활 영어', url:'/program/classroom-english', chips:{recommend:true, required:false, hot:false}, age:'유아', status:'노출'},
+      {order:20, category:'의사소통', name:'영어챈트', subtext:'리듬으로 익히는 영어 챈트', url:'/program/english-chant', chips:{recommend:false, required:false, hot:false}, age:'유아', status:'숨김'},
+      {order:21, category:'의사소통', name:'8급한자', subtext:'생활 속 8급 한자 익히기', url:'/program/hanja-8', chips:{recommend:false, required:false, hot:false}, age:'유아', status:'노출'},
+
+      {order:22, category:'사회관계', name:'사회정서학습', subtext:'감정과 관계를 배우는 활동', url:'/program/social-emotional', chips:{recommend:true, required:false, hot:false}, age:'유아', status:'노출'},
+      {order:23, category:'사회관계', name:'유아인성교육', subtext:'바른 인성을 기르는 자료', url:'/program/character-edu', chips:{recommend:false, required:true, hot:false}, age:'유아', status:'노출'},
+      {order:24, category:'사회관계', name:'스페셜행사', subtext:'특별한 순간을 위한 행사 자료', url:'/program/special-event', chips:{recommend:false, required:false, hot:false}, age:'영유아', status:'노출'},
+      {order:25, category:'사회관계', name:'특별한날/절기', subtext:'절기와 기념일 맞춤 활동', url:'/program/special-day', chips:{recommend:false, required:false, hot:false}, age:'영유아', status:'노출'},
+      {order:26, category:'사회관계', name:'이음교육', subtext:'가정과 기관을 잇는 교육 자료', url:'/program/ieum-edu', chips:{recommend:false, required:false, hot:false}, age:'영유아', status:'노출'},
+      {order:27, category:'사회관계', name:'마음자람', subtext:'마음이 자라는 정서 활동', url:'/program/mind-growth', chips:{recommend:false, required:false, hot:false}, age:'유아', status:'노출'},
+      {order:28, category:'사회관계', name:'똑똑인문학', subtext:'유아를 위한 쉬운 인문학', url:'/program/humanities', chips:{recommend:true, required:false, hot:false}, age:'유아', status:'노출'},
+      {order:29, category:'사회관계', name:'세시생태놀이', subtext:'절기 따라 즐기는 생태 놀이', url:'/program/season-eco-play', chips:{recommend:false, required:false, hot:false}, age:'영유아', status:'노출'},
+      {order:30, category:'사회관계', name:'꼬마펫톡', subtext:'반려동물과 함께하는 정서 활동', url:'/program/kkoma-pettalk', chips:{recommend:false, required:false, hot:true}, age:'유아', status:'노출'},
+      {order:31, category:'사회관계', name:'다문화교육', subtext:'다양한 문화를 이해하는 교육', url:'/program/multicultural', chips:{recommend:false, required:false, hot:false}, age:'영유아', status:'노출'},
+      {order:32, category:'사회관계', name:'장애아교육', subtext:'통합교육을 위한 지원 자료', url:'/program/inclusive-edu', chips:{recommend:false, required:false, hot:false}, age:'영유아', status:'숨김'},
+
+      {order:33, category:'예술경험', name:'조물조물 만들기', subtext:'감각을 키우는 만들기 활동', url:'/program/hands-on-craft', chips:{recommend:true, required:false, hot:false}, age:'유아', status:'노출'},
+      {order:34, category:'예술경험', name:'아트자람', subtext:'예술로 자라는 표현력', url:'/program/art-growth', chips:{recommend:true, required:true, hot:false}, age:'영유아', status:'노출'},
+      {order:35, category:'예술경험', name:'미술아놀래', subtext:'창의적 표현을 키우는 미술 놀이', url:'/program/art-surprise', chips:{recommend:false, required:false, hot:false}, age:'유아', status:'노출'},
+      {order:36, category:'예술경험', name:'종이접기', subtext:'손끝으로 배우는 종이접기', url:'/program/origami', chips:{recommend:false, required:false, hot:false}, age:'유아', status:'노출'},
+      {order:37, category:'예술경험', name:'명화감상', subtext:'명화로 만나는 예술 감상', url:'/program/art-appreciation', chips:{recommend:false, required:false, hot:false}, age:'유아', status:'노출'},
+      {order:38, category:'예술경험', name:'퍼포먼스미술', subtext:'몸으로 표현하는 미술 활동', url:'/program/performance-art', chips:{recommend:false, required:false, hot:false}, age:'유아', status:'숨김'},
+      {order:39, category:'예술경험', name:'클래식음악감상', subtext:'클래식으로 여는 감성 시간', url:'/program/classical-music', chips:{recommend:false, required:false, hot:false}, age:'영유아', status:'노출'},
+      {order:40, category:'예술경험', name:'창작동요', subtext:'직접 만들어보는 창작 동요', url:'/program/creative-song', chips:{recommend:false, required:false, hot:false}, age:'유아', status:'노출'},
+
+      {order:41, category:'자연탐구', name:'모아이AI', subtext:'AI와 함께하는 탐구 활동', url:'/program/moai-ai', chips:{recommend:true, required:false, hot:true}, age:'영유아', status:'노출'},
+      {order:42, category:'자연탐구', name:'모아이코딩', subtext:'놀이로 배우는 코딩 사고력', url:'/program/moai-coding', chips:{recommend:false, required:false, hot:false}, age:'유아', status:'노출'},
+      {order:43, category:'자연탐구', name:'디지털놀이', subtext:'스마트 기기로 즐기는 놀이', url:'/program/digital-play', chips:{recommend:false, required:false, hot:false}, age:'영유아', status:'숨김'},
+      {order:44, category:'자연탐구', name:'환경교육', subtext:'지구를 생각하는 환경 교육', url:'/program/environment-edu', chips:{recommend:false, required:false, hot:false}, age:'영유아', status:'노출'},
+      {order:45, category:'자연탐구', name:'창의과학', subtext:'실험으로 배우는 창의 과학', url:'/program/creative-science', chips:{recommend:false, required:false, hot:false}, age:'유아', status:'노출'},
+      {order:46, category:'자연탐구', name:'스토리텔링수학', subtext:'이야기로 배우는 수학 개념', url:'/program/storytelling-math', chips:{recommend:false, required:false, hot:false}, age:'유아', status:'노출'},
+      {order:47, category:'자연탐구', name:'탐정수학', subtext:'추리하며 배우는 수학 놀이', url:'/program/detective-math', chips:{recommend:false, required:false, hot:false}, age:'유아', status:'노출'},
+      {order:48, category:'자연탐구', name:'주제별요리', subtext:'주제로 배우는 요리 활동', url:'/program/themed-cooking', chips:{recommend:false, required:false, hot:false}, age:'영유아', status:'노출'},
+      {order:49, category:'자연탐구', name:'산책바깥놀이', subtext:'자연 속에서 즐기는 탐구 산책', url:'/program/outdoor-nature-walk', chips:{recommend:false, required:false, hot:false}, age:'영유아', status:'노출'},
+      {order:50, category:'자연탐구', name:'티파하파자연관찰', subtext:'오감으로 관찰하는 자연 탐구', url:'/program/nature-observation', chips:{recommend:false, required:false, hot:false}, age:'유아', status:'노출'},
+
+      {order:51, category:'영아', name:'베베Toy', subtext:'영아 발달을 돕는 장난감 놀이', url:'/program/bebe-toy', chips:{recommend:true, required:false, hot:false}, age:'영아', status:'노출'},
+      {order:52, category:'영아', name:'베베TV', subtext:'연령별 맞춤 영상 콘텐츠', url:'/program/bebe-tv', chips:{recommend:false, required:false, hot:false}, age:'영아', status:'숨김'},
+      {order:53, category:'영아', name:'베베놀이터', subtext:'또래와 함께하는 사회성 놀이', url:'/program/bebe-play', chips:{recommend:true, required:false, hot:false}, age:'영아', status:'노출'},
+      {order:54, category:'영아', name:'오감놀이', subtext:'오감을 자극하는 놀이 활동', url:'/program/sensory-play', chips:{recommend:false, required:false, hot:true}, age:'영아', status:'노출'},
+      {order:55, category:'영아', name:'배변훈련', subtext:'단계별로 익히는 배변 훈련', url:'/program/toilet-training', chips:{recommend:false, required:true, hot:false}, age:'영아', status:'노출'},
+      {order:56, category:'영아', name:'영아인성교육', subtext:'영아를 위한 바른 인성 교육', url:'/program/infant-character-edu', chips:{recommend:false, required:false, hot:false}, age:'영아', status:'노출'},
     ];
 
     const body = document.getElementById('programTableBody');
