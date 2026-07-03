@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>프로그램 관리</title>
+  <style>
+    :root{
+      --green:#15783c;
+      --green-2:#1b8f4b;
+      --green-3:#eaf6ee;
+      --mint:#f4faf6;
+      --line:#e8ece8;
+      --line-2:#dfe5df;
+      --bg:#f7f9f7;
+      --text:#172018;
+      --muted:#7c867d;
+      --danger:#f04438;
+      --danger-bg:#fff2f0;
+      --gray:#f3f5f3;
+      --shadow:0 12px 32px rgba(20,40,25,.06);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",Arial,sans-serif;
+      color:var(--text);
+      background:var(--bg);
+      letter-spacing:-.03em;
+    }
+    button,input,select{font:inherit}
+    .app{display:flex;min-height:100vh}
+
+    /* content */
+    .main{width:100%}
+    .topbar{
+      height:82px;background:#fff;border-bottom:1px solid var(--line);
+      display:flex;align-items:center;justify-content:flex-end;padding:0 44px;gap:20px;
+    }
+    .icon-btn{width:36px;height:36px;border:0;background:transparent;border-radius:50%;position:relative;display:grid;place-items:center;color:#1d251f;cursor:pointer}
+    .badge{position:absolute;right:2px;top:2px;background:#e9332a;color:#fff;border-radius:999px;font-size:10px;font-weight:800;min-width:17px;height:17px;display:grid;place-items:center;border:2px solid #fff}
+    .user-menu{display:flex;align-items:center;gap:8px;font-weight:700;color:#2d352e}
+    .page{padding:28px 48px 60px;max-width:1720px;margin:0 auto}
+    .page-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:24px}
+    .title-area{display:flex;flex-direction:column;gap:14px}
+    .title-row{display:flex;align-items:flex-end;gap:20px}
+    h1{font-size:31px;line-height:1;margin:0;font-weight:900;letter-spacing:-.055em}
+    .desc{font-size:15px;color:#6f7a70;margin-bottom:2px}
+    .tabs{display:inline-flex;width:fit-content;padding:4px;border:1px solid var(--line-2);background:#fff;border-radius:14px;box-shadow:0 8px 18px rgba(20,60,40,.04)}
+    .tab{min-width:116px;height:38px;border:0;border-radius:10px;background:transparent;color:#617069;font-weight:850;font-size:14px;cursor:pointer}
+    .tab.active{background:var(--green);color:#fff;box-shadow:0 8px 16px rgba(21,120,60,.18)}
+    .actions{display:flex;gap:12px}
+    .btn{
+      height:50px;border-radius:11px;border:1px solid var(--line-2);background:#fff;padding:0 22px;
+      display:inline-flex;align-items:center;gap:9px;font-weight:800;color:#29312a;cursor:pointer;box-shadow:0 1px 0 rgba(0,0,0,.02)
+    }
+    .btn.primary{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 8px 18px rgba(21,120,60,.18)}
+    .btn:hover{filter:brightness(.98)}
+    .btn svg{width:20px;height:20px}
+
+    .filter-card{
+      background:#fff;border:1px solid var(--line);border-radius:17px;padding:22px 24px;margin-bottom:20px;box-shadow:var(--shadow)
+    }
+    .filters{display:grid;grid-template-columns:220px 200px 200px 1fr 160px;gap:22px;align-items:end}
+    .field label{display:block;font-size:14px;font-weight:800;margin-bottom:10px;color:#384139}
+    .field select,.field input{
+      width:100%;height:48px;border:1px solid var(--line-2);border-radius:10px;background:#fff;padding:0 14px;color:#222d24;outline:none
+    }
+    .search-wrap{position:relative}
+    .search-wrap input{padding-right:46px}
+    .search-wrap svg{position:absolute;right:14px;bottom:13px;width:22px;height:22px;color:#1c241e}
+    .reset{height:48px;border:1px solid var(--line-2);background:#fff;border-radius:10px;font-weight:750;display:flex;justify-content:center;align-items:center;gap:8px;color:#263028;cursor:pointer}
+    .hint{display:flex;gap:8px;align-items:center;color:#697469;font-size:14px;margin:8px 0 18px 0}
+    .hint svg{width:17px;height:17px;color:#6d756d}
+
+    .summary-dash{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+    .summary-tile{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 18px;box-shadow:var(--shadow)}
+    .summary-tile-label{font-size:12.5px;color:#737d73;font-weight:750;margin-bottom:7px}
+    .summary-tile-value{font-size:24px;font-weight:900;letter-spacing:-.04em}
+    .summary-tile-value span{font-size:13px;margin-left:2px;font-weight:700;color:#7c867d}
+    .summary-tile.stack{display:flex;flex-direction:column;justify-content:center;padding:12px 18px}
+    .mini-row{display:flex;align-items:center;justify-content:space-between;font-size:12.5px;font-weight:700;color:#3b453d}
+    .mini-row+.mini-row{margin-top:6px}
+    .dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:7px}.dot.baby{background:#1f9d4c}.dot.child{background:#8dcf8b}.dot.all{background:#e2b92e}
+    .dot.rec{background:var(--green)}.dot.req{background:#d9822b}.dot.hot{background:#e9332a}
+
+    .table-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+    table{width:100%;border-collapse:collapse;table-layout:fixed}
+    thead th{height:56px;background:#fafbfa;border-bottom:1px solid var(--line);font-size:14px;color:#364137;font-weight:850;text-align:left;padding:0 16px}
+    tbody td{padding:16px;vertical-align:middle;font-size:14px;border-bottom:1px solid #edf0ed}
+    tbody tr:hover{background:#fbfdfb}
+    tbody tr.dragging{opacity:.45;background:var(--green-3)}
+    th.order,td.order{width:9%;text-align:center}
+    th.category,td.category{width:12%}
+    th.info,td.info{width:20%}
+    th.url,td.url{width:16%}
+    th.chips,td.chips{width:16%}
+    th.age,td.age{width:16%;text-align:center}
+    th.status,td.status{width:5%;text-align:center}
+    th.manage,td.manage{width:6%;text-align:center}
+
+    .info-stack{display:flex;flex-direction:column;gap:8px}
+    .subtext-input{color:#6f7a70;font-weight:550;font-size:13px}
+    .chip-set{display:flex;flex-direction:column;gap:9px}
+    .chip-toggle{display:flex;align-items:center;justify-content:flex-start;gap:8px;font-size:12.5px;font-weight:750;color:#4d594e}
+    .chip-toggle span:first-child{width:28px}
+    .chip-toggle .mini-toggle{position:relative;width:34px;height:19px;display:inline-block;flex:none}
+    .chip-toggle .mini-toggle input{opacity:0;width:0;height:0}
+    .chip-toggle .mini-slider{position:absolute;cursor:pointer;inset:0;background:#c3c9c4;border-radius:999px;transition:.18s}
+    .chip-toggle .mini-slider:before{content:"";position:absolute;width:14px;height:14px;left:2.5px;top:2.5px;background:#fff;border-radius:50%;transition:.18s;box-shadow:0 1px 2px rgba(0,0,0,.18)}
+    .chip-toggle .mini-toggle input:checked + .mini-slider{background:var(--green)}
+    .chip-toggle .mini-toggle input:checked + .mini-slider:before{transform:translateX(15px)}
+    .chip-toggle.chip-required .mini-toggle input:checked + .mini-slider{background:#d9822b}
+    .chip-toggle.chip-hot .mini-toggle input:checked + .mini-slider{background:#e9332a}
+
+    .order-wrap{display:flex;align-items:center;gap:13px;justify-content:center}
+    .drag-handle{cursor:grab;color:#9aa39a;display:grid;place-items:center}
+    .drag-handle:active{cursor:grabbing}
+    .order-input{width:44px;height:37px;border:1px solid var(--line-2);border-radius:8px;text-align:center;font-weight:750;color:#384139;background:#fff}
+    .cell-select,.cell-input{
+      height:38px;border:1px solid var(--line-2);border-radius:8px;background:#fff;padding:0 11px;width:100%;outline:none;color:#263028
+    }
+    .cell-input{font-weight:650}
+    .age-group{display:flex;gap:7px;justify-content:center}
+    .age-chip{height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--line-2);background:#fff;color:#747e75;font-weight:760;font-size:13px;cursor:pointer}
+    .age-chip.active{background:#eff9f2;color:var(--green);border-color:#77bd8c}
+    .status-chip{height:27px;padding:0 10px;border-radius:8px;display:inline-flex;align-items:center;font-size:13px;font-weight:850}
+    .status-chip.show{background:#edf8ef;color:var(--green)}
+    .status-chip.hide{background:#f0f1f0;color:#777f78}
+    .manage-actions{display:flex;gap:8px;justify-content:center}
+    .mini-btn{width:31px;height:31px;border:1px solid var(--line-2);background:#fff;border-radius:7px;display:grid;place-items:center;cursor:pointer;color:#263028}
+    .mini-btn.delete{color:var(--danger);border-color:#ffd9d5;background:#fff}
+    .mini-btn:hover{background:#f8faf8}
+    .mini-btn svg{width:16px;height:16px}
+
+    .table-footer{height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:#fff;font-size:14px;color:#343c35}
+    .paging{display:flex;align-items:center;gap:8px}
+    .page-btn{min-width:33px;height:33px;border:0;background:#fff;border-radius:8px;color:#333c35;font-weight:750;cursor:pointer}
+    .page-btn.active{background:var(--green);color:#fff}
+    .view-select{height:38px;border:1px solid var(--line-2);border-radius:8px;background:#fff;padding:0 10px;color:#343c35}
+
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.28);display:none;align-items:center;justify-content:center;z-index:20}
+    .modal-backdrop.open{display:flex}
+    .modal{width:560px;background:#fff;border-radius:18px;box-shadow:0 22px 60px rgba(0,0,0,.18);padding:28px;border:1px solid var(--line)}
+    .modal h2{margin:0 0 18px;font-size:24px;letter-spacing:-.05em}
+    .modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.modal-grid .wide{grid-column:1/3}
+    .modal .field input,.modal .field select{height:46px}.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}
+
+    @media (max-width:1200px){
+      .filters{grid-template-columns:1fr 1fr}.search-field{grid-column:1/3}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-btn" aria-label="알림"><span class="badge">3</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
+        <button class="icon-btn" aria-label="도움말"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 1 1 5.83 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg></button>
+        <div class="user-menu">관리자님 <span>⌄</span></div>
+      </header>
+
+      <section class="page">
+        <div class="page-head">
+          <div class="title-area">
+            <div class="title-row">
+              <h1>프로그램 관리</h1>
+              <p class="desc">프로그램 전체보기 노출 항목을 관리합니다.</p>
+            </div>
+            <nav class="tabs" aria-label="프로그램 관리 탭">
+              <button class="tab active" onclick="location.href='program_admin.html'">프로그램 관리</button>
+              <button class="tab" onclick="location.href='program_stats_only.html'">통계</button>
+            </nav>
+          </div>
+          <div class="actions">
+            <button class="btn" id="addBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>프로그램 추가</button>
+            <button class="btn primary" id="saveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>저장</button>
+          </div>
+        </div>
+
+        <div class="summary-dash">
+          <div class="summary-tile">
+            <div class="summary-tile-label">전체 프로그램 수</div>
+            <div class="summary-tile-value" id="countAll">0<span>개</span></div>
+          </div>
+          <div class="summary-tile">
+            <div class="summary-tile-label">추천 칩 노출</div>
+            <div class="summary-tile-value" id="countRec">0<span>개</span></div>
+          </div>
+          <div class="summary-tile">
+            <div class="summary-tile-label">필수 칩 노출</div>
+            <div class="summary-tile-value" id="countReq">0<span>개</span></div>
+          </div>
+          <div class="summary-tile">
+            <div class="summary-tile-label">HOT 칩 노출</div>
+            <div class="summary-tile-value" id="countHot">0<span>개</span></div>
+          </div>
+          <div class="summary-tile stack">
+            <div class="summary-tile-label">노출 상태</div>
+            <div class="mini-row"><span>노출 중</span><strong id="countShow">0개</strong></div>
+            <div class="mini-row"><span>숨김</span><strong id="countHide">0개</strong></div>
+          </div>
+          <div class="summary-tile stack">
+            <div class="summary-tile-label">대상연령별 개수</div>
+            <div class="mini-row"><span><i class="dot baby"></i>영아</span><strong id="countBaby">0개</strong></div>
+            <div class="mini-row"><span><i class="dot child"></i>유아</span><strong id="countChild">0개</strong></div>
+            <div class="mini-row"><span><i class="dot all"></i>영유아</span><strong id="countAllAge">0개</strong></div>
+          </div>
+        </div>
+
+        <div class="filter-card">
+          <div class="filters">
+            <div class="field">
+              <label for="filterCategory">카테고리</label>
+              <select id="filterCategory">
+                <option value="전체">전체</option>
+                <option>신체운동건강</option><option>의사소통</option><option>사회관계</option><option>예술경험</option><option>자연탐구</option><option>영아</option><option>안전교육</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="filterChip">칩 종류</label>
+              <select id="filterChip">
+                <option value="전체">전체</option><option value="추천">추천</option><option value="필수">필수</option><option value="HOT">HOT</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="filterAge">대상연령</label>
+              <select id="filterAge">
+                <option value="전체">전체</option><option>영아</option><option>유아</option><option>영유아</option>
+              </select>
+            </div>
+            <div class="field search-field search-wrap">
+              <label for="searchInput">프로그램명 검색</label>
+              <input id="searchInput" type="search" placeholder="프로그램명을 입력하세요." />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            </div>
+            <button class="reset" id="resetBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>필터 초기화</button>
+          </div>
+        </div>
+
+        <div class="hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>드래그하거나 순서를 입력하여 노출 순서를 변경할 수 있습니다.</div>
+
+        <div class="table-card">
+            <table>
+              <thead>
+                <tr>
+                  <th class="order">순서</th>
+                  <th class="category">카테고리 지정</th>
+                  <th class="info">프로그램 정보</th>
+                  <th class="url">URL</th>
+                  <th class="chips">칩 설정</th>
+                  <th class="age">대상연령</th>
+                  <th class="status">상태</th>
+                  <th class="manage">관리</th>
+                </tr>
+              </thead>
+              <tbody id="programTableBody"></tbody>
+            </table>
+            <div class="table-footer">
+              <div id="totalCount">전체 0개</div>
+              <div class="paging">
+                <button class="page-btn">‹‹</button><button class="page-btn">‹</button>
+                <button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">4</button><button class="page-btn">5</button>
+                <button class="page-btn">›</button><button class="page-btn">››</button>
+              </div>
+              <select class="view-select"><option>12개씩 보기</option><option>24개씩 보기</option><option>48개씩 보기</option></select>
+            </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <h2>프로그램 추가</h2>
+      <div class="modal-grid">
+        <div class="field">
+          <label>카테고리 지정</label>
+          <select id="modalCategory"><option>안전교육</option><option>신체운동건강</option><option>의사소통</option><option>사회관계</option><option>예술경험</option><option>자연탐구</option><option>영아</option></select>
+        </div>
+        <div class="field">
+          <label>대상연령</label>
+          <select id="modalAge"><option>영아</option><option>유아</option><option>영유아</option></select>
+        </div>
+        <div class="field wide">
+          <label>프로그램명</label>
+          <input id="modalName" placeholder="프로그램명을 입력하세요." />
+        </div>
+        <div class="field wide">
+          <label>보조문구</label>
+          <input id="modalSubtext" placeholder="예) 연령별 안전교육 자료" />
+        </div>
+        <div class="field wide">
+          <label>URL</label>
+          <input id="modalUrl" placeholder="/program/example" />
+        </div>
+        <div class="field">
+          <label>상태</label>
+          <select id="modalStatus"><option value="노출">노출</option><option value="숨김">숨김</option></select>
+        </div>
+        <div class="field wide">
+          <label>칩 노출 설정</label>
+          <div class="chip-set" style="flex-direction:row;gap:18px">
+            <label class="chip-toggle"><span>추천</span><span class="mini-toggle"><input type="checkbox" id="modalChipRecommend" /><span class="mini-slider"></span></span></label>
+            <label class="chip-toggle chip-required"><span>필수</span><span class="mini-toggle"><input type="checkbox" id="modalChipRequired" /><span class="mini-slider"></span></span></label>
+            <label class="chip-toggle chip-hot"><span>HOT</span><span class="mini-toggle"><input type="checkbox" id="modalChipHot" /><span class="mini-slider"></span></span></label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="modalCancel">취소</button>
+        <button class="btn primary" id="modalAdd">추가</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const categories = ['안전교육','신체운동건강','의사소통','사회관계','예술경험','자연탐구','영아'];
+    const programs = [
+      {order:1, category:'안전교육', name:'안전교육', subtext:'연령별 안전교육 자료', url:'/program/safety', chips:{recommend:true, required:true, hot:false}, age:'영유아', status:'노출'},
+      {order:2, category:'의사소통', name:'이야기나누기', subtext:'주제별 대화 중심 언어 활동', url:'/program/talk', chips:{recommend:true, required:false, hot:false}, age:'유아', status:'노출'},
+      {order:3, category:'예술경험', name:'조형놀이터', subtext:'감각을 키우는 만들기 활동', url:'/program/creative-play', chips:{recommend:true, required:false, hot:true}, age:'유아', status:'노출'},
+      {order:4, category:'신체운동건강', name:'놀이랩', subtext:'AI가 제안하는 놀이 활동', url:'/program/play-lab', chips:{recommend:true, required:false, hot:true}, age:'영유아', status:'노출'},
+      {order:5, category:'영아', name:'모아이', subtext:'영아를 위한 모아 활동', url:'/program/moai', chips:{recommend:false, required:false, hot:false}, age:'영아', status:'숨김'},
+      {order:6, category:'사회관계', name:'베베놀이터', subtext:'또래와 함께하는 사회성 놀이', url:'/program/bebe-play', chips:{recommend:true, required:false, hot:false}, age:'영아', status:'노출'},
+      {order:7, category:'자연탐구', name:'사계절놀이', subtext:'계절 변화로 배우는 자연탐구', url:'/program/season-play', chips:{recommend:true, required:false, hot:false}, age:'영유아', status:'노출'},
+      {order:8, category:'영아', name:'디지털놀이', subtext:'스마트 기기로 즐기는 놀이', url:'/program/digital-play', chips:{recommend:false, required:false, hot:false}, age:'영유아', status:'숨김'},
+      {order:9, category:'의사소통', name:'아트자람', subtext:'예술로 자라는 표현력', url:'/program/art-growth', chips:{recommend:true, required:true, hot:false}, age:'영유아', status:'노출'},
+      {order:10, category:'예술경험', name:'베베TV', subtext:'연령별 맞춤 영상 콘텐츠', url:'/program/bebe-tv', chips:{recommend:false, required:false, hot:false}, age:'영아', status:'숨김'},
+      {order:11, category:'사회관계', name:'월간유아', subtext:'매달 새로워지는 유아 콘텐츠', url:'/program/monthly-kids', chips:{recommend:true, required:false, hot:true}, age:'영유아', status:'노출'},
+      {order:12, category:'자연탐구', name:'자연아놀자', subtext:'자연 속에서 배우는 탐구놀이', url:'/program/nature-play', chips:{recommend:false, required:false, hot:false}, age:'영아', status:'노출'},
+    ];
+
+    const body = document.getElementById('programTableBody');
+    let dragIndex = null;
+
+    function categoryOptions(selected){
+      return categories.map(c => `<option ${c===selected?'selected':''}>${c}</option>`).join('');
+    }
+
+    const chipFilterMap = {'추천':'recommend', '필수':'required', 'HOT':'hot'};
+
+    function render(){
+      const categoryFilter = document.getElementById('filterCategory').value;
+      const chipFilter = document.getElementById('filterChip').value;
+      const ageFilter = document.getElementById('filterAge').value;
+      const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+
+      const filtered = programs.filter(p => {
+        const byCategory = categoryFilter === '전체' || p.category === categoryFilter;
+        const byChip = chipFilter === '전체' || p.chips[chipFilterMap[chipFilter]];
+        const byAge = ageFilter === '전체' || p.age === ageFilter;
+        const byKeyword = !keyword || p.name.toLowerCase().includes(keyword);
+        return byCategory && byChip && byAge && byKeyword;
+      });
+
+      body.innerHTML = filtered.map((p) => {
+        const realIndex = programs.indexOf(p);
+        return `
+          <tr draggable="true" data-index="${realIndex}">
+            <td class="order">
+              <div class="order-wrap">
+                <span class="drag-handle" title="드래그로 순서 변경">
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><circle cx="8" cy="6" r="1.5"/><circle cx="8" cy="12" r="1.5"/><circle cx="8" cy="18" r="1.5"/><circle cx="16" cy="6" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="16" cy="18" r="1.5"/></svg>
+                </span>
+                <input class="order-input" value="${p.order}" data-field="order" data-index="${realIndex}" />
+              </div>
+            </td>
+            <td class="category"><select class="cell-select" data-field="category" data-index="${realIndex}">${categoryOptions(p.category)}</select></td>
+            <td class="info">
+              <div class="info-stack">
+                <input class="cell-input" value="${p.name}" data-field="name" data-index="${realIndex}" placeholder="프로그램명" />
+                <input class="cell-input subtext-input" value="${p.subtext || ''}" data-field="subtext" data-index="${realIndex}" placeholder="보조문구" />
+              </div>
+            </td>
+            <td class="url"><input class="cell-input" value="${p.url}" data-field="url" data-index="${realIndex}" /></td>
+            <td class="chips">
+              <div class="chip-set">
+                <label class="chip-toggle"><span>추천</span><span class="mini-toggle"><input type="checkbox" ${p.chips.recommend?'checked':''} data-chip="recommend" data-index="${realIndex}" /><span class="mini-slider"></span></span></label>
+                <label class="chip-toggle chip-required"><span>필수</span><span class="mini-toggle"><input type="checkbox" ${p.chips.required?'checked':''} data-chip="required" data-index="${realIndex}" /><span class="mini-slider"></span></span></label>
+                <label class="chip-toggle chip-hot"><span>HOT</span><span class="mini-toggle"><input type="checkbox" ${p.chips.hot?'checked':''} data-chip="hot" data-index="${realIndex}" /><span class="mini-slider"></span></span></label>
+              </div>
+            </td>
+            <td class="age">
+              <div class="age-group" data-index="${realIndex}">
+                ${['영아','유아','영유아'].map(age => `<button type="button" class="age-chip ${p.age===age?'active':''}" data-age="${age}">${age}</button>`).join('')}
+              </div>
+            </td>
+            <td class="status"><button type="button" class="status-chip ${p.status==='노출'?'show':'hide'}" data-field="status" data-index="${realIndex}">${p.status}</button></td>
+            <td class="manage"><div class="manage-actions"><button class="mini-btn" title="수정"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg></button><button class="mini-btn delete" title="삭제" data-delete="${realIndex}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button></div></td>
+          </tr>
+        `;
+      }).join('');
+
+      updateSummary();
+      bindRows();
+    }
+
+    function updateSummary(){
+      const all = programs.length;
+      const rec = programs.filter(p => p.chips.recommend).length;
+      const req = programs.filter(p => p.chips.required).length;
+      const hot = programs.filter(p => p.chips.hot).length;
+      const show = programs.filter(p => p.status === '노출').length;
+      const hide = all - show;
+      document.getElementById('totalCount').textContent = `전체 ${all}개`;
+      document.getElementById('countAll').innerHTML = `${all}<span>개</span>`;
+      document.getElementById('countRec').innerHTML = `${rec}<span>개</span>`;
+      document.getElementById('countReq').innerHTML = `${req}<span>개</span>`;
+      document.getElementById('countHot').innerHTML = `${hot}<span>개</span>`;
+      document.getElementById('countShow').textContent = `${show}개`;
+      document.getElementById('countHide').textContent = `${hide}개`;
+      document.getElementById('countBaby').textContent = `${programs.filter(p => p.age === '영아').length}개`;
+      document.getElementById('countChild').textContent = `${programs.filter(p => p.age === '유아').length}개`;
+      document.getElementById('countAllAge').textContent = `${programs.filter(p => p.age === '영유아').length}개`;
+    }
+
+    function normalizeOrder(){
+      programs.forEach((p, i) => p.order = i + 1);
+    }
+
+    function bindRows(){
+      body.querySelectorAll('input[data-field], select[data-field]').forEach(el => {
+        el.addEventListener('change', (e) => {
+          const idx = Number(e.target.dataset.index);
+          const field = e.target.dataset.field;
+          if(field === 'order') {
+            const newOrder = Math.max(1, Math.min(programs.length, Number(e.target.value) || programs[idx].order));
+            const [moved] = programs.splice(idx, 1);
+            programs.splice(newOrder - 1, 0, moved);
+            normalizeOrder();
+          } else programs[idx][field] = e.target.value;
+          render();
+        });
+      });
+
+      body.querySelectorAll('input[data-chip]').forEach(el => {
+        el.addEventListener('change', (e) => {
+          const idx = Number(e.target.dataset.index);
+          const chip = e.target.dataset.chip;
+          programs[idx].chips[chip] = e.target.checked;
+          render();
+        });
+      });
+
+      body.querySelectorAll('.age-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.closest('.age-group').dataset.index);
+          programs[idx].age = btn.dataset.age;
+          render();
+        });
+      });
+
+      body.querySelectorAll('.status-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.dataset.index);
+          programs[idx].status = programs[idx].status === '노출' ? '숨김' : '노출';
+          render();
+        });
+      });
+
+      body.querySelectorAll('[data-delete]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.dataset.delete);
+          if(confirm(`'${programs[idx].name}' 프로그램을 삭제하시겠습니까?`)){
+            programs.splice(idx,1);
+            normalizeOrder();
+            render();
+          }
+        });
+      });
+
+      body.querySelectorAll('tr').forEach(row => {
+        row.addEventListener('dragstart', () => {
+          dragIndex = Number(row.dataset.index);
+          row.classList.add('dragging');
+        });
+        row.addEventListener('dragend', () => {
+          row.classList.remove('dragging');
+          dragIndex = null;
+        });
+        row.addEventListener('dragover', (e) => e.preventDefault());
+        row.addEventListener('drop', () => {
+          const dropIndex = Number(row.dataset.index);
+          if(dragIndex === null || dragIndex === dropIndex) return;
+          const [moved] = programs.splice(dragIndex, 1);
+          programs.splice(dropIndex, 0, moved);
+          normalizeOrder();
+          render();
+        });
+      });
+    }
+
+    ['filterCategory','filterChip','filterAge','searchInput'].forEach(id => {
+      document.getElementById(id).addEventListener(id === 'searchInput' ? 'input' : 'change', render);
+    });
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      document.getElementById('filterCategory').value = '전체';
+      document.getElementById('filterChip').value = '전체';
+      document.getElementById('filterAge').value = '전체';
+      document.getElementById('searchInput').value = '';
+      render();
+    });
+
+    const modal = document.getElementById('modalBackdrop');
+    function openModal(){ modal.classList.add('open'); document.getElementById('modalName').focus(); }
+    function closeModal(){ modal.classList.remove('open'); }
+    document.getElementById('addBtn').addEventListener('click', openModal);
+    document.getElementById('modalCancel').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if(e.target === modal) closeModal(); });
+    document.getElementById('modalAdd').addEventListener('click', () => {
+      const name = document.getElementById('modalName').value.trim();
+      const url = document.getElementById('modalUrl').value.trim();
+      if(!name || !url){ alert('프로그램명과 URL을 입력해주세요.'); return; }
+      programs.push({
+        order:programs.length + 1,
+        category:document.getElementById('modalCategory').value,
+        name,
+        subtext:document.getElementById('modalSubtext').value.trim(),
+        url,
+        chips:{
+          recommend:document.getElementById('modalChipRecommend').checked,
+          required:document.getElementById('modalChipRequired').checked,
+          hot:document.getElementById('modalChipHot').checked
+        },
+        age:document.getElementById('modalAge').value,
+        status:document.getElementById('modalStatus').value
+      });
+      document.getElementById('modalName').value = '';
+      document.getElementById('modalSubtext').value = '';
+      document.getElementById('modalUrl').value = '';
+      document.getElementById('modalChipRecommend').checked = false;
+      document.getElementById('modalChipRequired').checked = false;
+      document.getElementById('modalChipHot').checked = false;
+      closeModal();
+      render();
+    });
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      alert('저장되었습니다. 실제 개발 시 API 연동 영역입니다.');
+    });
+
+    render();
+  </script>
+</body>
+</html>

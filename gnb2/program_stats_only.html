@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>프로그램 통계</title>
+  <style>
+    :root {
+      --green: #0f7a3f;
+      --green-dark: #075c2c;
+      --green-soft: #eaf6ef;
+      --green-soft-2: #f3faf6;
+      --border: #e3ebe6;
+      --text: #0f1714;
+      --sub: #68746e;
+      --muted: #9aa7a1;
+      --bg: #f5f8f6;
+      --white: #fff;
+      --red: #f04438;
+      --orange: #f59e0b;
+      --shadow: 0 14px 32px rgba(14, 59, 35, 0.08);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard", "Noto Sans KR", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      letter-spacing: -0.03em;
+      font-weight: 400;
+    }
+
+    button,
+    input,
+    select {
+      font-family: inherit;
+    }
+
+    .topbar {
+      height: 64px;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 56px;
+      gap: 18px;
+    }
+
+    .top-icon {
+      position: relative;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #111;
+      font-size: 18px;
+    }
+
+    .badge {
+      position: absolute;
+      top: 0;
+      right: -2px;
+      min-width: 14px;
+      height: 14px;
+      border-radius: 99px;
+      background: var(--red);
+      color: #fff;
+      font-size: 9px;
+      display: grid;
+      place-items: center;
+      border: 2px solid #fff;
+      line-height: 1;
+    }
+
+    .user {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .page {
+      padding: 34px 56px 56px;
+      max-width: 1720px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 22px;
+    }
+
+    .title-area {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .desc {
+      color: var(--sub);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .tabs {
+      display: inline-flex;
+      width: fit-content;
+      padding: 4px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      border-radius: 14px;
+      box-shadow: 0 8px 18px rgba(20, 60, 40, 0.04);
+    }
+
+    .tab {
+      min-width: 116px;
+      height: 38px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: #617069;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: var(--green);
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 8px 16px rgba(15, 122, 63, 0.18);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 0 16px;
+      background: #fff;
+      color: #1a241f;
+      font-weight: 600;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .btn.green {
+      border-color: var(--green);
+      background: var(--green);
+      color: #fff;
+    }
+
+    .info-wrap {
+      position: relative;
+    }
+
+    .info-btn {
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 0 14px;
+      background: #fff;
+      color: #3a4a42;
+      font-weight: 600;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .info-btn:hover {
+      background: #f7faf8;
+    }
+
+    .info-popover {
+      position: absolute;
+      top: 50px;
+      right: 0;
+      width: 320px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 20px 44px rgba(14, 59, 35, 0.16);
+      padding: 18px 20px;
+      display: none;
+      z-index: 30;
+      text-align: left;
+    }
+
+    .info-popover.open {
+      display: block;
+    }
+
+    .info-popover h3 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #111;
+    }
+
+    .info-popover ul {
+      margin: 0;
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .info-popover li {
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: #45524d;
+      font-weight: 400;
+    }
+
+    .info-popover li b {
+      color: #111;
+      font-weight: 700;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(150px, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .summary-card {
+      min-height: 96px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .summary-card .label {
+      color: #53625b;
+      font-size: 13px;
+      font-weight: 550;
+    }
+
+    .summary-card .value {
+      font-size: 27px;
+      line-height: 1;
+      font-weight: 850;
+      letter-spacing: -0.05em;
+    }
+
+    .summary-card .value small {
+      font-size: 15px;
+      margin-left: 2px;
+      font-weight: 500;
+    }
+
+    .summary-card .hint {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 450;
+    }
+
+    .summary-card.highlight {
+      border-color: #bfe4cc;
+      background: linear-gradient(180deg, #fff 0%, #f3fbf6 100%);
+    }
+
+    .filter {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 170px 170px 170px 170px minmax(260px, 1fr) 132px;
+      gap: 14px;
+      align-items: end;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      color: #111;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .field select,
+    .field input {
+      width: 100%;
+      height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+      padding: 0 14px;
+      font-size: 14px;
+      font-weight: 450;
+      color: #1d2924;
+      outline: none;
+    }
+
+    .field input::placeholder {
+      color: #a0aaa5;
+    }
+
+    .reset {
+      height: 42px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+      color: #26352e;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .table-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    thead {
+      background: #fbfdfc;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      padding: 16px 14px;
+      text-align: left;
+      color: #111;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 16px 14px;
+      border-bottom: 1px solid #edf2ef;
+      vertical-align: middle;
+      font-size: 14px;
+      font-weight: 450;
+      color: #2c3733;
+    }
+
+    tbody tr:hover {
+      background: #fbfefc;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .rank {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: var(--green);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .rank.plain {
+      background: #f1f5f2;
+      color: #2f3b35;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .program-name {
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    .program-desc {
+      color: #65746d;
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.35;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 44px;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 9px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: #4e5c55;
+      margin-right: 5px;
+    }
+
+    .chip.green {
+      border-color: #9edbb8;
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .chip.red {
+      border-color: #ffc5c0;
+      background: #fff2f1;
+      color: var(--red);
+    }
+
+    .chip.orange {
+      border-color: #ffd9a0;
+      background: #fff7e8;
+      color: #b86600;
+    }
+
+    .num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      font-weight: 450;
+    }
+
+    .rate {
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .muted {
+      color: var(--sub);
+      font-size: 12px;
+      font-weight: 450;
+    }
+
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 18px;
+      border-top: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .pagination {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .page-num {
+      min-width: 32px;
+      height: 32px;
+      border: 0;
+      background: transparent;
+      border-radius: 9px;
+      color: #18231e;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .page-num.active {
+      background: var(--green);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    @media (max-width: 1300px) {
+      .page {
+        padding: 28px 32px 48px;
+      }
+
+      .summary {
+        grid-template-columns: repeat(3, minmax(150px, 1fr));
+      }
+
+      .filter-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .reset {
+        grid-column: span 1;
+      }
+
+      table {
+        min-width: 1180px;
+      }
+
+      .table-card {
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="top-icon">⌕<span class="badge">0</span></div>
+    <div class="top-icon">?</div>
+    <div class="user">관리자님 ˅</div>
+  </header>
+
+  <main class="page">
+    <section class="header">
+      <div class="title-area">
+        <div class="title-row">
+          <h1>프로그램 통계</h1>
+          <span class="desc">프로그램 전체보기 기준의 진입 및 클릭 데이터를 확인합니다.</span>
+        </div>
+
+        <nav class="tabs" aria-label="프로그램 관리 탭">
+          <button class="tab" onclick="location.href='program_admin.html'">프로그램 관리</button>
+          <button class="tab active">통계</button>
+        </nav>
+      </div>
+
+      <div class="header-actions">
+        <div class="info-wrap">
+          <button class="info-btn" id="infoBtn" type="button">ⓘ 통계 기준</button>
+          <div class="info-popover" id="infoPopover">
+            <h3>통계 기준 안내</h3>
+            <ul>
+              <li><b>전체보기 PV</b> · 프로그램 전체보기 페이지 진입 수</li>
+              <li><b>전체보기 UV</b> · 프로그램 전체보기 페이지 순 방문자 수</li>
+              <li><b>클릭 수</b> · 프로그램 전체보기 안에서 각 프로그램이 클릭된 횟수</li>
+              <li><b>클릭 UV</b> · 해당 프로그램을 클릭한 순 사용자 수</li>
+              <li><b>클릭률</b> · 해당 프로그램 클릭 수 ÷ 전체보기 PV</li>
+              <li>검색/배너/직접 URL 등 다른 경로로 각 프로그램 페이지에 들어간 방문은 이 통계에 포함하지 않습니다.</li>
+            </ul>
+          </div>
+        </div>
+        <button class="btn">↧ 통계 다운로드</button>
+        <button class="btn green">⟳ 새로고침</button>
+      </div>
+    </section>
+
+    <section class="summary" aria-label="통계 요약">
+      <div class="summary-card highlight">
+        <div class="label">전체보기 PV</div>
+        <div class="value">12,480<small>회</small></div>
+        <div class="hint">프로그램 전체보기 페이지 진입 수</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">전체보기 UV</div>
+        <div class="value">5,236<small>명</small></div>
+        <div class="hint">중복 제외 순 방문자 수</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">총 프로그램 클릭 수</div>
+        <div class="value">3,184<small>회</small></div>
+        <div class="hint">전체보기 안에서 발생한 클릭 합계</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">평균 클릭률</div>
+        <div class="value">25.5<small>%</small></div>
+        <div class="hint">총 클릭 수 ÷ 전체보기 PV</div>
+      </div>
+      <div class="summary-card">
+        <div class="label">인기 프로그램</div>
+        <div class="value">놀이랩</div>
+        <div class="hint">클릭 수 684회 · 클릭률 5.5%</div>
+      </div>
+    </section>
+
+    <section class="filter">
+      <div class="filter-grid">
+        <div class="field">
+          <label>기간</label>
+          <select>
+            <option>최근 7일</option>
+            <option>오늘</option>
+            <option>최근 30일</option>
+            <option>직접 선택</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>카테고리</label>
+          <select>
+            <option>전체</option>
+            <option>신체운동건강</option>
+            <option>의사소통</option>
+            <option>사회관계</option>
+            <option>예술경험</option>
+            <option>자연탐구</option>
+            <option>영아</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>대상연령</label>
+          <select>
+            <option>전체</option>
+            <option>영아</option>
+            <option>유아</option>
+            <option>영유아</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>칩 종류</label>
+          <select>
+            <option>전체</option>
+            <option>추천</option>
+            <option>필수</option>
+            <option>HOT</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>프로그램명 검색</label>
+          <input type="text" placeholder="프로그램명을 입력하세요." />
+        </div>
+        <button class="reset">↻ 필터 초기화</button>
+      </div>
+    </section>
+
+    <section class="table-card">
+      <table>
+        <colgroup>
+          <col style="width: 82px" />
+          <col style="width: 240px" />
+          <col style="width: 150px" />
+          <col style="width: 130px" />
+          <col style="width: 170px" />
+          <col style="width: 110px" />
+          <col style="width: 110px" />
+          <col style="width: 110px" />
+          <col style="width: 150px" />
+        </colgroup>
+        <thead>
+          <tr>
+            <th>순위</th>
+            <th>프로그램명</th>
+            <th>카테고리</th>
+            <th>대상연령</th>
+            <th>칩</th>
+            <th class="num">클릭 수</th>
+            <th class="num">클릭 UV</th>
+            <th class="num">클릭률</th>
+            <th>최근 클릭일시</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="rank">1</span></td>
+            <td>
+              <div class="program-name">놀이랩</div>
+              <div class="program-desc">AI가 제안하는 놀이 활동</div>
+            </td>
+            <td>신체운동건강</td>
+            <td><span class="chip green">영유아</span></td>
+            <td><span class="chip green">추천</span><span class="chip red">HOT</span></td>
+            <td class="num">684</td>
+            <td class="num">412</td>
+            <td class="num rate">5.5%</td>
+            <td>2026.07.03 09:23</td>
+          </tr>
+          <tr>
+            <td><span class="rank plain">2</span></td>
+            <td>
+              <div class="program-name">안전교육</div>
+              <div class="program-desc">연령별 안전교육 자료</div>
+            </td>
+            <td>안전교육</td>
+            <td><span class="chip green">영유아</span></td>
+            <td><span class="chip orange">필수</span></td>
+            <td class="num">521</td>
+            <td class="num">338</td>
+            <td class="num rate">4.2%</td>
+            <td>2026.07.03 09:11</td>
+          </tr>
+          <tr>
+            <td><span class="rank plain">3</span></td>
+            <td>
+              <div class="program-name">이야기나누기</div>
+              <div class="program-desc">주제별 대화 중심 언어 활동</div>
+            </td>
+            <td>의사소통</td>
+            <td><span class="chip green">유아</span></td>
+            <td><span class="chip green">추천</span></td>
+            <td class="num">468</td>
+            <td class="num">291</td>
+            <td class="num rate">3.8%</td>
+            <td>2026.07.03 08:42</td>
+          </tr>
+          <tr>
+            <td><span class="rank plain">4</span></td>
+            <td>
+              <div class="program-name">월간유아</div>
+              <div class="program-desc">매월 새로워지는 유아 콘텐츠</div>
+            </td>
+            <td>사회관계</td>
+            <td><span class="chip green">영유아</span></td>
+            <td><span class="chip green">추천</span><span class="chip red">HOT</span></td>
+            <td class="num">392</td>
+            <td class="num">244</td>
+            <td class="num rate">3.1%</td>
+            <td>2026.07.03 08:18</td>
+          </tr>
+          <tr>
+            <td><span class="rank plain">5</span></td>
+            <td>
+              <div class="program-name">디지털놀이</div>
+              <div class="program-desc">스마트 기기로 즐기는 놀이</div>
+            </td>
+            <td>영아</td>
+            <td><span class="chip green">영유아</span></td>
+            <td><span class="chip red">HOT</span></td>
+            <td class="num">304</td>
+            <td class="num">183</td>
+            <td class="num rate">2.4%</td>
+            <td>2026.07.03 07:56</td>
+          </tr>
+          <tr>
+            <td><span class="rank plain">6</span></td>
+            <td>
+              <div class="program-name">조형놀이터</div>
+              <div class="program-desc">감각을 키우는 만들기 활동</div>
+            </td>
+            <td>예술경험</td>
+            <td><span class="chip green">유아</span></td>
+            <td><span class="chip green">추천</span></td>
+            <td class="num">267</td>
+            <td class="num">168</td>
+            <td class="num rate">2.1%</td>
+            <td>2026.07.03 07:22</td>
+          </tr>
+          <tr>
+            <td><span class="rank plain">7</span></td>
+            <td>
+              <div class="program-name">베베놀이터</div>
+              <div class="program-desc">또래와 함께하는 사회성 놀이</div>
+            </td>
+            <td>사회관계</td>
+            <td><span class="chip green">영아</span></td>
+            <td><span class="chip green">추천</span></td>
+            <td class="num">238</td>
+            <td class="num">157</td>
+            <td class="num rate">1.9%</td>
+            <td>2026.07.02 18:46</td>
+          </tr>
+          <tr>
+            <td><span class="rank plain">8</span></td>
+            <td>
+              <div class="program-name">사계절놀이</div>
+              <div class="program-desc">계절 변화로 배우는 자연탐구</div>
+            </td>
+            <td>자연탐구</td>
+            <td><span class="chip green">영유아</span></td>
+            <td><span class="chip green">추천</span></td>
+            <td class="num">210</td>
+            <td class="num">129</td>
+            <td class="num rate">1.7%</td>
+            <td>2026.07.02 17:30</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="footer">
+        <span class="muted">전체 57개 프로그램 중 클릭 수 상위 항목</span>
+        <div class="pagination">
+          <button class="page-num">‹‹</button>
+          <button class="page-num">‹</button>
+          <button class="page-num active">1</button>
+          <button class="page-num">2</button>
+          <button class="page-num">3</button>
+          <button class="page-num">›</button>
+          <button class="page-num">››</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const infoBtn = document.getElementById('infoBtn');
+    const infoPopover = document.getElementById('infoPopover');
+    infoBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      infoPopover.classList.toggle('open');
+    });
+    document.addEventListener('click', (e) => {
+      if (!infoPopover.contains(e.target) && e.target !== infoBtn) {
+        infoPopover.classList.remove('open');
+      }
+    });
+  </script>
+</body>
+</html>
