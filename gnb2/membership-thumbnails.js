@@ -3,8 +3,6 @@
 
   var ATTR = "data-mkt";
   var TEXT_ATTR = "data-mktxt";
-  var TEXT_DB = "mkThumbStore";
-  var TEXT_STORE = "thumbs";
   var config = window.KIDKIDS_SUPABASE || {};
   var client = null;
   var remoteThumbnails = {};
@@ -12,7 +10,6 @@
   var editing = false;
   var busy = false;
   var pendingRawKey = null;
-  var textDbPromise = null;
   var setEditingMode = function () {};
   var OAUTH_EDIT_KEY = "kidkids-membership-thumbnail-oauth-edit";
 
@@ -47,7 +44,7 @@
   function isConfigured() {
     return Boolean(
       config.url && config.publishableKey && config.storageBucket &&
-      config.thumbnailsTable && config.adminCheckFunction &&
+      config.thumbnailsTable && config.textsTable && config.adminCheckFunction &&
       config.oauthRedirectTo && window.supabase &&
       typeof window.supabase.createClient === "function"
     );
@@ -64,62 +61,35 @@
     });
   }
 
-  function openTextDb() {
-    if (textDbPromise) return textDbPromise;
-    textDbPromise = new Promise(function (resolve, reject) {
-      var request = indexedDB.open(TEXT_DB, 1);
-      request.onupgradeneeded = function () {
-        if (!request.result.objectStoreNames.contains(TEXT_STORE)) {
-          request.result.createObjectStore(TEXT_STORE);
-        }
-      };
-      request.onsuccess = function () { resolve(request.result); };
-      request.onerror = function () { reject(request.error); };
+  async function loadRemoteText() {
+    if (!client) return;
+    var response = await client
+      .from(config.textsTable)
+      .select("text_key,text_value,updated_at");
+    if (response.error) throw response.error;
+    textCache = {};
+    (response.data || []).forEach(function (record) {
+      textCache[record.text_key] = record.text_value;
     });
-    return textDbPromise;
+    applyAllText();
   }
 
-  function loadTextCache() {
-    return openTextDb().then(function (db) {
-      return new Promise(function (resolve) {
-        var result = {};
-        var cursor = db.transaction(TEXT_STORE, "readonly").objectStore(TEXT_STORE).openCursor();
-        cursor.onsuccess = function (event) {
-          var item = event.target.result;
-          if (!item) return resolve(result);
-          if (String(item.key).indexOf("T:") === 0) result[item.key] = item.value;
-          item.continue();
-        };
-        cursor.onerror = function () { resolve(result); };
-      });
-    }).catch(function () { return {}; });
+  async function saveText(key, value) {
+    var user = await requireAdmin();
+    var saved = await client.from(config.textsTable).upsert({
+      text_key: key,
+      text_value: value,
+      updated_at: new Date().toISOString(),
+      updated_by: user.id
+    }, { onConflict: "text_key" }).select("text_key,text_value,updated_at").single();
+    if (saved.error) throw saved.error;
+    textCache[key] = saved.data.text_value;
+    return saved.data;
   }
 
-  function saveText(key, value) {
-    return openTextDb().then(function (db) {
-      return new Promise(function (resolve, reject) {
-        var tx = db.transaction(TEXT_STORE, "readwrite");
-        tx.objectStore(TEXT_STORE).put(value, key);
-        tx.oncomplete = resolve;
-        tx.onerror = function () { reject(tx.error); };
-      });
-    });
-  }
-
-  function clearTextCache() {
-    return openTextDb().then(function (db) {
-      return new Promise(function (resolve) {
-        var store = db.transaction(TEXT_STORE, "readwrite").objectStore(TEXT_STORE);
-        var cursor = store.openCursor();
-        cursor.onsuccess = function (event) {
-          var item = event.target.result;
-          if (!item) return resolve();
-          if (String(item.key).indexOf("T:") === 0) item.delete();
-          item.continue();
-        };
-        cursor.onerror = resolve;
-      });
-    }).catch(function () {});
+  async function clearRemoteText() {
+    var deleted = await client.from(config.textsTable).delete().like("text_key", "%");
+    if (deleted.error) throw deleted.error;
   }
 
   function applyThumbnail(element) {
@@ -182,7 +152,7 @@
     var elements = document.querySelectorAll("[" + TEXT_ATTR + "]");
     for (var i = 0; i < elements.length; i += 1) {
       var element = elements[i];
-      var value = textCache["T:" + element.getAttribute(TEXT_ATTR)];
+      var value = textCache[element.getAttribute(TEXT_ATTR)];
       if (value != null && document.activeElement !== element && element.__mkTextApplied !== value) {
         element.textContent = value;
         element.__mkTextApplied = value;
@@ -402,7 +372,7 @@
     }
     remoteThumbnails = {};
     textCache = {};
-    await clearTextCache();
+    await clearRemoteText();
     location.reload();
   }
 
@@ -410,7 +380,8 @@
     var payload = {
       version: 2,
       exported_at: new Date().toISOString(),
-      thumbnails: remoteThumbnails
+      thumbnails: remoteThumbnails,
+      texts: textCache
     };
     var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     var anchor = document.createElement("a");
@@ -521,6 +492,12 @@
               });
             }
           }
+          var importedTexts = parsed.texts || {};
+          var textKeys = Object.keys(importedTexts);
+          for (var j = 0; j < textKeys.length; j += 1) {
+            await saveText(textKeys[j], String(importedTexts[textKeys[j]]));
+          }
+          applyAllText();
           alert("가져오기가 완료되었습니다.");
         } catch (error) {
           alert("가져오기 실패: " + (error.message || error));
@@ -570,29 +547,30 @@
     installStyles();
     buildControls();
 
-    document.addEventListener("focusout", function (event) {
+    document.addEventListener("focusout", async function (event) {
       var element = event.target;
       if (!element.getAttribute || element.getAttribute(TEXT_ATTR) == null) return;
       if (element.getAttribute("contenteditable") !== "true") return;
-      var cacheKey = "T:" + element.getAttribute(TEXT_ATTR);
+      var cacheKey = element.getAttribute(TEXT_ATTR);
       var value = element.textContent;
       if (textCache[cacheKey] === value) return;
-      textCache[cacheKey] = value;
-      element.__mkTextApplied = value;
-      saveText(cacheKey, value).catch(function (error) {
-        console.warn("텍스트 저장 실패:", error);
-      });
+      var previous = textCache[cacheKey];
+      try {
+        await saveText(cacheKey, value);
+        element.__mkTextApplied = value;
+      } catch (error) {
+        if (previous != null) element.textContent = previous;
+        alert("텍스트 저장 실패: " + (error.message || error));
+      }
     }, true);
-
-    loadTextCache().then(function (savedText) {
-      textCache = savedText;
-      applyAllText();
-    });
 
     client = createSupabaseClient();
     if (client) {
       loadRemoteThumbnails().catch(function (error) {
         console.error("Supabase 썸네일 조회 실패:", error);
+      });
+      loadRemoteText().catch(function (error) {
+        console.error("Supabase 텍스트 조회 실패:", error);
       });
       if (sessionStorage.getItem(OAUTH_EDIT_KEY) === "1") {
         sessionStorage.removeItem(OAUTH_EDIT_KEY);
