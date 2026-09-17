@@ -13,6 +13,8 @@
   var busy = false;
   var pendingRawKey = null;
   var textDbPromise = null;
+  var setEditingMode = function () {};
+  var OAUTH_EDIT_KEY = "kidkids-membership-thumbnail-oauth-edit";
 
   var CONTENT_KEY_OVERRIDES = {
     "st-0": "dal-tokki-rice-cake",
@@ -45,7 +47,8 @@
   function isConfigured() {
     return Boolean(
       config.url && config.publishableKey && config.storageBucket &&
-      config.thumbnailsTable && window.supabase &&
+      config.thumbnailsTable && config.adminCheckFunction &&
+      config.oauthRedirectTo && window.supabase &&
       typeof window.supabase.createClient === "function"
     );
   }
@@ -208,37 +211,52 @@
     applyAllThumbnails();
   }
 
-  function requestCredentials() {
+  function requestGoogleLogin() {
     return new Promise(function (resolve, reject) {
       var overlay = document.createElement("div");
       overlay.className = "mk-auth-overlay";
       overlay.innerHTML =
-        '<form class="mk-auth-dialog">' +
-          '<strong>썸네일 관리자 로그인</strong>' +
-          '<p>Supabase Auth에 등록된 관리자 계정으로 로그인해주세요.</p>' +
-          '<input name="email" type="email" autocomplete="username" placeholder="이메일" required>' +
-          '<input name="password" type="password" autocomplete="current-password" placeholder="비밀번호" required>' +
-          '<div><button type="button" data-cancel>취소</button><button type="submit">로그인</button></div>' +
-        '</form>';
+        '<div class="mk-auth-dialog" role="dialog" aria-modal="true" aria-labelledby="mk-auth-title">' +
+          '<strong id="mk-auth-title">썸네일 관리자 로그인</strong>' +
+          '<p>등록된 관리자 Google 계정으로 로그인해주세요.</p>' +
+          '<button type="button" class="mk-google-login" data-google-login>' +
+            '<span class="mk-google-mark" aria-hidden="true">G</span>' +
+            '<span>Google 계정으로 로그인</span>' +
+          '</button>' +
+          '<div><button type="button" data-cancel>취소</button></div>' +
+        '</div>';
       document.body.appendChild(overlay);
-      var form = overlay.querySelector("form");
-      var emailInput = form.elements.email;
-      var passwordInput = form.elements.password;
+      var loginButton = overlay.querySelector("[data-google-login]");
 
       function close() { overlay.remove(); }
-      form.addEventListener("submit", function (event) {
-        event.preventDefault();
-        var credentials = { email: emailInput.value.trim(), password: passwordInput.value };
-        passwordInput.value = "";
-        close();
-        resolve(credentials);
+      loginButton.addEventListener("click", async function () {
+        loginButton.disabled = true;
+        loginButton.querySelector("span:last-child").textContent = "Google로 이동 중...";
+        sessionStorage.setItem(OAUTH_EDIT_KEY, "1");
+        var login = await client.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: config.oauthRedirectTo }
+        });
+        if (login.error) {
+          sessionStorage.removeItem(OAUTH_EDIT_KEY);
+          close();
+          reject(login.error);
+          return;
+        }
+        resolve();
       });
       overlay.querySelector("[data-cancel]").addEventListener("click", function () {
         close();
         reject(new Error("로그인이 취소되었습니다."));
       });
-      emailInput.focus();
+      loginButton.focus();
     });
+  }
+
+  async function isThumbnailAdmin() {
+    var result = await client.rpc(config.adminCheckFunction);
+    if (result.error) throw result.error;
+    return result.data === true;
   }
 
   async function requireAdmin() {
@@ -247,13 +265,11 @@
     var user = current.data && current.data.user;
 
     if (!user) {
-      var credentials = await requestCredentials();
-      var login = await client.auth.signInWithPassword(credentials);
-      if (login.error) throw login.error;
-      user = login.data && login.data.user;
+      await requestGoogleLogin();
+      return new Promise(function () {});
     }
 
-    if (!user || !user.app_metadata || user.app_metadata.membership_thumbnail_admin !== true) {
+    if (!(await isThumbnailAdmin())) {
       await client.auth.signOut();
       throw new Error("이 계정에는 썸네일 편집 권한이 없습니다.");
     }
@@ -366,9 +382,10 @@
       ".mk-auth-overlay{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(7,7,12,.76);backdrop-filter:blur(8px)}" +
       ".mk-auth-dialog{width:min(390px,100%);display:flex;flex-direction:column;gap:12px;padding:24px;border:1px solid rgba(255,255,255,.13);border-radius:18px;background:#171722;color:#fff;box-shadow:0 24px 80px rgba(0,0,0,.55);font-family:'Pretendard',system-ui,sans-serif}" +
       ".mk-auth-dialog strong{font-size:18px}.mk-auth-dialog p{margin:0 0 4px;color:#aaaabd;font-size:13px;line-height:1.5}" +
-      ".mk-auth-dialog input{width:100%;padding:12px 13px;border:1px solid rgba(255,255,255,.14);border-radius:9px;background:#0e0e16;color:#fff;font:14px inherit;outline:none}" +
-      ".mk-auth-dialog input:focus{border-color:#ff2e63}.mk-auth-dialog div{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}" +
-      ".mk-auth-dialog button{padding:9px 14px;border:0;border-radius:8px;background:#30303c;color:#fff;font-weight:700;cursor:pointer}.mk-auth-dialog button[type=\"submit\"]{background:#ff2e63}";
+      ".mk-auth-dialog div{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}" +
+      ".mk-auth-dialog button{padding:9px 14px;border:0;border-radius:8px;background:#30303c;color:#fff;font-weight:700;cursor:pointer}.mk-auth-dialog button:disabled{cursor:wait;opacity:.68}" +
+      ".mk-auth-dialog .mk-google-login{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px 14px;border:1px solid rgba(255,255,255,.2);background:#fff;color:#202124;font-size:14px}" +
+      ".mk-google-mark{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font:bold 16px Arial,sans-serif;color:#4285f4}";
     document.head.appendChild(css);
   }
 
@@ -436,17 +453,21 @@
     fab.appendChild(resetButton);
     document.body.appendChild(fab);
 
+    setEditingMode = function (enabled) {
+      editing = enabled;
+      document.body.classList.toggle("mk-editing", editing);
+      toggle.classList.toggle("on", editing);
+      toggle.textContent = editing ? "✓ 편집 종료" : "🖼✏️ 편집";
+      var display = editing ? "block" : "none";
+      exportButton.style.display = importButton.style.display = resetButton.style.display = display;
+      refreshBadges();
+      refreshTextEditable();
+    };
+
     toggle.addEventListener("click", async function () {
       try {
         if (!editing) await requireAdmin();
-        editing = !editing;
-        document.body.classList.toggle("mk-editing", editing);
-        toggle.classList.toggle("on", editing);
-        toggle.textContent = editing ? "✓ 편집 종료" : "🖼✏️ 편집";
-        var display = editing ? "block" : "none";
-        exportButton.style.display = importButton.style.display = resetButton.style.display = display;
-        refreshBadges();
-        refreshTextEditable();
+        setEditingMode(!editing);
       } catch (error) {
         if (error && error.message !== "로그인이 취소되었습니다.") {
           alert("편집 모드 진입 실패: " + (error.message || error));
@@ -573,6 +594,14 @@
       loadRemoteThumbnails().catch(function (error) {
         console.error("Supabase 썸네일 조회 실패:", error);
       });
+      if (sessionStorage.getItem(OAUTH_EDIT_KEY) === "1") {
+        sessionStorage.removeItem(OAUTH_EDIT_KEY);
+        requireAdmin().then(function () {
+          setEditingMode(true);
+        }).catch(function (error) {
+          alert("편집 모드 진입 실패: " + (error.message || error));
+        });
+      }
     } else {
       console.error("Supabase 썸네일 설정을 불러오지 못했습니다.");
     }
