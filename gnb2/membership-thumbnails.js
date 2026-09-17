@@ -596,13 +596,15 @@
         applyAllText();
       }, 120);
     });
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
     window.addEventListener("load", function () {
       applyAllThumbnails();
       applyAllText();
     });
     setTimeout(applyAllThumbnails, 700);
     setTimeout(applyAllThumbnails, 2000);
+    setTimeout(applyAllText, 700);
+    setTimeout(applyAllText, 2000);
   }
 
   boot();
