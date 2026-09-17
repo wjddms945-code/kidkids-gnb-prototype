@@ -594,6 +594,7 @@
       timer = setTimeout(function () {
         applyAllThumbnails();
         applyAllText();
+        refreshTextEditable();
       }, 120);
     });
     observer.observe(document.body, { childList: true, subtree: true, characterData: true });
