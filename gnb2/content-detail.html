@@ -1,0 +1,1691 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>콘텐츠 상세 | 키드키즈 멤버십전용관</title>
+<style>
+  :root{
+    --bg:#07070c;
+    --fg:#f4f4f7;
+    --pink:#ff2e63;
+    --muted:#9a9aa8;
+    --border:rgba(255,255,255,.1);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--fg);
+    font-family:'Pretendard',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    min-height:100vh;
+  }
+  a{color:inherit;text-decoration:none}
+
+  header.gnb{
+    position:sticky;top:0;z-index:50;
+    display:flex;align-items:center;
+    padding:16px clamp(20px,5vw,60px);
+    background:linear-gradient(180deg,rgba(7,7,12,.92),rgba(7,7,12,.75));
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .back-link{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:15px;font-weight:700;color:var(--fg);
+    padding:8px 4px;
+    cursor:pointer;
+    background:none;border:none;font-family:inherit;
+    transition:color .18s ease;
+  }
+  .back-link:hover{color:var(--pink)}
+  .back-link .arrow{font-size:18px;line-height:1}
+
+  .breadcrumb-bar{
+    max-width:1280px;margin:0 auto;
+    padding:14px clamp(20px,5vw,60px) 0;
+    font-size:13px;color:var(--muted);
+  }
+  .breadcrumb-bar .crumb-current{color:var(--fg);font-weight:700}
+
+  main{
+    max-width:1280px;
+    margin:0 auto;
+    padding:clamp(24px,4vh,48px) clamp(20px,5vw,60px) clamp(60px,8vh,96px);
+    animation:fadeUp .5s ease both;
+  }
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+  /* ---- single detail card: left info/CTA (35~40%) + right media panel
+     (60~65%), both inside one bordered card instead of two floating
+     blocks — layout structure only borrowed from the reference (a light
+     "2026 무신사 임팩트 리포트" split card); colors/tone stay this page's
+     own dark + pink-accent look, not the reference's white/gradient. ---- */
+  .detail-layout{
+    display:flex;
+    align-items:stretch;
+    background:#131319;
+    border:1px solid var(--border);
+    border-radius:20px;
+    overflow:hidden;
+  }
+  .detail-info{
+    flex:0 0 clamp(280px,38%,420px);
+    display:flex;
+    flex-direction:column;
+    /* bottom-anchors the whole title/tags/description(/CTA) group as one
+       block, rather than pinning the title to the top — matches the right
+       panel's media, which is vertically centered within the same
+       stretched-height column (see .detail-media below), so with equal
+       padding on both sides the two naturally line up at the bottom. */
+    justify-content:flex-end;
+    padding:clamp(36px,4vw,48px);
+  }
+  .detail-media{
+    flex:1;min-width:0;
+    display:flex;align-items:center;justify-content:center;
+    padding:clamp(36px,4vw,48px);
+    background:rgba(0,0,0,.18);
+  }
+  @media (max-width:860px){
+    .detail-layout{flex-direction:column}
+    .detail-info{flex:1 1 auto;order:2}
+    .detail-media{order:1;width:100%}
+  }
+
+  /* ---- video media (right column) ---- */
+  .detail-video-wrap{
+    position:relative;width:100%;aspect-ratio:16/9;
+    border-radius:16px;overflow:hidden;
+    background:#000;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+  }
+  .detail-player{width:100%;height:100%;display:block;object-fit:contain;background:#000}
+  .detail-video-wrap .poster-fallback{
+    width:100%;height:100%;object-fit:cover;display:block;
+  }
+  .detail-video-wrap .center-play{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:72px;height:72px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(7,7,12,.6);backdrop-filter:blur(4px);
+    border:2px solid rgba(255,255,255,.85);
+    color:#fff;font-size:24px;padding:0 0 0 4px;
+    cursor:pointer;transition:transform .2s ease,background .2s ease,border-color .2s ease;
+  }
+  .detail-video-wrap .center-play:hover{transform:translate(-50%,-50%) scale(1.08);background:var(--pink);border-color:#fff}
+
+  /* ---- decorative (non-functional) player chrome: shown on the video
+     layout whenever there's no real videoUrl/legacyGate connected yet, so
+     the video detail view always reads as "a video plays here" instead of
+     a bare poster. Purely visual — no click/state behavior. ---- */
+  .player-center-icon{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:76px;height:76px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(7,7,12,.55);backdrop-filter:blur(4px);
+    border:2px solid rgba(255,255,255,.85);
+    color:#fff;font-size:26px;padding:0 0 0 4px;
+    pointer-events:none;
+  }
+  .player-controlbar{
+    position:absolute;left:0;right:0;bottom:0;
+    display:flex;align-items:center;gap:10px;
+    padding:10px 16px 14px;
+    background:linear-gradient(0deg,rgba(0,0,0,.78),transparent);
+    pointer-events:none;
+  }
+  .player-controlbar .pc-icon{font-size:14px;color:#fff;opacity:.9}
+  .player-controlbar .pc-time{font-size:11.5px;color:rgba(255,255,255,.82);font-variant-numeric:tabular-nums}
+  .player-controlbar .pc-progress{flex:1;height:4px;border-radius:3px;background:rgba(255,255,255,.28);overflow:hidden}
+  .player-controlbar .pc-progress-fill{width:24%;height:100%;background:var(--pink)}
+
+  /* decorative chrome is clickable (opens the review-only video popup,
+     see openVideoModal) whenever there's no real video/legacyGate wired
+     up yet — a visible hover/press cue so it still reads as "a real
+     player" rather than a static image. */
+  .video-wrap-clickable{cursor:pointer;transition:transform .15s ease}
+  .video-wrap-clickable:hover .player-center-icon{transform:translate(-50%,-50%) scale(1.08);background:var(--pink);border-color:#fff}
+  .video-wrap-clickable:active{transform:scale(.99)}
+
+  /* ---- review-only video popup: opens on a click of the (non-functional)
+     video player, purely to make the "플레이어를 누르면 재생 화면이 열리는"
+     flow reviewable. No real playback — same decorative chrome as the
+     detail page's player, just presented full-screen in a modal. ---- */
+  .video-modal-overlay{
+    position:fixed;inset:0;z-index:200;
+    display:flex;align-items:center;justify-content:center;
+    padding:40px;
+    background:rgba(0,0,0,.84);
+    opacity:0;visibility:hidden;
+    transition:opacity .2s ease;
+  }
+  .video-modal-overlay.open{opacity:1;visibility:visible}
+  .video-modal{
+    position:relative;
+    width:100%;max-width:960px;
+    transform:scale(.97);
+    transition:transform .2s ease;
+  }
+  .video-modal-overlay.open .video-modal{transform:scale(1)}
+  .video-modal-player{width:100%}
+  /* closed button sits outside the player, to its right, on PC (enough
+     room exists once the overlay's own padding + this offset both fit) —
+     falls back to overlapping the player's own top-right corner only when
+     space is tight (narrow/mobile), per the brief. */
+  .video-modal-close{
+    position:absolute;top:0;right:-54px;z-index:1;
+    width:38px;height:38px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(7,7,12,.6);backdrop-filter:blur(4px);
+    border:1px solid rgba(255,255,255,.3);
+    color:#fff;font-size:16px;
+    cursor:pointer;font-family:inherit;
+    transition:background .2s ease,transform .2s ease;
+  }
+  .video-modal-close:hover{background:rgba(255,46,99,.85);transform:scale(1.06)}
+  @media (max-width:1100px){
+    .video-modal-close{top:14px;right:14px}
+  }
+  body.video-modal-locked{overflow:hidden}
+
+  /* ---- worksheet / pdf preview (right column): fills the whole media
+     panel edge-to-edge (see .detail-media--preview, which drops its own
+     padding so this can reach the card's own rounded corners) using the
+     same thumbnail twice — a cropped, darkened, lightly-blurred version as
+     the full-bleed background, and the real unstretched image centered on
+     top — so the space around a tall vertical thumbnail reads as an
+     intentional premium media panel instead of empty space. ---- */
+  .detail-media--preview{padding:0}
+  .detail-preview-panel{
+    position:relative;
+    width:100%;height:100%;min-height:360px;
+    overflow:hidden;
+  }
+  .detail-preview-bg{
+    position:absolute;inset:0;
+    width:100%;height:100%;
+    object-fit:cover;
+    filter:blur(6px) brightness(.5);
+    transform:scale(1.1); /* hides blurred edge fringing */
+  }
+  .detail-preview-tint{position:absolute;inset:0;background:rgba(0,0,0,.32)}
+  .detail-preview-label{
+    position:absolute;top:18px;left:18px;z-index:2;
+    font-size:12.5px;font-weight:700;color:#fff;letter-spacing:.02em;
+    padding:6px 12px;border-radius:8px;
+    background:rgba(7,7,12,.5);backdrop-filter:blur(4px);
+  }
+  .detail-preview-fg-wrap{
+    position:relative;z-index:1;
+    display:flex;align-items:center;justify-content:center;
+    width:100%;height:100%;
+    padding:clamp(32px,4vw,44px);
+  }
+  .detail-preview-fg{
+    max-width:clamp(300px,24vw,340px);
+    max-height:clamp(420px,52vh,480px);
+    width:auto;height:auto;
+    object-fit:contain;
+    border-radius:14px;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+  }
+  .icon-fallback-panel{
+    width:240px;height:240px;
+    border-radius:16px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:84px;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+  }
+
+  /* ---- left column: title / tags / description / CTA ---- */
+  .detail-title{
+    margin:0 0 14px;
+    font-size:clamp(22px,2.6vw,30px);
+    font-weight:800;
+    letter-spacing:-.02em;
+    line-height:1.25;
+    color:#fff;
+  }
+
+  .tag-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  .tag{
+    padding:5px 12px;border-radius:7px;
+    font-size:12.5px;font-weight:700;
+    background:rgba(255,255,255,.08);
+    color:#c4c4d0;
+    border:1px solid rgba(255,255,255,.1);
+  }
+  .tag-brand{
+    background:rgba(255,46,99,.16);
+    color:#ff9db8;
+    border-color:rgba(255,46,99,.3);
+  }
+  .tag-type{
+    background:rgba(124,184,255,.14);
+    color:#8fc4ff;
+    border-color:rgba(124,184,255,.3);
+  }
+
+  .detail-desc{
+    margin:0 0 26px;
+    font-size:15px;
+    line-height:1.7;
+    color:var(--muted);
+  }
+  .detail-desc:empty{display:none;margin-bottom:0}
+
+  .detail-cta{
+    display:inline-flex;align-items:center;justify-content:center;gap:10px;
+    padding:15px 26px;
+    border:none;border-radius:12px;
+    background:var(--pink);
+    color:#fff;
+    font-size:16px;font-weight:800;
+    cursor:pointer;
+    font-family:inherit;
+    box-shadow:0 14px 34px rgba(255,46,99,.4);
+    transition:transform .2s ease,background .2s ease;
+    align-self:flex-start;
+  }
+  .detail-cta:hover{transform:translateY(-2px);background:#ff1a52}
+
+  /* ---- "함께 보면 좋은 콘텐츠" — single horizontal row, below the main
+     detail layout, so the page doesn't end in a large empty area. ---- */
+  .related-section{margin-top:clamp(48px,7vh,80px)}
+  .related-title{
+    font-size:18px;font-weight:800;color:#fff;
+    margin:0 0 18px;
+  }
+  /* 6 equal columns filling the exact same container width as the detail
+     card above (both are plain block children of #detail-root/main, so
+     their left/right edges already match) — grows the cards themselves to
+     fill the row instead of leaving trailing space after a fixed-width
+     flex row. Narrow screens fall back to the original horizontal-scroll
+     flex row (see the 640px override below). */
+  .related-row{
+    display:grid;
+    grid-template-columns:repeat(6,minmax(0,1fr));
+    gap:18px;
+  }
+  .related-card{
+    cursor:pointer;
+    border-radius:12px;
+    overflow:hidden;
+    background:rgba(255,255,255,.03);
+    border:1px solid var(--border);
+    transition:transform .2s ease,border-color .2s ease;
+  }
+  .related-card:hover{transform:translateY(-4px);border-color:rgba(255,46,99,.4)}
+  .related-thumb{
+    position:relative;width:100%;aspect-ratio:3/4;
+    background:linear-gradient(150deg,#1a1030,#2c1560);
+    overflow:hidden;
+  }
+  .related-thumb img{width:100%;height:100%;display:block;object-fit:cover}
+  .related-thumb .icon-fallback{
+    width:100%;height:100%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:40px;
+  }
+  .related-info{padding:10px 12px 14px}
+  .related-card-title{
+    font-size:13.5px;font-weight:700;color:#fff;line-height:1.4;
+    margin:0 0 7px;
+    display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  .related-tag{
+    display:inline-block;
+    font-size:11px;font-weight:700;
+    padding:3px 8px;border-radius:6px;
+    background:rgba(124,184,255,.14);color:#8fc4ff;
+    border:1px solid rgba(124,184,255,.3);
+  }
+
+  @media (max-width:640px){
+    .detail-thumb-wrap{max-width:280px}
+    .detail-cta{width:100%}
+    /* back to the original horizontal-scroll row — 6 equal grid columns
+       get too narrow to read on phones. */
+    .related-row{
+      display:flex;gap:16px;
+      overflow-x:auto;
+      scrollbar-width:none;
+      padding-bottom:4px;
+    }
+    .related-row::-webkit-scrollbar{display:none}
+    .related-card{flex:0 0 140px}
+  }
+</style>
+</head>
+<body>
+  <header class="gnb">
+    <button class="back-link" id="back-btn" type="button">
+      <span class="arrow">&larr;</span>
+      <span>목록으로</span>
+    </button>
+  </header>
+  <div class="breadcrumb-bar" id="breadcrumb-bar"></div>
+
+  <main id="detail-root"></main>
+
+  <!-- review-only video popup (see openVideoModal/closeVideoModal below) —
+       lives outside #detail-root so render()'s innerHTML reset never
+       touches it. -->
+  <div class="video-modal-overlay" id="video-modal-overlay">
+    <div class="video-modal">
+      <button class="video-modal-close" id="video-modal-close" type="button" aria-label="닫기">✕</button>
+      <div class="video-modal-player" id="video-modal-player"></div>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    "use strict";
+
+    /* ========================================================
+       content registry — type-driven, reusable.
+       shape (per section 5 of the spec):
+         { id, type, title, thumbnail, description, tags, videoUrl, downloadUrl }
+       built from the LIVE kidkidsmembership.html card data (titles/
+       thumbnails/badges), so ids here match each card's data-mkt value
+       one-to-one. `type` is only set to "video" where the source card
+       carries an explicit "영상" badge — everything else is "unknown"
+       on purpose (no type is guessed). Add real videoUrl/downloadUrl
+       values here once real files exist; no other code needs to change.
+       ======================================================== */
+    var CONTENT_DATA = {
+      "r1": {
+        type: "unknown",
+        title: "봄 주제 통합 활동계획안",
+        thumbnail: "./1.png",
+        description: "",
+        tags: ["인기","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "r2": {
+        type: "unknown",
+        title: "곤충 관찰 놀이 프로그램",
+        thumbnail: "./2.png",
+        description: "",
+        tags: ["인기","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "r3": {
+        type: "unknown",
+        title: "AI 동화 만들기",
+        thumbnail: "./3.png",
+        description: "",
+        tags: ["AI","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "r4": {
+        type: "unknown",
+        title: "색종이 접기 도안 모음",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-r4/membership-r4-1789632462328.webp?v=1789632462328",
+        description: "",
+        tags: ["인기","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "r5": {
+        type: "unknown",
+        title: "오감통합 놀이",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-r5/membership-r5-1789632471874.webp?v=1789632471874",
+        description: "",
+        tags: ["인기","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "r6": {
+        type: "unknown",
+        title: "티칭보드 활용 수업",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-r6/membership-r6-1789632483495.webp?v=1789632483495",
+        description: "",
+        tags: ["AI","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "r7": {
+        type: "unknown",
+        title: "전래놀이 한마당",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-r7/membership-r7-1789632489800.webp?v=1789632489800",
+        description: "",
+        tags: ["인기","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "r8": {
+        type: "unknown",
+        title: "생활주제 이야기나누기",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-r8/membership-r8-1789632499571.webp?v=1789632499571",
+        description: "",
+        tags: ["인기","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "r9": {
+        type: "unknown",
+        title: "게이미피케이션 수업",
+        thumbnail: "./1.png",
+        description: "",
+        tags: ["인기","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "r10": {
+        type: "unknown",
+        title: "자연탐구 관찰일지",
+        thumbnail: "./2.png",
+        description: "",
+        tags: ["인기","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-32": {
+        type: "unknown",
+        title: "가을 낙엽",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-32/membership-st-32-1789633001202.webp?v=1789633001202",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-33": {
+        type: "unknown",
+        title: "나뭇잎의 새로운 탄생",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-33/membership-st-33-1789633062522.webp?v=1789633062522",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-34": {
+        type: "unknown",
+        title: "[쇼앤텔] 단풍잎 색을 가진 물건을 소개해요",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-34/membership-st-34-1789633072686.webp?v=1789633072686",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-35": {
+        type: "unknown",
+        title: "낙엽 헤어 디자이너",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-35/membership-st-35-1789633009224.webp?v=1789633009224",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-36": {
+        type: "unknown",
+        title: "단풍놀이 도시락",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-36/membership-st-36-1789633052175.webp?v=1789633052175",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-37": {
+        type: "unknown",
+        title: "가을 숫자카드",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-37/membership-st-37-1789633017157.webp?v=1789633017157",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-38": {
+        type: "unknown",
+        title: "단풍잎 합성도안",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-38/membership-st-38-1789633035829.webp?v=1789633035829",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-39": {
+        type: "unknown",
+        title: "[배경묶음] 알록달록 단풍길",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-39/membership-st-39-1789633083187.webp?v=1789633083187",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-40": {
+        type: "unknown",
+        title: "[동화] 가을 낙엽 멀리 뛰기 대회",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-40/membership-st-40-1789633026903.webp?v=1789633026903",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-0": {
+        type: "unknown",
+        title: "달 토끼의 떡 방앗간",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/dal-tokki-rice-cake/dal-tokki-rice-cake-1789632745283.webp?v=1789632745283",
+        description: "",
+        tags: ["행사","추석 체험 행사","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-1": {
+        type: "unknown",
+        title: "추석행사 All-in-one",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/chuseok-all-in-one/chuseok-all-in-one-1789632752844.webp?v=1789632752844",
+        description: "",
+        tags: ["행사","행사 패키지","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-2": {
+        type: "unknown",
+        title: "오감퍼포먼스",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/sensory-performance/sensory-performance-1789632758327.webp?v=1789632758327",
+        description: "",
+        tags: ["체험","감각 놀이","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-3": {
+        type: "unknown",
+        title: "시네마 자동차 극장",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/cinema-car-theater/cinema-car-theater-1789632763842.webp?v=1789632763842",
+        description: "",
+        tags: ["행사","이벤트","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-4": {
+        type: "unknown",
+        title: "체력 측정 검사",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/physical-fitness-test/physical-fitness-test-1789632768850.webp?v=1789632768850",
+        description: "",
+        tags: ["체험","신체 활동","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-5": {
+        type: "unknown",
+        title: "추석 · 음식과 환경",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-5/membership-st-5-1789632777425.webp?v=1789632777425",
+        description: "",
+        tags: ["주제","키워드 놀이","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-55": {
+        type: "unknown",
+        title: "허수아비 접기",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-55/membership-st-55-1789633099480.webp?v=1789633099480",
+        description: "",
+        tags: ["미술","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-56": {
+        type: "unknown",
+        title: "알록달록 가을나무",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-56/membership-st-56-1789633105547.webp?v=1789633105547",
+        description: "",
+        tags: ["미술","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-57": {
+        type: "unknown",
+        title: "잠자리 가을 리스",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-57/membership-st-57-1789633111093.webp?v=1789633111093",
+        description: "",
+        tags: ["미술","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-58": {
+        type: "unknown",
+        title: "가을풍경",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-58/membership-st-58-1789633116048.webp?v=1789633116048",
+        description: "",
+        tags: ["미술","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-59": {
+        type: "unknown",
+        title: "허수아비",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-59/membership-st-59-1789633121781.webp?v=1789633121781",
+        description: "",
+        tags: ["미술","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-60": {
+        type: "unknown",
+        title: "가을 - 명화",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-60/membership-st-60-1789633128588.webp?v=1789633128588",
+        description: "",
+        tags: ["미술","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-61": {
+        type: "unknown",
+        title: "하늘하늘 코스모스",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-61/membership-st-61-1789633136388.webp?v=1789633136388",
+        description: "",
+        tags: ["미술","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-62": {
+        type: "unknown",
+        title: "뱅글뱅글 날아라! 새",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-62/membership-st-62-1789633144029.webp?v=1789633144029",
+        description: "",
+        tags: ["미술","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-63": {
+        type: "unknown",
+        title: "털실 나뭇잎",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-63/membership-st-63-1789633150835.webp?v=1789633150835",
+        description: "",
+        tags: ["미술","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-64": {
+        type: "unknown",
+        title: "손 코팅지로 만드는 단풍잎",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-64/membership-st-64-1789633195670.webp?v=1789633195670",
+        description: "",
+        tags: ["미술","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-300": {
+        type: "unknown",
+        title: "다람쥐 놀이터 글자",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-300/membership-st-300-1791424343799.webp?v=1791424343799",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-301": {
+        type: "unknown",
+        title: "다람쥐 먹이주기 도안",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-301/membership-st-301-1791424358124.webp?v=1791424358124",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-302": {
+        type: "unknown",
+        title: "다람쥐 합성 프롬프트",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-302/membership-st-302-1791424374243.webp?v=1791424374243",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-303": {
+        type: "unknown",
+        title: "가을 열매 도안 10종",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-303/membership-st-303-1791424388688.webp?v=1791424388688",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-304": {
+        type: "unknown",
+        title: "가을 열매 도안 10종",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-304/membership-st-304-1791424402078.webp?v=1791424402078",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-305": {
+        type: "unknown",
+        title: "숲속 동물 놀이",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-305/membership-st-305-1791424414023.webp?v=1791424414023",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-306": {
+        type: "unknown",
+        title: "도토리/밤 놀이",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-306/membership-st-306-1791424578332.webp?v=1791424578332",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-12": {
+        type: "unknown",
+        title: "디지털 리터러시",
+        thumbnail: "./1.png",
+        description: "",
+        tags: ["추천","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-13": {
+        type: "unknown",
+        title: "사회정서학습",
+        thumbnail: "./2.png",
+        description: "",
+        tags: ["추천","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-14": {
+        type: "unknown",
+        title: "신규 동화",
+        thumbnail: "./3.png",
+        description: "",
+        tags: ["동화","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-15": {
+        type: "video",
+        title: "베베TV",
+        thumbnail: "./4.png",
+        description: "",
+        tags: ["영상","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-16": {
+        type: "unknown",
+        title: "틱톡 안전",
+        thumbnail: "./1.png",
+        description: "",
+        tags: ["추천","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-65": {
+        type: "unknown",
+        title: "학교폭력예방교육",
+        thumbnail: "./2.png",
+        description: "",
+        tags: ["필수","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-66": {
+        type: "unknown",
+        title: "장애인식 개선교육",
+        thumbnail: "./3.png",
+        description: "",
+        tags: ["필수","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-67": {
+        type: "unknown",
+        title: "성교육 콘텐츠",
+        thumbnail: "./4.png",
+        description: "",
+        tags: ["필수","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-68": {
+        type: "unknown",
+        title: "다문화 이해교육",
+        thumbnail: "./1.png",
+        description: "",
+        tags: ["추천","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-69": {
+        type: "unknown",
+        title: "환경·기후위기 교육",
+        thumbnail: "./2.png",
+        description: "",
+        tags: ["신규","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-220": {
+        type: "unknown",
+        title: "베베TV",
+        thumbnail: null,
+        iconStyle: "background: linear-gradient(135deg, rgb(94, 15, 46), rgb(229, 50, 107));",
+        description: "",
+        tags: ["NEW","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-221": {
+        type: "unknown",
+        title: "튼튼자람",
+        thumbnail: null,
+        iconStyle: "background: linear-gradient(135deg, rgb(31, 77, 46), rgb(63, 174, 106));",
+        description: "",
+        tags: ["HOT","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-222": {
+        type: "unknown",
+        title: "매일언어",
+        thumbnail: null,
+        iconStyle: "background: linear-gradient(135deg, rgb(44, 21, 96), rgb(123, 47, 247));",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-223": {
+        type: "unknown",
+        title: "디지털 리터러시",
+        thumbnail: null,
+        iconStyle: "background: linear-gradient(135deg, rgb(20, 16, 38), rgb(63, 43, 122));",
+        description: "",
+        tags: ["HOT","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-224": {
+        type: "unknown",
+        title: "명화감상",
+        thumbnail: null,
+        iconStyle: "background: linear-gradient(135deg, rgb(11, 30, 63), rgb(43, 87, 176));",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-225": {
+        type: "unknown",
+        title: "유아 인성자람",
+        thumbnail: null,
+        iconStyle: "background: linear-gradient(135deg, rgb(13, 46, 59), rgb(31, 122, 154));",
+        description: "",
+        tags: ["NEW","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-226": {
+        type: "unknown",
+        title: "베베TV+",
+        thumbnail: null,
+        iconStyle: "background: linear-gradient(135deg, rgb(122, 31, 61), rgb(255, 91, 129));",
+        description: "",
+        tags: ["NEW","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-227": {
+        type: "unknown",
+        title: "산책·바깥놀이",
+        thumbnail: null,
+        iconStyle: "background: linear-gradient(135deg, rgb(35, 16, 67), rgb(176, 42, 143));",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-228": {
+        type: "unknown",
+        title: "쇼앤텔",
+        thumbnail: null,
+        iconStyle: "background: linear-gradient(135deg, rgb(11, 46, 77), rgb(31, 159, 214));",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-229": {
+        type: "unknown",
+        title: "탐정수학",
+        thumbnail: null,
+        iconStyle: "background: linear-gradient(135deg, rgb(77, 59, 13), rgb(201, 151, 46));",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-230": {
+        type: "unknown",
+        title: "종이접기",
+        thumbnail: null,
+        iconStyle: "background: linear-gradient(135deg, rgb(61, 31, 77), rgb(161, 95, 247));",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-231": {
+        type: "unknown",
+        title: "마음자람",
+        thumbnail: null,
+        iconStyle: "background: linear-gradient(135deg, rgb(94, 15, 46), rgb(255, 122, 158));",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-232": {
+        type: "unknown",
+        title: "오감놀이",
+        thumbnail: null,
+        iconStyle: "background: linear-gradient(135deg, rgb(13, 46, 59), rgb(31, 122, 154));",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-233": {
+        type: "unknown",
+        title: "문해력 동화",
+        thumbnail: null,
+        iconStyle: "background: linear-gradient(135deg, rgb(26, 16, 48), rgb(109, 59, 209));",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-234": {
+        type: "unknown",
+        title: "과학아 놀래",
+        thumbnail: null,
+        iconStyle: "background: linear-gradient(135deg, rgb(20, 42, 26), rgb(47, 158, 99));",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-235": {
+        type: "unknown",
+        title: "클래식 음악감상",
+        thumbnail: null,
+        iconStyle: "background: linear-gradient(135deg, rgb(44, 21, 96), rgb(123, 47, 247));",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-236": {
+        type: "unknown",
+        title: "스페셜 행사",
+        thumbnail: null,
+        iconStyle: "background: linear-gradient(135deg, rgb(255, 46, 99), rgb(161, 47, 247));",
+        description: "",
+        tags: ["HOT","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-237": {
+        type: "unknown",
+        title: "환경교육",
+        thumbnail: null,
+        iconStyle: "background: linear-gradient(135deg, rgb(15, 61, 46), rgb(43, 212, 160));",
+        description: "",
+        tags: ["NEW","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-238": {
+        type: "unknown",
+        title: "키드키즈 창작동요",
+        thumbnail: null,
+        iconStyle: "background: linear-gradient(135deg, rgb(63, 43, 122), rgb(123, 47, 247));",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-239": {
+        type: "unknown",
+        title: "다문화교육",
+        thumbnail: null,
+        iconStyle: "background: linear-gradient(135deg, rgb(20, 16, 38), rgb(63, 43, 122));",
+        description: "",
+        tags: ["멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+      "st-307": {
+        type: "unknown",
+        title: "다람쥐 놀이터 자료 모음",
+        thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-307/membership-st-307-1791423953660.webp?v=1791423953660",
+        description: "글자 · 도안 · 가을 열매",
+        tags: ["테마","멤버십"],
+        originalDetailUrl: "",
+        actionType: "none",
+        videoUrl: "",
+        downloadUrl: ""
+      },
+    };
+
+    function el(tag, attrs, children){
+      var node = document.createElement(tag);
+      attrs = attrs || {};
+      Object.keys(attrs).forEach(function(k){
+        if(k === "class") node.className = attrs[k];
+        else if(k === "text") node.textContent = attrs[k];
+        else if(k === "disabled") { if(attrs[k]) node.setAttribute("disabled","disabled"); }
+        else node.setAttribute(k, attrs[k]);
+      });
+      (children || []).forEach(function(c){ if(c) node.appendChild(c); });
+      return node;
+    }
+
+    // "유형" tag label. Called with the resolved *review* type (see
+    // resolveReviewType) rather than content.type directly, so a demo-split
+    // item's tag always matches the layout actually shown for it.
+    function typeLabel(type){
+      if(type === "video") return "영상";
+      if(type === "worksheet") return "활동지";
+      if(type === "pdf") return "PDF";
+      return null;
+    }
+
+    // builds a list of { text, variant } — variant is "type" for the one
+    // derived tag, "brand" for the trailing 멤버십 tag, or "" for the rest.
+    // keeping the variant attached to each tag (instead of re-deriving it
+    // later by comparing text) avoids false positives if a category tag
+    // ever happens to match a type label string.
+    function buildTags(content, reviewType){
+      var tags = [];
+      var tl = typeLabel(reviewType);
+      if(tl) tags.push({ text: tl, variant: "type" });
+      (content.tags || []).forEach(function(t){
+        // skip "멤버십" (re-added at the end as the brand tag) and skip
+        // anything that duplicates the derived type tag already added above
+        if(t !== "멤버십" && t !== tl) tags.push({ text: t, variant: "" });
+      });
+      tags.push({ text: "멤버십", variant: "brand" });
+      return tags;
+    }
+
+    function renderTags(tags){
+      var row = el("div", { class: "tag-row" });
+      tags.forEach(function(t){
+        var cls = "tag" + (t.variant ? " tag-" + t.variant : "");
+        row.appendChild(el("span", { class: cls, text: t.text }));
+      });
+      return row;
+    }
+
+    /* ============================ media (right column) ============================ */
+
+    // review type "video" -> large 16:9 player area, and no left CTA at all
+    // (see render()) — the player here is the only action surface. A real
+    // videoUrl/legacyGate shows the actual functional center-play button;
+    // with neither yet, it falls back to decorative (non-functional) player
+    // chrome — see renderVideoMedia below.
+    /* ============================================================
+       action resolution — mirrors how kidkids.net itself gates content:
+       "동영상 보기" on the real site doesn't carry a direct playable URL;
+       it's wired to a page-local confirm()-style gate (mship_msg()) that
+       isn't something a separate page can call (it's not a shared/reusable
+       permission API — it's inline, page-specific, and for an unauthenticated
+       visitor it's just a one-way "upgrade your membership" prompt with no
+       branch that actually unlocks playback). The real unlock logic lives
+       behind kidkids.net's own login session, which isn't inspectable from
+       here. So instead of calling a function we can't actually reuse, each
+       content item declares how it *can* be used right now:
+
+         actionType: "video"      -> we hold a real, direct videoUrl
+         actionType: "download"   -> we hold a real, direct downloadUrl
+         actionType: "legacyGate" -> no direct URL, but we hold the real
+                                      kidkids.net detail page for this item;
+                                      the CTA opens it in a new tab and lets
+                                      kidkids.net's own login/membership
+                                      check decide access — exactly the real
+                                      "로그인 확인 → 회원등급 확인 → 이용" flow,
+                                      just not reimplemented here
+         actionType: "none"       -> no confirmed way to use this item yet
+
+       All 73 items pulled from the live page are "none" for now (we don't
+       have a verified mapping from this prototype's cards to real
+       kidkids.net content URLs) — the structure above is ready the moment
+       that mapping exists: fill in videoUrl/downloadUrl/originalDetailUrl
+       and flip actionType, nothing else needs to change.
+       ============================================================ */
+    function resolveAction(content){
+      var at = content.actionType || "none";
+      if(at === "video" && content.videoUrl) return { kind: "video" };
+      if(at === "download" && content.downloadUrl) return { kind: "download" };
+      if(at === "legacyGate" && content.originalDetailUrl) return { kind: "legacyGate" };
+      return { kind: "none" };
+    }
+
+    function openLegacyGate(url){
+      window.open(url, "_blank", "noopener");
+    }
+
+    /* ============================================================
+       review-only demo type split — SEPARATE layer on top of the real
+       integration data above, for this internal review stage only.
+
+       Most of the 73 items pulled from the live page have no confirmed
+       type ("unknown" — we never saw a real "영상" badge or similar for
+       them). Left as-is, every one of them would render identically
+       (thumbnail + no CTA), so reviewers can't compare the video vs.
+       download detail layouts at all. To make both visible, "unknown"
+       items are deterministically split ~50/50 into a video-style and a
+       worksheet-style detail view, purely for this review pass.
+
+       This never writes to content.type — the real/unconfirmed value is
+       left untouched so it's still there the moment someone confirms the
+       real type. resolveAction()/originalDetailUrl/actionType/videoUrl/
+       downloadUrl above are untouched too; when real values are filled
+       in later, the real playback/download/legacyGate behavior already
+       wired into renderVideoMedia/renderDownloadCta below takes over
+       automatically, with zero changes needed to this function.
+       ============================================================ */
+    function simpleHash(str){
+      var h = 0;
+      for(var i = 0; i < str.length; i++){ h = (h * 31 + str.charCodeAt(i)) | 0; }
+      return Math.abs(h);
+    }
+
+    function resolveReviewType(content){
+      if(content.type === "video") return "video";
+      if(content.type === "worksheet" || content.type === "pdf") return "worksheet";
+      return simpleHash(content.id) % 2 === 0 ? "video" : "worksheet";
+    }
+
+    /* ============================ media (right column) ============================ */
+
+    // type = video -> large 16:9 player area.
+    //   action "video"      -> poster shows a center play button; clicking it
+    //                          (or the left CTA) swaps in the real <video>.
+    //   action "legacyGate" -> poster shows a center play button too, but it
+    //                          opens the real kidkids.net page instead — same
+    //                          visual affordance, honest about where playback
+    //                          actually happens.
+    //   action "none"       -> poster only, no button pretending to do something.
+    // shared decorative (non-functional) player chrome — center play icon +
+    // bottom control bar — reused by both the in-page video card (see
+    // renderVideoMedia below) and the review-only popup (see
+    // openVideoModal), so the two always look identical.
+    function buildDecorativePlayerChrome(){
+      var nodes = [];
+      nodes.push(el("div", { class: "player-center-icon", text: "▶" }));
+      var bar = el("div", { class: "player-controlbar" });
+      bar.appendChild(el("span", { class: "pc-icon", text: "▶" }));
+      bar.appendChild(el("span", { class: "pc-time", text: "0:00" }));
+      bar.appendChild(el("div", { class: "pc-progress" }, [el("div", { class: "pc-progress-fill" })]));
+      bar.appendChild(el("span", { class: "pc-time", text: "3:24" }));
+      bar.appendChild(el("span", { class: "pc-icon", text: "🔊" }));
+      bar.appendChild(el("span", { class: "pc-icon", text: "⛶" }));
+      nodes.push(bar);
+      return nodes;
+    }
+
+    // review-only video popup — opens on a click of the decorative player
+    // (see renderVideoMedia's "none" branch below). No real playback: same
+    // non-functional chrome as the in-page player, just shown full-screen.
+    function openVideoModal(content){
+      var overlay = document.getElementById("video-modal-overlay");
+      var playerArea = document.getElementById("video-modal-player");
+      playerArea.className = "detail-video-wrap video-modal-player";
+      playerArea.innerHTML = "";
+      if(content.thumbnail){
+        playerArea.appendChild(el("img", { class: "poster-fallback", src: content.thumbnail, alt: content.title }));
+      }
+      buildDecorativePlayerChrome().forEach(function(n){ playerArea.appendChild(n); });
+      overlay.classList.add("open");
+      document.body.classList.add("video-modal-locked");
+    }
+
+    function closeVideoModal(){
+      document.getElementById("video-modal-overlay").classList.remove("open");
+      document.body.classList.remove("video-modal-locked");
+    }
+
+    function renderVideoMedia(content){
+      var poster = content.thumbnail || "";
+      var wrap = el("div", { class: "detail-video-wrap" });
+      if(poster){
+        wrap.appendChild(el("img", { class: "poster-fallback", src: poster, alt: content.title }));
+      }
+
+      var action = resolveAction(content);
+
+      if(action.kind === "video"){
+        var playNow = function(){
+          wrap.innerHTML = "";
+          var video = el("video", {
+            class: "detail-player",
+            controls: "controls",
+            playsinline: "playsinline",
+            autoplay: "autoplay",
+            poster: poster
+          });
+          video.appendChild(el("source", { src: content.videoUrl, type: "video/mp4" }));
+          // setAttribute alone doesn't reliably sync the live .muted property
+          // on elements created via createElement, which would silently
+          // block autoplay — set it explicitly.
+          video.muted = true;
+          video.defaultMuted = true;
+          wrap.appendChild(video);
+        };
+        var playBtn = el("button", { class: "center-play", type: "button", "aria-label": "재생하기", text: "▶" });
+        playBtn.addEventListener("click", playNow);
+        wrap.appendChild(playBtn);
+      } else if(action.kind === "legacyGate"){
+        var openNow = function(){ openLegacyGate(content.originalDetailUrl); };
+        var gateBtn = el("button", { class: "center-play", type: "button", "aria-label": "재생하기", text: "▶" });
+        gateBtn.addEventListener("click", openNow);
+        wrap.appendChild(gateBtn);
+      } else {
+        // no real playable source wired up yet — decorative (non-functional)
+        // player chrome, clickable to open the review-only popup above.
+        // Swaps for the real <video>/legacyGate button above automatically
+        // once actionType/videoUrl are filled in.
+        wrap.classList.add("video-wrap-clickable");
+        buildDecorativePlayerChrome().forEach(function(n){ wrap.appendChild(n); });
+        wrap.addEventListener("click", function(){ openVideoModal(content); });
+      }
+      return wrap;
+    }
+
+    // worksheet/pdf preview block. capped to a modest size (see
+    // .detail-thumb-wrap) with a "자료 미리보기" label, so a tall vertical
+    // thumbnail reads as a preview rather than taking over the screen.
+    // falls back to a centered icon/gradient block when there's no real
+    // thumbnail (e.g. the 프로그램 바로가기 shortcut cards, which only ever
+    // had an emoji + gradient, never a photo).
+    // fills the whole right panel: a cropped/darkened/blurred copy of the
+    // same thumbnail as full-bleed background, the real unstretched image
+    // centered on top — see .detail-preview-panel for why.
+    function renderThumbMedia(content){
+      var panel = el("div", { class: "detail-preview-panel" });
+      var fgWrap = el("div", { class: "detail-preview-fg-wrap" });
+
+      if(content.thumbnail){
+        panel.appendChild(el("img", { class: "detail-preview-bg", src: content.thumbnail, alt: "" }));
+        panel.appendChild(el("div", { class: "detail-preview-tint" }));
+        fgWrap.appendChild(el("img", { class: "detail-preview-fg", src: content.thumbnail, alt: content.title }));
+      } else {
+        // shortcut cards with no real photo (emoji + gradient) — no
+        // background image to blur, just the icon centered in the panel.
+        var fallback = el("div", { class: "icon-fallback-panel", text: content.icon || "📄" });
+        if(content.iconStyle) fallback.setAttribute("style", content.iconStyle);
+        fgWrap.appendChild(fallback);
+      }
+
+      panel.appendChild(el("div", { class: "detail-preview-label", text: "자료 미리보기" }));
+      panel.appendChild(fgWrap);
+      return panel;
+    }
+
+    /* ============================ CTA (left column) ============================ */
+
+    // download CTA only — video-type details have no left CTA at all (the
+    // player on the right is the only action surface there, see render()).
+    // Always shown enabled: a real downloadUrl/legacyGate fires immediately
+    // on click; until one exists, this is still a normal, clickable primary
+    // button (never a disabled/"준비 중" placeholder) that simply has
+    // nothing to do yet — it swaps to the real download the moment
+    // actionType/downloadUrl are filled in, with no UI change needed.
+    function renderDownloadCta(content){
+      var btn = el("button", { class: "detail-cta", type: "button", text: "↓ 자료 다운로드" });
+      btn.addEventListener("click", function(){
+        var action = resolveAction(content);
+        if(action.kind === "download"){
+          var a = document.createElement("a");
+          a.href = content.downloadUrl;
+          a.download = content.title;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        } else if(action.kind === "legacyGate"){
+          openLegacyGate(content.originalDetailUrl);
+        }
+      });
+      return btn;
+    }
+
+    // review type ("video"/"worksheet", see resolveReviewType) -> media
+    // renderer. add a new type here (e.g. "audio") + its own render*Media
+    // function to extend without touching render() below.
+    var TYPE_RENDERERS = {
+      video: renderVideoMedia,
+      worksheet: renderThumbMedia
+    };
+
+    /* ============================ breadcrumb ============================ */
+
+    // one-level breadcrumb only ("멤버십 전용관 / <카테고리>") — picks the
+    // first non-멤버십/non-유형 tag as a stand-in category label, since
+    // CONTENT_DATA has no dedicated category field. Falls back to a generic
+    // label rather than leaving it blank.
+    function breadcrumbCategory(content, reviewType){
+      var tl = typeLabel(reviewType);
+      var cat = (content.tags || []).filter(function(t){ return t !== "멤버십" && t !== tl; })[0];
+      return cat || "추천 테마";
+    }
+
+    function renderBreadcrumb(content, reviewType){
+      var bar = document.getElementById("breadcrumb-bar");
+      bar.innerHTML = "";
+      bar.appendChild(document.createTextNode("멤버십 전용관 / "));
+      bar.appendChild(el("span", { class: "crumb-current", text: breadcrumbCategory(content, reviewType) }));
+    }
+
+    /* ============================ related row ============================ */
+
+    // deterministic pick (id-hash based, same rule as resolveReviewType) —
+    // stable across reloads for a given content id, varies between
+    // different ids, no real recommendation logic needed for this review
+    // pass. Object.keys() on CONTENT_DATA preserves insertion order, so
+    // this is a fixed rotation starting at a fixed offset, not a sort.
+    function pickRelatedIds(currentId, count){
+      var allIds = Object.keys(CONTENT_DATA).filter(function(id){ return id !== currentId; });
+      if(!allIds.length) return [];
+      var start = simpleHash(currentId) % allIds.length;
+      var picked = [];
+      for(var i = 0; i < count && i < allIds.length; i++){
+        picked.push(allIds[(start + i) % allIds.length]);
+      }
+      return picked;
+    }
+
+    function buildRelatedCard(id){
+      var item = CONTENT_DATA[id];
+      if(!item) return null;
+      item.id = item.id || id;
+      var rt = resolveReviewType(item);
+
+      var thumb = el("div", { class: "related-thumb" });
+      if(item.thumbnail){
+        thumb.appendChild(el("img", { src: item.thumbnail, alt: item.title }));
+      } else {
+        var fb = el("div", { class: "icon-fallback", text: item.icon || "📄" });
+        if(item.iconStyle) fb.setAttribute("style", item.iconStyle);
+        thumb.appendChild(fb);
+      }
+
+      var info = el("div", { class: "related-info" });
+      info.appendChild(el("div", { class: "related-card-title", text: item.title }));
+      var tl = typeLabel(rt);
+      if(tl) info.appendChild(el("span", { class: "related-tag", text: tl }));
+
+      var card = el("div", { class: "related-card" }, [thumb, info]);
+      card.addEventListener("click", function(){
+        window.location.href = "content-detail.html?id=" + encodeURIComponent(id);
+      });
+      return card;
+    }
+
+    // single row, 6 items max — no view count / likes / date, just
+    // thumbnail + title + type tag, per the brief.
+    function renderRelated(content){
+      var ids = pickRelatedIds(content.id, 6);
+      if(!ids.length) return null;
+      var row = el("div", { class: "related-row" });
+      ids.forEach(function(id){
+        var card = buildRelatedCard(id);
+        if(card) row.appendChild(card);
+      });
+      return el("div", { class: "related-section" }, [
+        el("h2", { class: "related-title", text: "함께 보면 좋은 콘텐츠" }),
+        row
+      ]);
+    }
+
+    function render(content){
+      var root = document.getElementById("detail-root");
+      root.innerHTML = "";
+
+      var reviewType = resolveReviewType(content);
+      renderBreadcrumb(content, reviewType);
+      var mediaRenderer = TYPE_RENDERERS[reviewType] || renderThumbMedia;
+
+      var info = el("div", { class: "detail-info" });
+      info.appendChild(el("h1", { class: "detail-title", text: content.title }));
+      info.appendChild(renderTags(buildTags(content, reviewType)));
+      if(content.description){
+        info.appendChild(el("p", { class: "detail-desc", text: content.description }));
+      }
+
+      // worksheet's preview panel fills .detail-media edge-to-edge (see
+      // .detail-media--preview / renderThumbMedia) instead of sitting in
+      // its padded center like the video player does.
+      var mediaClass = "detail-media" + (reviewType !== "video" ? " detail-media--preview" : "");
+      var media = el("div", { class: mediaClass }, [mediaRenderer(content)]);
+
+      // video details are driven entirely by the player on the right — no
+      // separate CTA on the left (that's also the clearest visual cue that
+      // distinguishes it from the download layout at a glance). .detail-info
+      // bottom-anchors its whole content group (justify-content:flex-end),
+      // so the CTA — appended last — ends up at the very bottom of the card.
+      if(reviewType !== "video"){
+        info.appendChild(renderDownloadCta(content));
+      }
+
+      root.appendChild(el("div", { class: "detail-layout" }, [info, media]));
+
+      var related = renderRelated(content);
+      if(related) root.appendChild(related);
+    }
+
+    function notFound(id){
+      var bar = document.getElementById("breadcrumb-bar");
+      if(bar) bar.innerHTML = "";
+      var root = document.getElementById("detail-root");
+      root.innerHTML = "";
+      root.appendChild(el("h1", { class: "detail-title", text: "콘텐츠를 찾을 수 없어요" }));
+      root.appendChild(el("p", { class: "detail-desc", text: "요청하신 콘텐츠(id: " + id + ")를 찾을 수 없습니다." }));
+    }
+
+    function boot(){
+      var params = new URLSearchParams(window.location.search);
+      var id = params.get("id");
+      var content = id ? CONTENT_DATA[id] : null;
+      if(content){
+        // attaches the lookup key onto the item itself so resolveReviewType
+        // has a stable id to hash for the deterministic demo-type split.
+        content.id = id;
+        render(content);
+      } else {
+        notFound(id || "(없음)");
+      }
+    }
+
+    // back button: prefer browser history so the user returns to the exact
+    // scroll position AND in-memory membership state (userStatus) they were
+    // at on the main page — kidkidsmembership.html holds its paid/guest
+    // view purely as in-page JS state, never persisted to storage/URL, so
+    // only a true history.back() (same page instance) carries it over.
+    //
+    // When there's no such history to go back to (e.g. direct entry via a
+    // shared content-detail.html?id= link), send the user to the paid-
+    // member view explicitly rather than kidkidsmembership.html's default
+    // guest/signup screen — reuses the page's own userStatus state field
+    // via the ?userStatus= override added for this (see the page's
+    // Component constructor), not a separate membership system.
+    document.getElementById("back-btn").addEventListener("click", function(){
+      if(document.referrer && document.referrer.indexOf("kidkidsmembership.html") !== -1 && window.history.length > 1){
+        window.history.back();
+      } else {
+        window.location.href = "./kidkidsmembership.html?userStatus=membership";
+      }
+    });
+
+    // video popup close triggers: the X button, clicking the dim
+    // background itself (but not the modal box, via the e.target===this
+    // check), and Escape — X stays the primary/expected close action so a
+    // stray click elsewhere doesn't feel like an accidental dismiss.
+    document.getElementById("video-modal-close").addEventListener("click", closeVideoModal);
+    document.getElementById("video-modal-overlay").addEventListener("click", function(e){
+      if(e.target === this) closeVideoModal();
+    });
+    document.addEventListener("keydown", function(e){
+      if(e.key === "Escape" && document.getElementById("video-modal-overlay").classList.contains("open")){
+        closeVideoModal();
+      }
+    });
+
+    boot();
+  })();
+  </script>
+</body>
+</html>
