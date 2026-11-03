@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>멤버십전용관 편성 미리보기</title>
+  <link rel="stylesheet" href="membership-admin-preview.css" />
+</head>
+<body>
+  <div class="preview-bar">
+    <div class="preview-bar-inner">
+      <span class="preview-badge">PREVIEW</span>
+      <div><strong id="previewMonthLabel">편성 미리보기</strong><span id="previewGeneratedAt"></span></div>
+      <p>발행 전 관리자 편성 데이터입니다.</p>
+      <button onclick="window.close()">미리보기 닫기</button>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="site-logo" href="#"><span>KIDKIDS</span><em>MEMBERSHIP</em></a>
+      <nav><a href="#">수업자료</a><a href="#">놀이자료</a><a href="#">프로그램</a><a class="active" href="#">멤버십전용관</a></nav>
+      <div class="site-actions"><button>검색</button><button class="profile">김</button></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="preview-hero">
+      <div class="hero-glow one"></div><div class="hero-glow two"></div>
+      <div id="previewHeroImage" class="hero-full-image"></div>
+      <div class="hero-inner">
+        <span id="previewHeroBadge" class="hero-eyebrow">ONLY FOR MEMBERS</span>
+        <h1 id="previewHeroTitle">선생님의 오늘을 가볍게,<br />수업의 내일을 풍성하게.</h1>
+        <p id="previewHeroSubtitle">매달 새롭게 엄선한 키드키즈 콘텐츠를<br />멤버십 회원에게 먼저 소개합니다.</p>
+        <div id="previewHeroDots" class="hero-dots" aria-label="히어로 배너 선택"></div>
+      </div>
+    </section>
+
+    <section class="section-nav-wrap">
+      <div id="previewSectionNav" class="section-nav"></div>
+    </section>
+
+    <div id="previewSections" class="preview-sections"></div>
+    <section id="previewPromotion" class="promotion-banner" hidden></section>
+  </main>
+
+  <footer><strong>KIDKIDS MEMBERSHIP</strong><span>관리자 편성 미리보기 · 실제 운영 데이터와 다를 수 있습니다.</span></footer>
+
+  <script src="membership-admin-preview.js"></script>
+</body>
+</html>
+
