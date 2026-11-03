@@ -63,6 +63,16 @@ document.addEventListener('DOMContentLoaded', async function() {
     const manifest = JSON.parse(manifestEl.textContent);
     let template = JSON.parse(templateEl.textContent);
 
+    // Keep the existing member controls intact and append a low-emphasis
+    // shortcut to the verified admin page beside the logout button.
+    const logoutButton = '<button onclick="{{ onLogout }}" style="padding:8px 14px;border:1px solid rgba(255,255,255,.18);border-radius:8px;background:transparent;color:#d4d4dd;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">로그아웃</button>';
+    const adminLink = '<a href="./membership_admin.html" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;white-space:nowrap;padding:8px 12px;border:1px solid rgba(255,255,255,.14);border-radius:8px;background:rgba(255,255,255,.02);color:#a9a9b5;font-size:13px;font-weight:600;line-height:normal;text-decoration:none;font-family:inherit;cursor:pointer" style-hover="border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.06)">관리자</a>';
+    if (template.includes(logoutButton)) {
+      template = template.replace(logoutButton, logoutButton + '\n        ' + adminLink);
+    } else {
+      console.warn('[bundler] Logout button marker not found; admin shortcut was not added.');
+    }
+
     const uuids = Object.keys(manifest);
     setStatus('Unpacking ' + uuids.length + ' assets...');
 

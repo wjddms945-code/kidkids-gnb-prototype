@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>멤버십전용관 편성 관리</title>
+  <link rel="stylesheet" href="membership-admin.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">K</div>
+        <div class="brand-name">KIDKIDS</div>
+        <div class="brand-divider"></div>
+        <div class="brand-product">운영 관리자</div>
+      </div>
+      <div class="topbar-right">
+        <button class="top-icon" aria-label="도움말">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.4 2.4 0 0 1 4.7.7c0 1.8-2.4 1.9-2.4 3.6M12 17h.01"/></svg>
+        </button>
+        <button class="top-icon" aria-label="알림">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 1 0-12 0c0 6-3 7-3 7h18s-3-1-3-7M10 19h4"/></svg>
+        </button>
+        <div class="admin-profile">
+          <div class="avatar">김</div>
+          <div class="admin-copy"><strong>김정은</strong><span>콘텐츠 운영자</span></div>
+        </div>
+      </div>
+    </header>
+
+    <section class="operation-header">
+      <div class="breadcrumb">콘텐츠 관리 <span>›</span> <b>멤버십전용관</b></div>
+      <div class="operation-row">
+        <div class="title-block">
+          <h1 id="operationTitle">멤버십전용관 편성 관리</h1>
+        </div>
+
+        <div class="month-control">
+          <div class="month-select-wrap">
+            <select id="monthSelect" class="month-select" aria-label="편성 월 선택"></select>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 10 5 5 5-5"/></svg>
+          </div>
+          <button class="btn icon-only" id="createMonthBtn" title="신규 월 편성 생성" aria-label="신규 월 편성 생성">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </div>
+
+        <div class="status-block">
+          <span class="status-label">상태</span>
+          <span id="monthStatus" class="status-pill draft">임시저장</span>
+        </div>
+
+        <div class="operation-actions">
+          <button class="btn" id="copyPreviousBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="7" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span id="copyPreviousLabel" class="optional-label">전월 설정 불러오기</span>
+          </button>
+          <button class="btn" id="previewBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+            미리보기
+          </button>
+          <button class="btn dark" id="saveDraftBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+            임시저장
+          </button>
+          <button class="btn primary" id="publishBtn">발행</button>
+        </div>
+      </div>
+      <nav class="admin-mode-tabs" aria-label="멤버십전용관 관리 메뉴">
+        <button id="mainModeTab" class="admin-mode-tab active" data-admin-view="main"><span>01</span><strong>메인관리</strong></button>
+        <button id="contentModeTab" class="admin-mode-tab" data-admin-view="content"><span>02</span><strong>콘텐츠 편성관리</strong></button>
+        <button id="statsModeTab" class="admin-mode-tab" data-admin-view="stats"><span>03</span><strong>통계</strong></button>
+      </nav>
+    </section>
+
+    <div class="workspace">
+      <aside class="section-sidebar">
+        <div id="mainSidebarMenu" class="sidebar-view">
+          <div class="sidebar-head"><strong>메인관리</strong></div>
+          <nav class="main-menu-list" aria-label="메인관리 항목">
+            <button class="main-menu-item active" data-main-anchor="mainHeroSettings"><span>01</span><strong>히어로 배너</strong></button>
+            <button class="main-menu-item" data-main-anchor="sectionLayoutSettings"><span>02</span><strong>카테고리·섹션</strong></button>
+            <button class="main-menu-item" data-main-anchor="programMenuSettings"><span>03</span><strong>프로그램 메뉴</strong></button>
+            <button class="main-menu-item" data-main-anchor="promotionSettings"><span>04</span><strong>하단 프로모션</strong></button>
+          </nav>
+        </div>
+        <div id="contentSidebarMenu" class="sidebar-view" hidden>
+          <div class="sidebar-head"><strong>콘텐츠 섹션</strong><span id="sectionTotal" class="section-count"></span></div>
+          <nav id="sectionList" class="section-list" aria-label="멤버십전용관 섹션"></nav>
+        </div>
+        <div id="statsSidebarMenu" class="sidebar-view" hidden>
+          <div class="sidebar-head"><strong>통계</strong></div>
+          <nav class="main-menu-list" aria-label="통계 항목">
+            <button class="main-menu-item active" data-stats-anchor="statsOverview"><span>01</span><strong>전체 성과</strong></button>
+            <button class="main-menu-item" data-stats-anchor="statsPopularContent"><span>02</span><strong>콘텐츠 성과</strong></button>
+            <button class="main-menu-item" data-stats-anchor="statsSectionPerformance"><span>03</span><strong>섹션 성과</strong></button>
+            <button class="main-menu-item" data-stats-anchor="statsConversion"><span>04</span><strong>전환 분석</strong></button>
+          </nav>
+          <div class="stats-source-mini"><span>DATA SOURCE</span><strong>프로토타입</strong><em>로그·결제 연동 전</em></div>
+        </div>
+        <div class="sidebar-divider"></div>
+        <button class="sidebar-tool" id="openHistoryBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2M3 4v5h5"/></svg>변경 이력</button>
+        <div class="audit-card">
+          <span>최근 수정</span>
+          <strong id="lastModifiedAt">2026-10-29 16:20</strong>
+          <em id="lastModifiedBy">김정은</em>
+        </div>
+      </aside>
+
+      <main class="content-area">
+        <div id="dirtyAlert" class="dirty-alert">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 9v4M12 17h.01"/></svg>
+          저장하지 않은 변경사항이 있습니다.
+          <button id="quickSaveBtn" class="btn small">변경사항 저장</button>
+        </div>
+
+        <div id="mainManagementView" class="admin-view">
+        <section id="mainHeroSettings" class="content-card page-settings-card hero-banner-settings">
+          <div class="settings-card-head">
+            <div>
+              <div class="settings-eyebrow">MAIN HERO BANNER</div>
+              <h2>히어로 배너 관리</h2>
+            </div>
+            <div class="settings-head-actions"><span id="pageSettingsMonthLabel" class="settings-month-chip">2026년 10월</span><button id="addHeroBannerBtn" class="btn primary small">+ 배너 세트 추가</button></div>
+          </div>
+          <div class="hero-list-head"><strong>등록된 배너</strong><span id="heroBannerCount">1개</span></div>
+          <div id="heroBannerSetList" class="hero-banner-set-list"></div>
+          <div class="hero-banner-editor">
+            <div class="hero-editor-head"><div><strong id="heroBannerEditorLabel">히어로 배너 1</strong></div><label class="visibility-control compact"><span>배너 노출</span><span class="toggle"><input id="heroBannerVisibleInput" type="checkbox" /><span class="toggle-track"></span></span><strong id="heroBannerVisibleLabel">ON</strong></label></div>
+            <div class="hero-editor-grid">
+              <div id="heroCompositeImage" class="hero-composite-image">
+                <div id="heroCompositePreview" class="hero-composite-preview"></div>
+                <div class="hero-composite-meta"><strong>권장 사이즈 1920 × 520px</strong><span>JPG, PNG · 최대 10MB</span></div>
+                <div class="hero-composite-actions"><button id="heroImageChangeBtn" class="btn small">이미지 교체</button><button id="heroImageDeleteBtn" class="btn small danger">삭제</button></div>
+              </div>
+              <div class="hero-copy-fields">
+                <div class="copy-field">
+                  <div class="copy-label-row"><label for="heroBadgeInput">히어로 배지</label></div>
+                  <input id="heroBadgeInput" class="copy-input" data-copy-limit="20" />
+                  <div class="copy-feedback"><span class="copy-warning">권장 글자수를 초과했습니다.</span><span class="copy-count" data-count-for="heroBadgeInput">0 / 20</span></div>
+                </div>
+                <div class="copy-field">
+                  <div class="copy-label-row"><label for="heroTitleInput">메인 타이틀</label></div>
+                  <textarea id="heroTitleInput" class="copy-input copy-textarea" rows="2" data-copy-limit="25"></textarea>
+                  <div class="copy-feedback"><span class="copy-warning">권장 글자수를 초과했습니다. Front에서 줄바꿈이 발생할 수 있습니다.</span><span class="copy-count" data-count-for="heroTitleInput">0 / 25</span></div>
+                </div>
+                <div class="copy-field">
+                  <div class="copy-label-row"><label for="heroSubtitleInput">메인 보조문구</label></div>
+                  <textarea id="heroSubtitleInput" class="copy-input copy-textarea" rows="2" data-copy-limit="60"></textarea>
+                  <div class="copy-feedback"><span class="copy-warning">권장 글자수를 초과했습니다. Front에서 줄바꿈이 발생할 수 있습니다.</span><span class="copy-count" data-count-for="heroSubtitleInput">0 / 60</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="sectionLayoutSettings" class="content-card management-card navigation-layout-card">
+          <div class="settings-card-head">
+            <div><div class="settings-eyebrow">CATEGORY · SECTION · LAYOUT</div><h2>카테고리·섹션 통합 관리</h2></div>
+            <button id="addLayoutSectionBtn" class="btn primary small">+ 섹션 영역 추가</button>
+          </div>
+          <div class="layout-guide-head"><strong>레이아웃 테마</strong></div>
+          <div id="layoutThemeGuide" class="layout-theme-guide"></div>
+          <div class="layout-list-head"><span>순서</span><span>상단 카테고리명</span><span>연결 섹션</span><span>레이아웃 테마</span><span>카테고리</span><span>섹션</span><span>관리</span></div>
+          <div id="layoutSectionList" class="layout-section-list"></div>
+        </section>
+
+        <section id="programMenuSettings" class="content-card management-card program-menu-settings">
+          <div class="settings-card-head">
+            <div><div class="settings-eyebrow">PROGRAM SHORTCUTS</div><h2>프로그램 원형 메뉴 관리</h2></div>
+            <button id="addProgramShortcutBtn" class="btn primary small">+ 프로그램 추가</button>
+          </div>
+          <div class="program-list-head"><span>순서</span><span>아이콘</span><span>프로그램명</span><span>배지</span><span>연결 URL</span><span>노출</span><span>관리</span></div>
+          <div id="programShortcutList" class="program-shortcut-list"></div>
+        </section>
+
+        <section id="promotionSettings" class="content-card management-card">
+          <div class="settings-card-head">
+            <div><div class="settings-eyebrow">BOTTOM PROMOTION</div><h2>하단 프로모션 배너 관리</h2></div>
+          </div>
+          <div class="promo-type-area">
+            <strong>배너 유형</strong>
+            <div class="promo-type-tabs" role="radiogroup" aria-label="하단 배너 유형"><label><input id="promoTypeDesign" type="radio" name="promoType" value="design" /><span>디자인형</span></label><label><input id="promoTypeImage" type="radio" name="promoType" value="image" /><span>통이미지형</span></label></div>
+          </div>
+          <div class="promo-editor-layout">
+            <div class="promo-editor-main">
+              <section id="promoDesignSettings" class="promo-type-panel">
+                <div class="promo-panel-title"><strong>디자인형 설정</strong></div>
+                <div class="copy-grid promo-copy-grid">
+                  <div class="copy-field"><div class="copy-label-row"><label for="promoBadgeInput">배너 배지</label></div><input id="promoBadgeInput" class="copy-input" data-copy-limit="15" /><div class="copy-feedback"><span class="copy-warning">권장 글자수를 초과했습니다.</span><span class="copy-count" data-count-for="promoBadgeInput">0 / 15</span></div></div>
+                  <div class="copy-field"><div class="copy-label-row"><label for="promoTitleInput">메인 문구</label></div><input id="promoTitleInput" class="copy-input" data-copy-limit="30" /><div class="copy-feedback"><span class="copy-warning">권장 글자수를 초과했습니다.</span><span class="copy-count" data-count-for="promoTitleInput">0 / 30</span></div></div>
+                  <div class="copy-field wide"><div class="copy-label-row"><label for="promoSubtitleInput">보조문구</label></div><input id="promoSubtitleInput" class="copy-input" data-copy-limit="60" /><div class="copy-feedback"><span class="copy-warning">권장 글자수를 초과했습니다.</span><span class="copy-count" data-count-for="promoSubtitleInput">0 / 60</span></div></div>
+                  <div class="copy-field"><div class="copy-label-row"><label for="promoCtaInput">CTA 버튼명</label></div><input id="promoCtaInput" class="copy-input" data-copy-limit="15" /><div class="copy-feedback"><span class="copy-warning">권장 글자수를 초과했습니다.</span><span class="copy-count" data-count-for="promoCtaInput">0 / 15</span></div></div>
+                </div>
+                <div class="promo-preset-area"><div class="promo-panel-title"><strong>배경 스타일</strong></div><div id="promoColorPresets" class="promo-color-presets"></div></div>
+              </section>
+              <section id="promoImageSettings" class="promo-type-panel" hidden>
+                <div class="promo-panel-title"><strong>통이미지형 설정</strong></div>
+                <div class="promo-image-control"><div id="promoImageAdminPreview" class="promo-image-admin-preview"></div><div class="promo-image-info"><strong>권장 사이즈 1600 × 186px</strong><span>JPG, PNG, WebP</span><div><button id="promoImageChangeBtn" class="btn small">이미지 업로드·변경</button><button id="promoImageDeleteBtn" class="btn small danger">삭제</button></div></div></div>
+                <div class="copy-field promo-image-cta"><div class="copy-label-row"><label for="promoImageCtaInput">CTA 버튼명</label></div><input id="promoImageCtaInput" class="copy-input" data-copy-limit="15" /><div class="copy-feedback"><span class="copy-warning">권장 글자수를 초과했습니다.</span><span class="copy-count" data-count-for="promoImageCtaInput">0 / 15</span></div></div>
+              </section>
+              <section class="promo-common-settings"><div class="promo-panel-title"><strong>URL 입력</strong></div><div class="promo-common-grid"><div class="copy-field"><div class="copy-label-row"><label for="promoUrlInput">URL</label></div><input id="promoUrlInput" class="copy-input" placeholder="https:// 또는 /event/..." /></div><label class="visibility-control"><span>새창 열기</span><span class="toggle"><input id="promoOpenNewWindowInput" type="checkbox" /><span class="toggle-track"></span></span><strong id="promoOpenNewWindowLabel">OFF</strong></label><label class="visibility-control"><span>노출 여부</span><span class="toggle"><input id="promoCommonVisibleInput" type="checkbox" /><span class="toggle-track"></span></span><strong id="promoCommonVisibleLabel">ON</strong></label></div></section>
+            </div>
+            <aside class="promo-live-preview-wrap"><div class="promo-panel-title"><strong>배너 미리보기</strong></div><div id="promoLivePreview" class="promo-live-preview"></div></aside>
+          </div>
+        </section>
+        </div>
+
+        <div id="contentManagementView" class="admin-view" hidden>
+        <section class="content-card curation-card">
+          <div class="exposure-settings">
+            <div class="settings-card-head section-settings-head">
+              <div>
+                <div class="settings-eyebrow">SECTION <span id="selectedSectionNumber">01</span></div>
+                <h2>섹션 노출 설정 <span id="selectedAdminName" class="admin-name-chip">인기 콘텐츠</span></h2>
+              </div>
+              <label class="visibility-control"><span>섹션 노출</span><span class="toggle"><input id="sectionVisibleInput" type="checkbox" /><span class="toggle-track"></span></span><strong id="sectionVisibleLabel">ON</strong></label>
+            </div>
+
+            <div class="copy-grid section-copy-grid">
+              <div class="copy-field">
+                <div class="copy-label-row"><label for="sectionDisplayTitleInput">섹션 타이틀</label></div>
+                <input id="sectionDisplayTitleInput" class="copy-input" data-copy-limit="30" />
+                <div class="copy-feedback"><span class="copy-warning">권장 글자수를 초과했습니다. Front에서 줄바꿈이 발생할 수 있습니다.</span><span class="copy-count" data-count-for="sectionDisplayTitleInput">0 / 30</span></div>
+              </div>
+              <div class="copy-field">
+                <div class="copy-label-row"><label for="sectionBadgeInput">배지/라벨</label></div>
+                <input id="sectionBadgeInput" class="copy-input" data-copy-limit="15" />
+                <div class="copy-feedback"><span class="copy-warning">권장 글자수를 초과했습니다.</span><span class="copy-count" data-count-for="sectionBadgeInput">0 / 15</span></div>
+              </div>
+              <div class="copy-field wide">
+                <div class="copy-label-row"><label for="sectionSubtitleInput">보조문구</label></div>
+                <input id="sectionSubtitleInput" class="copy-input" data-copy-limit="60" />
+                <div class="copy-feedback"><span class="copy-warning">권장 글자수를 초과했습니다. Front에서 줄바꿈이 발생할 수 있습니다.</span><span class="copy-count" data-count-for="sectionSubtitleInput">0 / 60</span></div>
+              </div>
+              <div class="copy-field">
+                <div class="copy-label-row"><label for="sectionCtaInput">CTA 문구</label></div>
+                <input id="sectionCtaInput" class="copy-input" data-copy-limit="15" />
+                <div class="copy-feedback"><span class="copy-warning">권장 글자수를 초과했습니다.</span><span class="copy-count" data-count-for="sectionCtaInput">0 / 15</span></div>
+              </div>
+            </div>
+
+            <div id="featuredCardSettings" class="featured-settings" hidden>
+              <div class="featured-copy">
+                <div class="featured-title-row"><strong>대표 카드 문구</strong></div>
+                <div class="copy-grid featured-copy-grid">
+                  <div class="copy-field"><div class="copy-label-row"><label for="featuredTitleInput">대표 타이틀</label><span>권장 25자 이내</span></div><input id="featuredTitleInput" class="copy-input" data-copy-limit="25" /><div class="copy-feedback"><span class="copy-warning">권장 글자수를 초과했습니다.</span><span class="copy-count" data-count-for="featuredTitleInput">0 / 25</span></div></div>
+                  <div class="copy-field"><div class="copy-label-row"><label for="featuredCtaInput">대표 CTA</label><span>권장 15자 이내</span></div><input id="featuredCtaInput" class="copy-input" data-copy-limit="15" /><div class="copy-feedback"><span class="copy-warning">권장 글자수를 초과했습니다.</span><span class="copy-count" data-count-for="featuredCtaInput">0 / 15</span></div></div>
+                  <div class="copy-field wide"><div class="copy-label-row"><label for="featuredDescriptionInput">대표 설명</label><span>권장 60자 이내</span></div><input id="featuredDescriptionInput" class="copy-input" data-copy-limit="60" /><div class="copy-feedback"><span class="copy-warning">권장 글자수를 초과했습니다.</span><span class="copy-count" data-count-for="featuredDescriptionInput">0 / 60</span></div></div>
+                </div>
+              </div>
+              <div class="featured-image-control">
+                <span>대표 카드 노출 이미지</span>
+                <img id="featuredImagePreview" alt="대표 카드 노출 이미지" />
+                <button id="changeFeaturedImageBtn" class="btn small">이미지 변경</button>
+                <input id="featuredImageFileInput" type="file" accept="image/*" hidden />
+              </div>
+            </div>
+          </div>
+
+          <div class="curation-heading">
+            <div><span>CONTENT CURATION</span><h2>콘텐츠 편성</h2></div>
+            <div class="section-actions">
+              <button class="btn soft" id="recommendBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 3 1.7 4.3L18 9l-4.3 1.7L12 15l-1.7-4.3L6 9l4.3-1.7L12 3ZM18.5 15l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8.8-2.2Z"/></svg>
+                추천 후보
+              </button>
+              <button class="btn primary" id="addContentBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                콘텐츠 추가
+              </button>
+            </div>
+          </div>
+
+          <div class="list-toolbar">
+            <div class="list-summary">편성 콘텐츠 <strong id="contentCount">0개</strong></div>
+            <div class="toolbar-right">
+              <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+                <input id="contentSearch" type="search" placeholder="클립명 또는 ID 검색" />
+              </div>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="curation-table">
+              <thead>
+                <tr>
+                  <th class="col-order">순서</th>
+                  <th class="col-thumb">썸네일</th>
+                  <th class="col-title">클립 정보</th>
+                  <th class="col-type">자료유형</th>
+                  <th class="col-access">이용조건</th>
+                  <th class="col-point">포인트</th>
+                  <th class="col-visible">노출</th>
+                  <th class="col-manage">관리</th>
+                </tr>
+              </thead>
+              <tbody id="contentTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+        </div>
+
+        <div id="statsManagementView" class="admin-view stats-management-view" hidden>
+          <section id="statsOverview" class="content-card stats-page-card">
+            <div class="stats-page-head">
+              <div><span>MEMBERSHIP ANALYTICS</span><h2>멤버십전용관 통계</h2></div>
+              <span class="stats-prototype-badge">프로토타입 데이터</span>
+            </div>
+
+            <div class="stats-data-notice" role="status">
+              <div><strong>데이터 연결 전 화면입니다.</strong><span>방문·클릭·이용 수치는 UI 검증용이며, 구매 완료와 전환율은 결제 데이터 연동 후 제공됩니다.</span></div>
+              <button id="statsDataInfoBtn" class="btn small" type="button">연동 기준 보기</button>
+            </div>
+
+            <div class="stats-filter-panel" aria-label="통계 조회 조건">
+              <div class="stats-filter-row">
+                <div class="stats-filter-field stats-date-field">
+                  <label>기간</label>
+                  <div class="stats-date-range"><input id="statsStartDate" class="input" type="date" /><span>~</span><input id="statsEndDate" class="input" type="date" /></div>
+                </div>
+                <div class="stats-filter-field"><label for="statsMemberFilter">회원 상태</label><select id="statsMemberFilter" class="input"><option value="all">전체</option><option value="guest">비로그인</option><option value="normal">일반회원</option><option value="paid">유료회원</option></select></div>
+                <div class="stats-filter-field"><label for="statsSectionFilter">섹션</label><select id="statsSectionFilter" class="input"><option value="all">전체 섹션</option><option value="popular">지금 많이 보는 콘텐츠</option><option value="autumn">가을 자연</option><option value="special-day">행사</option><option value="program">프로그램</option><option value="theme">추천 테마</option><option value="outdoor">바깥놀이</option><option value="solution">이달의 놀이</option><option value="future">교육부 추천</option></select></div>
+                <div class="stats-filter-field"><label for="statsTypeFilter">콘텐츠 유형</label><select id="statsTypeFilter" class="input"><option value="all">전체</option><option value="video">영상</option><option value="material">자료</option><option value="program">프로그램</option></select></div>
+                <button id="statsSearchBtn" class="btn primary stats-search-btn" type="button">조회</button>
+              </div>
+              <div class="stats-quick-range" aria-label="빠른 기간 선택"><span>빠른 선택</span><button data-stats-range="today">오늘</button><button data-stats-range="7d">최근 7일</button><button class="active" data-stats-range="30d">최근 30일</button><button data-stats-range="month">이번 달</button><button data-stats-range="previous-month">지난달</button></div>
+            </div>
+
+            <div class="stats-result-meta"><span id="statsResultRange">최근 30일</span><em id="statsResultFilter">전체 회원 · 전체 섹션 · 전체 유형</em></div>
+            <div id="statsKpiGrid" class="stats-kpi-grid" aria-label="주요 지표"></div>
+
+            <section class="stats-inner-card stats-trend-card" aria-labelledby="statsTrendTitle">
+              <div class="stats-section-head"><div><span>VISIT · ENGAGEMENT</span><h3 id="statsTrendTitle">방문 / 이용 추이</h3></div><div class="stats-chart-controls"><button class="active" data-stats-granularity="day">일별</button><button data-stats-granularity="month">월별</button></div></div>
+              <div class="stats-chart-legend"><span class="visitor">방문자</span><span class="click">콘텐츠 클릭</span><span class="use">콘텐츠 이용</span></div>
+              <div id="statsTrendChart" class="stats-trend-chart" role="img" aria-label="일자별 방문자, 콘텐츠 클릭, 콘텐츠 이용 추이"></div>
+            </section>
+          </section>
+
+          <section id="statsPopularContent" class="content-card stats-section-card">
+            <div class="stats-section-head"><div><span>CONTENT PERFORMANCE</span><h3>인기 콘텐츠 TOP 10</h3></div><span class="stats-table-note">노출 대비 클릭률 기준 포함</span></div>
+            <div class="stats-table-wrap"><table class="stats-table stats-content-table"><thead><tr><th>순위</th><th>콘텐츠</th><th>클립 ID</th><th>소속 섹션</th><th>유형</th><th><span class="metric-header">노출수<button class="metric-info-button" type="button" data-metric-info="impression" aria-label="노출수 설명">i</button></span></th><th><span class="metric-header">클릭수<button class="metric-info-button" type="button" data-metric-info="contentClick" aria-label="클릭수 설명">i</button></span></th><th><span class="metric-header">CTR<button class="metric-info-button" type="button" data-metric-info="ctr" aria-label="CTR 설명">i</button></span></th><th><span class="metric-header">이용수<button class="metric-info-button" type="button" data-metric-info="contentUse" aria-label="이용수 설명">i</button></span></th></tr></thead><tbody id="statsPopularBody"></tbody></table></div>
+          </section>
+
+          <section id="statsSectionPerformance" class="content-card stats-section-card">
+            <div class="stats-section-head"><div><span>SECTION PERFORMANCE</span><h3>섹션별 성과</h3></div></div>
+            <div class="stats-table-wrap"><table class="stats-table"><thead><tr><th>섹션명</th><th><span class="metric-header">노출 사용자<button class="metric-info-button" type="button" data-metric-info="sectionUsers" aria-label="노출 사용자 설명">i</button></span></th><th><span class="metric-header">콘텐츠 노출수<button class="metric-info-button" type="button" data-metric-info="impression" aria-label="콘텐츠 노출수 설명">i</button></span></th><th><span class="metric-header">콘텐츠 클릭수<button class="metric-info-button" type="button" data-metric-info="contentClick" aria-label="콘텐츠 클릭수 설명">i</button></span></th><th><span class="metric-header">CTR<button class="metric-info-button" type="button" data-metric-info="ctr" aria-label="CTR 설명">i</button></span></th><th><span class="metric-header">콘텐츠 이용수<button class="metric-info-button" type="button" data-metric-info="contentUse" aria-label="콘텐츠 이용수 설명">i</button></span></th></tr></thead><tbody id="statsSectionBody"></tbody></table></div>
+          </section>
+
+          <section id="statsConversion" class="stats-conversion-grid">
+            <article class="content-card stats-section-card stats-funnel-card">
+              <div class="stats-section-head"><div><span>MEMBERSHIP FUNNEL</span><h3>멤버십 전환 퍼널 <button class="metric-info-button" type="button" data-metric-info="stageConversion" aria-label="단계별 전환율 설명">i</button></h3></div></div>
+              <div id="statsMembershipFunnel" class="stats-membership-funnel"></div>
+            </article>
+            <article class="content-card stats-section-card stats-connection-card">
+              <div class="stats-section-head"><div><span>DATA CONNECTION</span><h3>전환 데이터 연결 상태</h3></div></div>
+              <div class="stats-connection-list"><div><span class="status pending"></span><strong>Front 이벤트</strong><em>이벤트 스키마 연결 필요</em></div><div><span class="status pending"></span><strong>회원 식별</strong><em>내부 개인정보 정책 확인 필요</em></div><div><span class="status waiting"></span><strong>결제 완료</strong><em>주문·결제 상태 API 확인 필요</em></div></div>
+            </article>
+          </section>
+
+          <section class="content-card stats-section-card stats-contribution-card">
+            <div class="stats-section-head"><div><span>CONVERSION CONTRIBUTION</span><h3>구매 전환 기여 콘텐츠 TOP 10</h3></div><span class="stats-table-note">직접·7일 이내 기여 기준은 연동 후 적용</span></div>
+            <div class="stats-table-wrap"><table class="stats-table"><thead><tr><th>콘텐츠명</th><th>섹션</th><th><span class="metric-header">CTA 클릭<button class="metric-info-button" type="button" data-metric-info="ctaClick" aria-label="CTA 클릭 설명">i</button></span></th><th><span class="metric-header">결제 페이지 이동<button class="metric-info-button" type="button" data-metric-info="checkoutView" aria-label="결제 페이지 이동 설명">i</button></span></th><th><span class="metric-header">구매 완료<button class="metric-info-button" type="button" data-metric-info="purchase" aria-label="구매 완료 설명">i</button></span></th><th><span class="metric-header">구매 전환 기여율<button class="metric-info-button" type="button" data-metric-info="contributionRate" aria-label="구매 전환 기여율 설명">i</button></span></th></tr></thead><tbody id="statsContributionBody"></tbody></table></div>
+          </section>
+        </div>
+
+        <div id="historyManagementView" class="admin-view history-management-view" hidden>
+          <section class="content-card history-management-card">
+            <div class="history-page-head">
+              <div><span>OPERATION HISTORY</span><h2>변경 이력</h2></div>
+              <div class="history-range-badge">기본 조회 · 최근 3개월</div>
+            </div>
+
+            <div class="history-policy-note">
+              <strong>조회 범위 안내</strong>
+              <span>관리자 화면에서는 최근 1년 이력을 조회합니다. 1년 이전 데이터의 보관·삭제 정책은 내부 시스템 정책 확정 후 적용합니다.</span>
+            </div>
+
+            <div class="history-filter-panel">
+              <div class="history-filter-field">
+                <label for="historyPeriodFilter">기간</label>
+                <select id="historyPeriodFilter" class="input">
+                  <option value="1m">최근 1개월</option>
+                  <option value="3m" selected>최근 3개월</option>
+                  <option value="6m">최근 6개월</option>
+                  <option value="1y">최근 1년</option>
+                  <option value="custom">기간 직접설정</option>
+                </select>
+              </div>
+              <div class="history-filter-field">
+                <label for="historyAreaFilter">관리 영역</label>
+                <select id="historyAreaFilter" class="input">
+                  <option value="all">전체</option>
+                  <option value="hero">메인관리 &gt; 히어로 배너</option>
+                  <option value="category">메인관리 &gt; 카테고리·섹션</option>
+                  <option value="program">메인관리 &gt; 프로그램 메뉴</option>
+                  <option value="promotion">메인관리 &gt; 하단 프로모션</option>
+                  <option value="content">콘텐츠 편성관리</option>
+                  <option value="publish">발행 관리</option>
+                </select>
+              </div>
+              <div class="history-filter-field">
+                <label for="historyTypeFilter">변경 유형</label>
+                <select id="historyTypeFilter" class="input">
+                  <option value="all">전체</option>
+                  <option value="등록">등록</option>
+                  <option value="수정">수정</option>
+                  <option value="삭제">삭제</option>
+                  <option value="순서 변경">순서 변경</option>
+                  <option value="노출 ON/OFF">노출 ON/OFF</option>
+                  <option value="이미지 변경">이미지 변경</option>
+                  <option value="발행">발행</option>
+                </select>
+              </div>
+              <div class="history-filter-field">
+                <label for="historyAdminFilter">관리자</label>
+                <select id="historyAdminFilter" class="input"><option value="all">전체</option></select>
+              </div>
+              <button id="historySearchBtn" class="btn dark history-search-btn">검색</button>
+              <div id="historyCustomRange" class="history-custom-range" hidden>
+                <div class="history-filter-field"><label for="historyStartDate">시작일</label><input id="historyStartDate" class="input" type="date" /></div>
+                <span>~</span>
+                <div class="history-filter-field"><label for="historyEndDate">종료일</label><input id="historyEndDate" class="input" type="date" /></div>
+              </div>
+            </div>
+
+            <div class="history-result-head"><strong id="historyResultCount">총 0건</strong><span>최신 변경 건부터 표시됩니다.</span></div>
+            <div class="history-table-wrap">
+              <table class="history-table">
+                <thead><tr><th>변경 일시</th><th>관리자</th><th>관리 영역</th><th>변경 유형</th><th>변경 내용</th><th>대상 월</th><th>상세보기</th></tr></thead>
+                <tbody id="historyTableBody"></tbody>
+              </table>
+            </div>
+            <div id="historyPagination" class="history-pagination" aria-label="변경 이력 페이지"></div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <input id="heroImageFileInput" type="file" accept="image/*" hidden />
+  <input id="programIconFileInput" type="file" accept="image/*" hidden />
+  <input id="promoImageFileInput" type="file" accept="image/jpeg,image/png,image/webp" hidden />
+
+  <div id="contentDrawerBackdrop" class="drawer-backdrop" aria-hidden="true">
+    <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="contentDrawerTitle">
+      <div class="drawer-head">
+        <div><h2 id="contentDrawerTitle">콘텐츠 추가</h2><p>원본 클립정보와 멤버십 노출정보는 별도로 관리됩니다.</p></div>
+        <button class="drawer-close" data-close-drawer="content" aria-label="닫기">×</button>
+      </div>
+      <div class="drawer-body">
+        <div class="step-label"><span>1</span> 클립 ID 조회</div>
+        <div class="lookup-box">
+          <input id="clipIdInput" class="input" inputmode="numeric" placeholder="클립 ID를 입력하세요" />
+          <button id="lookupClipBtn" class="btn dark">조회</button>
+        </div>
+        <div class="sample-ids">프로토타입 테스트 ID:
+          <button data-sample-id="87021">87021</button>
+          <button data-sample-id="87025">87025</button>
+          <button data-sample-id="87027">87027</button>
+        </div>
+        <div id="lookupError" class="lookup-state lookup-error"></div>
+
+        <div id="clipForm" class="lookup-state">
+          <div class="subsection">
+            <div class="step-label"><span>2</span> 원본 클립정보</div>
+            <div class="original-card">
+              <img id="originalThumb" alt="기본 클립 썸네일" />
+              <div class="original-grid">
+                <div class="original-field wide"><span>클립명</span><strong id="originalTitle"></strong></div>
+                <div class="original-field"><span>클립 ID</span><strong id="originalId"></strong></div>
+                <div class="original-field"><span>자료유형</span><strong id="originalType"></strong></div>
+                <div class="original-field"><span>이용조건</span><strong id="originalAccess"></strong></div>
+                <div class="original-field"><span>포인트</span><strong id="originalPoints"></strong></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="subsection">
+            <div class="step-label"><span>3</span> 멤버십전용관 노출정보</div>
+            <div class="form-grid">
+              <div class="field"><label for="displayTitleInput">노출 제목</label><input id="displayTitleInput" class="input" /></div>
+              <div class="field"><label for="displayVisibleSelect">노출 상태</label><select id="displayVisibleSelect" class="input"><option value="true">ON</option><option value="false">OFF</option></select></div>
+            </div>
+          </div>
+
+          <div class="subsection">
+            <div class="step-label"><span>4</span> 썸네일</div>
+            <div class="thumb-compare">
+              <div class="thumb-box">
+                <div class="thumb-box-head">기본 썸네일</div>
+                <img id="baseThumbPreview" alt="기본 썸네일" />
+              </div>
+              <div class="thumb-box">
+                <div class="thumb-box-head">멤버십전용관 썸네일</div>
+                <img id="membershipThumbPreview" alt="멤버십전용관 썸네일" />
+                <div class="thumb-box-actions">
+                  <button id="changeThumbBtn" class="btn small">이미지 변경</button>
+                  <button id="resetThumbBtn" class="btn small">기본으로 되돌리기</button>
+                  <input id="thumbFileInput" type="file" accept="image/*" hidden />
+                </div>
+              </div>
+            </div>
+            <button id="applyToBaseBtn" class="btn small danger" style="margin-top:10px">클립자료 관리자에도 적용</button>
+            <p class="thumb-note">멤버십용 이미지만 변경하면 원본 클립 썸네일은 바뀌지 않습니다. 원본 변경은 위 액션을 명시적으로 실행한 경우에만 반영됩니다.</p>
+          </div>
+        </div>
+      </div>
+      <div class="drawer-foot">
+        <button class="btn" data-close-drawer="content">취소</button>
+        <button id="submitContentBtn" class="btn primary" disabled>편성에 추가</button>
+      </div>
+    </aside>
+  </div>
+
+  <div id="recommendDrawerBackdrop" class="drawer-backdrop" aria-hidden="true">
+    <aside class="drawer wide" role="dialog" aria-modal="true" aria-labelledby="recommendDrawerTitle">
+      <div class="drawer-head">
+        <div><h2 id="recommendDrawerTitle">추천 콘텐츠 후보</h2><p>선택한 콘텐츠만 현재 섹션 편성에 추가됩니다.</p></div>
+        <button class="drawer-close" data-close-drawer="recommend" aria-label="닫기">×</button>
+      </div>
+      <div class="drawer-body">
+        <div id="recommendTabs" class="recommend-tabs"></div>
+        <div id="recommendGrid" class="recommend-grid"></div>
+      </div>
+      <div class="drawer-foot">
+        <span id="recommendSelectionCount" class="selection-count">0개 선택</span>
+        <button class="btn" data-close-drawer="recommend">취소</button>
+        <button id="addRecommendationsBtn" class="btn primary" disabled>선택 콘텐츠 추가</button>
+      </div>
+    </aside>
+  </div>
+
+  <div id="sectionSettingsBackdrop" class="drawer-backdrop" aria-hidden="true">
+    <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="sectionSettingsTitle">
+      <div class="drawer-head">
+        <div><h2 id="sectionSettingsTitle">섹션 구조 설정</h2><p>일반 편성 화면과 분리된 구조 관리 영역입니다.</p></div>
+        <button class="drawer-close" data-close-drawer="settings" aria-label="닫기">×</button>
+      </div>
+      <div class="drawer-body">
+        <div id="sectionSettingsList" class="settings-list"></div>
+        <button id="addSectionBtn" class="btn settings-add">+ 새 섹션 추가</button>
+      </div>
+      <div class="drawer-foot">
+        <button class="btn" data-close-drawer="settings">취소</button>
+        <button id="saveSectionSettingsBtn" class="btn primary">섹션 구조 저장</button>
+      </div>
+    </aside>
+  </div>
+
+  <div id="confirmBackdrop" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <div class="modal-head"><h3 id="confirmTitle"></h3></div>
+      <div id="confirmBody" class="modal-body"></div>
+      <div class="modal-foot"><button id="confirmCancel" class="btn">취소</button><button id="confirmOk" class="btn primary">확인</button></div>
+    </div>
+  </div>
+
+  <div id="layoutPreviewBackdrop" class="modal-backdrop layout-preview-backdrop" aria-hidden="true">
+    <div class="layout-preview-modal" role="dialog" aria-modal="true" aria-labelledby="layoutPreviewTitle">
+      <div class="layout-preview-head">
+        <div><span>LAYOUT PREVIEW</span><h3 id="layoutPreviewTitle">레이아웃 미리보기</h3><p id="layoutPreviewDescription"></p></div>
+        <button id="layoutPreviewClose" class="drawer-close" aria-label="레이아웃 미리보기 닫기">×</button>
+      </div>
+      <div class="layout-preview-body">
+        <div class="layout-front-chrome"><span></span><strong>멤버십전용관 Front 섹션 예시</strong><em>미리보기</em></div>
+        <div id="layoutPreviewStage" class="layout-preview-stage"></div>
+      </div>
+      <div class="layout-preview-foot"><span>이미지와 문구는 예시이며, 실제 편성 콘텐츠가 적용됩니다.</span><button id="layoutPreviewApply" class="btn primary">이 레이아웃 사용</button><button class="btn" data-close-layout-preview>닫기</button></div>
+    </div>
+  </div>
+
+  <div id="historyDetailBackdrop" class="modal-backdrop" aria-hidden="true">
+    <div class="modal history-detail-modal" role="dialog" aria-modal="true" aria-labelledby="historyDetailTitle">
+      <div class="modal-head history-detail-head"><div><span>CHANGE DETAIL</span><h3 id="historyDetailTitle">변경 이력 상세</h3></div><button id="historyDetailClose" class="drawer-close" aria-label="변경 이력 상세 닫기">×</button></div>
+      <div class="modal-body history-detail-body">
+        <dl class="history-detail-meta">
+          <div><dt>변경 항목</dt><dd id="historyDetailItem"></dd></div>
+          <div><dt>관리 영역</dt><dd id="historyDetailArea"></dd></div>
+          <div><dt>변경 유형</dt><dd id="historyDetailType"></dd></div>
+          <div><dt>대상 월</dt><dd id="historyDetailMonth"></dd></div>
+        </dl>
+        <div class="history-value-compare">
+          <div><span>변경 전</span><p id="historyDetailBefore"></p></div>
+          <div><span>변경 후</span><p id="historyDetailAfter"></p></div>
+        </div>
+        <dl class="history-detail-meta compact">
+          <div><dt>변경자</dt><dd id="historyDetailBy"></dd></div>
+          <div><dt>변경일</dt><dd id="historyDetailAt"></dd></div>
+        </dl>
+      </div>
+      <div class="modal-foot"><button id="historyDetailConfirm" class="btn primary">확인</button></div>
+    </div>
+  </div>
+
+  <div id="statsDetailBackdrop" class="modal-backdrop stats-detail-backdrop" aria-hidden="true">
+    <div class="stats-detail-modal" role="dialog" aria-modal="true" aria-labelledby="statsDetailTitle">
+      <div class="stats-detail-head"><div><span>CONTENT DETAIL</span><h3 id="statsDetailTitle">콘텐츠 상세 통계</h3></div><button id="statsDetailClose" class="drawer-close" aria-label="콘텐츠 상세 통계 닫기">×</button></div>
+      <div class="stats-detail-body">
+        <div class="stats-detail-summary"><img id="statsDetailThumb" alt="" /><div><span id="statsDetailSection"></span><strong id="statsDetailName"></strong><em id="statsDetailClip"></em></div></div>
+        <div id="statsDetailMetrics" class="stats-detail-metrics"></div>
+        <div class="stats-detail-funnel-head"><strong>이용·전환 흐름</strong><span>구매 완료는 결제 연동 후 제공</span></div>
+        <div id="statsDetailFunnel" class="stats-detail-funnel"></div>
+      </div>
+      <div class="modal-foot"><button id="statsDetailConfirm" class="btn primary">확인</button></div>
+    </div>
+  </div>
+
+  <div id="toastStack" class="toast-stack" aria-live="polite"></div>
+
+  <script src="membership-clip-service.js"></script>
+  <script src="membership-admin.js"></script>
+  <script src="membership-admin-stats.js"></script>
+</body>
+</html>
