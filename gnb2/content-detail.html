@@ -88,7 +88,7 @@
     background:rgba(0,0,0,.18);
   }
   @media (max-width:860px){
-    .detail-layout{flex-direction:column}
+    .detail-layout{flex-direction:column}s
     .detail-info{flex:1 1 auto;order:2}
     .detail-media{order:1;width:100%}
   }
@@ -188,6 +188,90 @@
     .video-modal-close{top:14px;right:14px}
   }
   body.video-modal-locked{overflow:hidden}
+
+  /* ---- slide player: slide content keeps the normal detail page first,
+     then opens this full-viewport viewer from the "슬라이드 보기" CTA. ---- */
+  .slide-modal-overlay{
+    position:fixed;inset:0;z-index:260;
+    display:flex;flex-direction:column;
+    background:#141414;
+    opacity:0;visibility:hidden;
+    transition:opacity .2s ease;
+  }
+  .slide-modal-overlay.open{opacity:1;visibility:visible}
+  body.slide-modal-locked{overflow:hidden}
+  .slide-player-head{
+    min-height:72px;padding:12px clamp(18px,3vw,42px);
+    display:flex;align-items:center;justify-content:space-between;gap:20px;
+    background:#101010;border-bottom:1px solid rgba(255,255,255,.1);
+  }
+  .slide-player-title-wrap{min-width:0}
+  .slide-player-kicker{font-size:11px;font-weight:800;letter-spacing:.12em;color:#ffd43b;margin-bottom:4px}
+  .slide-player-title{margin:0;font-size:17px;line-height:1.35;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .slide-player-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+  .slide-tool{
+    min-width:40px;height:40px;padding:0 13px;border-radius:10px;
+    border:1px solid rgba(255,255,255,.16);background:#222;color:#fff;
+    display:inline-flex;align-items:center;justify-content:center;gap:7px;
+    font:700 13px/1 'Pretendard',system-ui,sans-serif;cursor:pointer;
+    transition:background .18s ease,border-color .18s ease;
+  }
+  .slide-tool:hover{background:#343434;border-color:rgba(255,255,255,.34)}
+  .slide-tool-close{font-size:18px;padding:0;width:40px}
+  .slide-player-body{
+    flex:1;min-height:0;display:flex;align-items:center;justify-content:center;
+    gap:clamp(10px,2vw,26px);padding:clamp(16px,3vh,32px) clamp(14px,3vw,44px);
+  }
+  .slide-stage{
+    position:relative;flex:1;min-width:0;max-width:1500px;height:100%;
+    display:flex;align-items:center;justify-content:center;overflow:hidden;
+    background:#090909;box-shadow:0 22px 70px rgba(0,0,0,.5);
+  }
+  .slide-stage img{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
+  .slide-count{
+    position:absolute;right:16px;bottom:14px;padding:6px 10px;border-radius:100px;
+    background:rgba(0,0,0,.68);color:#fff;font-size:12px;font-weight:700;
+  }
+  .slide-nav{
+    flex:0 0 auto;width:52px;height:52px;border-radius:50%;
+    border:2px solid rgba(255,255,255,.55);background:rgba(0,0,0,.35);color:#fff;
+    font-size:26px;cursor:pointer;transition:background .18s ease,border-color .18s ease,transform .18s ease;
+  }
+  .slide-nav:hover{background:rgba(255,255,255,.14);border-color:#fff;transform:scale(1.05)}
+  .slide-player-foot{
+    flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:12px;
+    min-height:112px;padding:12px clamp(18px,3vw,42px) 18px;
+    background:linear-gradient(180deg,#141414,#0c0c0c);border-top:1px solid rgba(255,255,255,.08);
+  }
+  .slide-play-toggle{
+    flex:0 0 auto;width:44px;height:44px;border:0;border-radius:50%;
+    background:#ffd43b;color:#111;font-size:17px;font-weight:900;cursor:pointer;
+  }
+  .slide-thumbs{
+    display:flex;align-items:center;gap:8px;max-width:min(900px,78vw);overflow-x:auto;padding:3px;
+    scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.28) transparent;
+  }
+  .slide-thumb{
+    flex:0 0 auto;width:116px;aspect-ratio:16/9;padding:0;border-radius:5px;overflow:hidden;
+    border:2px solid transparent;background:#242424;cursor:pointer;opacity:.58;
+  }
+  .slide-thumb img{width:100%;height:100%;display:block;object-fit:cover}
+  .slide-thumb.active{border-color:#ffd43b;opacity:1}
+  @media (max-width:760px){
+    .slide-player-head{min-height:62px}
+    .slide-tool-label{display:none}
+    .slide-player-body{gap:8px;padding:12px 8px}
+    .slide-nav{width:40px;height:40px;font-size:21px}
+    .slide-player-foot{min-height:88px;padding:10px 12px}
+    .slide-thumb{width:86px}
+  }
+  @media print{
+    body.slide-modal-locked > *:not(.slide-modal-overlay){display:none!important}
+    .slide-modal-overlay{position:static!important;opacity:1!important;visibility:visible!important;background:#fff!important}
+    .slide-player-head,.slide-player-foot,.slide-nav,.slide-count{display:none!important}
+    .slide-player-body,.slide-stage{height:auto!important;padding:0!important;background:#fff!important;box-shadow:none!important}
+    .slide-stage img{max-width:100%!important;max-height:none!important}
+  }
 
   /* ---- worksheet / pdf preview (right column): fills the whole media
      panel edge-to-edge (see .detail-media--preview, which drops its own
@@ -379,6 +463,32 @@
     </div>
   </div>
 
+  <div class="slide-modal-overlay" id="slide-modal-overlay" aria-hidden="true">
+    <div class="slide-player-head">
+      <div class="slide-player-title-wrap">
+        <div class="slide-player-kicker">SLIDE PLAYER</div>
+        <h2 class="slide-player-title" id="slide-player-title">슬라이드</h2>
+      </div>
+      <div class="slide-player-actions">
+        <button class="slide-tool" id="slide-print" type="button" aria-label="인쇄"><span>▣</span><span class="slide-tool-label">인쇄</span></button>
+        <button class="slide-tool" id="slide-fullscreen" type="button" aria-label="전체화면"><span>⛶</span><span class="slide-tool-label">전체화면</span></button>
+        <button class="slide-tool slide-tool-close" id="slide-modal-close" type="button" aria-label="닫기">✕</button>
+      </div>
+    </div>
+    <div class="slide-player-body">
+      <button class="slide-nav" id="slide-prev" type="button" aria-label="이전 슬라이드">‹</button>
+      <div class="slide-stage" id="slide-stage">
+        <img id="slide-player-image" src="" alt="">
+        <span class="slide-count" id="slide-count"></span>
+      </div>
+      <button class="slide-nav" id="slide-next" type="button" aria-label="다음 슬라이드">›</button>
+    </div>
+    <div class="slide-player-foot">
+      <button class="slide-play-toggle" id="slide-play-toggle" type="button" aria-label="자동 재생">▶</button>
+      <div class="slide-thumbs" id="slide-thumbs" aria-label="슬라이드 목록"></div>
+    </div>
+  </div>
+
   <script>
   (function(){
     "use strict";
@@ -506,7 +616,7 @@
         downloadUrl: ""
       },
       "st-32": {
-        type: "unknown",
+        type: "slide",
         title: "가을 낙엽",
         thumbnail: "https://jfcafpyzebaeasbzudbm.supabase.co/storage/v1/object/public/membership-thumbnails/membership-st-32/membership-st-32-1789633001202.webp?v=1789633001202",
         description: "",
@@ -1238,6 +1348,7 @@
     // item's tag always matches the layout actually shown for it.
     function typeLabel(type){
       if(type === "video") return "영상";
+      if(type === "slide") return "슬라이드";
       if(type === "worksheet") return "활동지";
       if(type === "pdf") return "PDF";
       return null;
@@ -1346,6 +1457,7 @@
 
     function resolveReviewType(content){
       if(content.type === "video") return "video";
+      if(content.type === "slide") return "slide";
       if(content.type === "worksheet" || content.type === "pdf") return "worksheet";
       return simpleHash(content.id) % 2 === 0 ? "video" : "worksheet";
     }
@@ -1397,6 +1509,105 @@
     function closeVideoModal(){
       document.getElementById("video-modal-overlay").classList.remove("open");
       document.body.classList.remove("video-modal-locked");
+    }
+
+    /* ============================ slide player ============================ */
+    var slidePlayerState = { content: null, images: [], index: 0, timer: null };
+
+    // Real slide content can provide a `slides: [url, ...]` array. Until
+    // that API is connected, the prototype uses the current thumbnail plus
+    // related autumn thumbnails so the complete player flow is reviewable.
+    function getSlideImages(content){
+      var source = Array.isArray(content.slides) && content.slides.length
+        ? content.slides
+        : [content.thumbnail, "st-33", "st-34", "st-35", "st-36", "st-37", "st-38", "st-39"].map(function(item){
+            return CONTENT_DATA[item] ? CONTENT_DATA[item].thumbnail : item;
+          });
+      var seen = {};
+      return source.filter(function(src){
+        if(!src || seen[src]) return false;
+        seen[src] = true;
+        return true;
+      });
+    }
+
+    function stopSlideAutoplay(){
+      if(slidePlayerState.timer){
+        window.clearInterval(slidePlayerState.timer);
+        slidePlayerState.timer = null;
+      }
+      var play = document.getElementById("slide-play-toggle");
+      if(play){ play.textContent = "▶"; play.setAttribute("aria-label", "자동 재생"); }
+    }
+
+    function renderSlidePlayerFrame(){
+      var images = slidePlayerState.images;
+      if(!images.length) return;
+      var index = (slidePlayerState.index + images.length) % images.length;
+      slidePlayerState.index = index;
+      var content = slidePlayerState.content;
+      var image = document.getElementById("slide-player-image");
+      image.src = images[index];
+      image.alt = (content ? content.title : "슬라이드") + " " + (index + 1) + "페이지";
+      document.getElementById("slide-count").textContent = (index + 1) + " / " + images.length;
+      var thumbs = document.querySelectorAll("#slide-thumbs .slide-thumb");
+      for(var i = 0; i < thumbs.length; i++){
+        thumbs[i].classList.toggle("active", i === index);
+        thumbs[i].setAttribute("aria-current", i === index ? "true" : "false");
+      }
+      if(thumbs[index]) thumbs[index].scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
+
+    function moveSlide(step){
+      if(!slidePlayerState.images.length) return;
+      slidePlayerState.index += step;
+      renderSlidePlayerFrame();
+    }
+
+    function openSlidePlayer(content){
+      var images = getSlideImages(content);
+      if(!images.length) return;
+      slidePlayerState.content = content;
+      slidePlayerState.images = images;
+      slidePlayerState.index = 0;
+      stopSlideAutoplay();
+      document.getElementById("slide-player-title").textContent = content.title;
+      var thumbs = document.getElementById("slide-thumbs");
+      thumbs.innerHTML = "";
+      images.forEach(function(src, index){
+        var btn = el("button", { class: "slide-thumb", type: "button", "aria-label": (index + 1) + "페이지 보기" });
+        btn.appendChild(el("img", { src: src, alt: "" }));
+        btn.addEventListener("click", function(){
+          slidePlayerState.index = index;
+          renderSlidePlayerFrame();
+        });
+        thumbs.appendChild(btn);
+      });
+      renderSlidePlayerFrame();
+      var overlay = document.getElementById("slide-modal-overlay");
+      overlay.classList.add("open");
+      overlay.setAttribute("aria-hidden", "false");
+      document.body.classList.add("slide-modal-locked");
+    }
+
+    function closeSlidePlayer(){
+      stopSlideAutoplay();
+      var overlay = document.getElementById("slide-modal-overlay");
+      overlay.classList.remove("open");
+      overlay.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("slide-modal-locked");
+      if(document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(function(){});
+    }
+
+    function toggleSlideAutoplay(){
+      if(slidePlayerState.timer){
+        stopSlideAutoplay();
+        return;
+      }
+      slidePlayerState.timer = window.setInterval(function(){ moveSlide(1); }, 3000);
+      var play = document.getElementById("slide-play-toggle");
+      play.textContent = "Ⅱ";
+      play.setAttribute("aria-label", "자동 재생 정지");
     }
 
     function renderVideoMedia(content){
@@ -1471,7 +1682,7 @@
         fgWrap.appendChild(fallback);
       }
 
-      panel.appendChild(el("div", { class: "detail-preview-label", text: "자료 미리보기" }));
+      panel.appendChild(el("div", { class: "detail-preview-label", text: content.type === "slide" ? "슬라이드 미리보기" : "자료 미리보기" }));
       panel.appendChild(fgWrap);
       return panel;
     }
@@ -1485,7 +1696,12 @@
     // button (never a disabled/"준비 중" placeholder) that simply has
     // nothing to do yet — it swaps to the real download the moment
     // actionType/downloadUrl are filled in, with no UI change needed.
-    function renderDownloadCta(content){
+    function renderDownloadCta(content, reviewType){
+      if(reviewType === "slide"){
+        var slideBtn = el("button", { class: "detail-cta", type: "button", text: "▶ 슬라이드 보기" });
+        slideBtn.addEventListener("click", function(){ openSlidePlayer(content); });
+        return slideBtn;
+      }
       var btn = el("button", { class: "detail-cta", type: "button", text: "↓ 자료 다운로드" });
       btn.addEventListener("click", function(){
         var action = resolveAction(content);
@@ -1508,6 +1724,7 @@
     // function to extend without touching render() below.
     var TYPE_RENDERERS = {
       video: renderVideoMedia,
+      slide: renderThumbMedia,
       worksheet: renderThumbMedia
     };
 
@@ -1618,7 +1835,7 @@
       // bottom-anchors its whole content group (justify-content:flex-end),
       // so the CTA — appended last — ends up at the very bottom of the card.
       if(reviewType !== "video"){
-        info.appendChild(renderDownloadCta(content));
+        info.appendChild(renderDownloadCta(content, reviewType));
       }
 
       root.appendChild(el("div", { class: "detail-layout" }, [info, media]));
@@ -1638,7 +1855,11 @@
 
     function boot(){
       var params = new URLSearchParams(window.location.search);
-      var id = params.get("id");
+      // Directly opening this prototype file has no card id in the URL.
+      // Use the slide example as the review landing item so the page never
+      // falls into the confusing "id: (없음)" error state. Card links that
+      // provide ?id= keep using their requested content unchanged.
+      var id = params.get("id") || "st-32";
       var content = id ? CONTENT_DATA[id] : null;
       if(content){
         // attaches the lookup key onto the item itself so resolveReviewType
@@ -1646,7 +1867,7 @@
         content.id = id;
         render(content);
       } else {
-        notFound(id || "(없음)");
+        notFound(id);
       }
     }
 
@@ -1678,7 +1899,28 @@
     document.getElementById("video-modal-overlay").addEventListener("click", function(e){
       if(e.target === this) closeVideoModal();
     });
+    document.getElementById("slide-modal-close").addEventListener("click", closeSlidePlayer);
+    document.getElementById("slide-prev").addEventListener("click", function(){ moveSlide(-1); });
+    document.getElementById("slide-next").addEventListener("click", function(){ moveSlide(1); });
+    document.getElementById("slide-play-toggle").addEventListener("click", toggleSlideAutoplay);
+    document.getElementById("slide-print").addEventListener("click", function(){ window.print(); });
+    document.getElementById("slide-fullscreen").addEventListener("click", function(){
+      var overlay = document.getElementById("slide-modal-overlay");
+      if(document.fullscreenElement){
+        if(document.exitFullscreen) document.exitFullscreen().catch(function(){});
+      } else if(overlay.requestFullscreen){
+        overlay.requestFullscreen().catch(function(){});
+      }
+    });
     document.addEventListener("keydown", function(e){
+      var slideOpen = document.getElementById("slide-modal-overlay").classList.contains("open");
+      if(slideOpen){
+        if(e.key === "Escape") closeSlidePlayer();
+        else if(e.key === "ArrowLeft") moveSlide(-1);
+        else if(e.key === "ArrowRight") moveSlide(1);
+        else if(e.key === " "){ e.preventDefault(); toggleSlideAutoplay(); }
+        return;
+      }
       if(e.key === "Escape" && document.getElementById("video-modal-overlay").classList.contains("open")){
         closeVideoModal();
       }
@@ -1687,5 +1929,6 @@
     boot();
   })();
   </script>
+  <script src="./membership-footer.js?v=20261118-dark-footer-1"></script>
 </body>
 </html>

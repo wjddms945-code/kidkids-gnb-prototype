@@ -4,6 +4,8 @@
   const STORAGE_KEY = "kidkids_membership_curation_v2";
   const LEGACY_STORAGE_KEY = "kidkids_membership_curation_v1";
   const PREVIEW_KEY = "kidkids_membership_preview_v1";
+  const URL_EXAMPLE_MIGRATION_KEY = "kidkids_membership_url_example_v1";
+  const URL_EXAMPLE_ID = "url-membership-guide";
   const USER_NAME = "김정은";
 
   const $ = selector => document.querySelector(selector);
@@ -143,16 +145,106 @@
   }
 
   const clipSeeds = {
-    "87021": { id: "87021", title: "가을 낙엽으로 꾸미는 우리 반", displayTitle: "가을 낙엽으로 꾸미는 우리 반", type: "활동지", access: "유료", points: 300, link: "/clip/87021", thumbnail: "이미지/ChatGPT Image 2026년 9월 9일 오후 03_17_57.png", baseThumbnail: "이미지/ChatGPT Image 2026년 9월 9일 오후 03_17_57.png", visible: true, source: "manual" },
-    "87022": { id: "87022", title: "숲에서 찾은 가을 색깔", displayTitle: "숲에서 찾은 가을 색깔", type: "영상", access: "무료", points: 0, link: "/clip/87022", thumbnail: "이미지/ChatGPT Image 2026년 9월 9일 오후 03_19_38.png", baseThumbnail: "이미지/ChatGPT Image 2026년 9월 9일 오후 03_19_38.png", visible: true, source: "recommended" },
-    "87023": { id: "87023", title: "단풍잎 모양 관찰 카드", displayTitle: "단풍잎 모양 관찰 카드", type: "교수자료", access: "유료", points: 200, link: "/clip/87023", thumbnail: "이미지/ChatGPT Image 2026년 9월 9일 오후 03_24_25.png", baseThumbnail: "이미지/ChatGPT Image 2026년 9월 9일 오후 03_24_25.png", visible: true, source: "manual" },
-    "87024": { id: "87024", title: "오늘은 꼬마 숲 탐험대", displayTitle: "오늘은 꼬마 숲 탐험대", type: "놀이자료", access: "유료", points: 500, link: "/clip/87024", thumbnail: "이미지/ChatGPT Image 2026년 9월 9일 오후 03_36_10.png", baseThumbnail: "이미지/ChatGPT Image 2026년 9월 9일 오후 03_36_10.png", visible: true, source: "recommended" },
-    "87025": { id: "87025", title: "달토끼의 떡 방앗간", displayTitle: "달토끼의 떡 방앗간", type: "동화", access: "유료", points: 300, link: "/clip/87025", thumbnail: "이미지/달토끼의 떡 방앗간_가로 .png", baseThumbnail: "이미지/달토끼의 떡 방앗간_가로 .png", visible: true, source: "manual" },
-    "87026": { id: "87026", title: "추석 행사 All-in-one", displayTitle: "추석 행사 All-in-one", type: "행사자료", access: "유료", points: 700, link: "/clip/87026", thumbnail: "이미지/추석행사 All-in-one.png", baseThumbnail: "이미지/추석행사 All-in-one.png", visible: true, source: "recommended" },
-    "87027": { id: "87027", title: "오감으로 만나는 가을 열매", displayTitle: "오감으로 만나는 가을 열매", type: "프로그램", access: "무료", points: 0, link: "/clip/87027", thumbnail: "이미지/오감퍼포먼스.png", baseThumbnail: "이미지/오감퍼포먼스.png", visible: true, source: "manual" },
-    "87028": { id: "87028", title: "바깥놀이 체력 측정 데이", displayTitle: "바깥놀이 체력 측정 데이", type: "행사자료", access: "유료", points: 400, link: "/clip/87028", thumbnail: "이미지/체력 측정 검사.png", baseThumbnail: "이미지/체력 측정 검사.png", visible: true, source: "recommended" },
-    "87029": { id: "87029", title: "가족과 함께하는 자동차 극장", displayTitle: "가족과 함께하는 자동차 극장", type: "영상", access: "무료", points: 0, link: "/clip/87029", thumbnail: "이미지/시네마 자동차 극장.png", baseThumbnail: "이미지/시네마 자동차 극장.png", visible: false, source: "manual" }
+    "87021": { id: "87021", title: "가을 낙엽으로 꾸미는 우리 반", displayTitle: "가을 낙엽으로 꾸미는 우리 반", month: 10, topic: "가을", type: "활동지", access: "유료", points: 300, link: "/clip/87021", thumbnail: "이미지/ChatGPT Image 2026년 9월 9일 오후 03_17_57.png", baseThumbnail: "이미지/ChatGPT Image 2026년 9월 9일 오후 03_17_57.png", visible: true, source: "manual" },
+    "87022": { id: "87022", title: "숲에서 찾은 가을 색깔", displayTitle: "숲에서 찾은 가을 색깔", month: 10, topic: "가을", type: "영상", access: "무료", points: 0, link: "/clip/87022", thumbnail: "이미지/ChatGPT Image 2026년 9월 9일 오후 03_19_38.png", baseThumbnail: "이미지/ChatGPT Image 2026년 9월 9일 오후 03_19_38.png", visible: true, source: "recommended" },
+    "87023": { id: "87023", title: "단풍잎 모양 관찰 카드", displayTitle: "단풍잎 모양 관찰 카드", month: 10, topic: "가을", type: "교수자료", access: "유료", points: 200, link: "/clip/87023", thumbnail: "이미지/ChatGPT Image 2026년 9월 9일 오후 03_24_25.png", baseThumbnail: "이미지/ChatGPT Image 2026년 9월 9일 오후 03_24_25.png", visible: true, source: "manual" },
+    "87024": { id: "87024", title: "오늘은 꼬마 숲 탐험대", displayTitle: "오늘은 꼬마 숲 탐험대", month: 10, topic: "자연과 생활", type: "놀이자료", access: "유료", points: 500, link: "/clip/87024", thumbnail: "이미지/ChatGPT Image 2026년 9월 9일 오후 03_36_10.png", baseThumbnail: "이미지/ChatGPT Image 2026년 9월 9일 오후 03_36_10.png", visible: true, source: "recommended" },
+    "87025": { id: "87025", title: "달토끼의 떡 방앗간", displayTitle: "달토끼의 떡 방앗간", month: 9, topic: "우리나라", type: "동화", access: "유료", points: 300, link: "/clip/87025", thumbnail: "이미지/달토끼의 떡 방앗간_가로 .png", baseThumbnail: "이미지/달토끼의 떡 방앗간_가로 .png", visible: true, source: "manual" },
+    "87026": { id: "87026", title: "추석 행사 All-in-one", displayTitle: "추석 행사 All-in-one", month: 9, topic: "우리나라", type: "행사자료", access: "유료", points: 700, link: "/clip/87026", thumbnail: "이미지/추석행사 All-in-one.png", baseThumbnail: "이미지/추석행사 All-in-one.png", visible: true, source: "recommended" },
+    "87027": { id: "87027", title: "오감으로 만나는 가을 열매", displayTitle: "오감으로 만나는 가을 열매", month: 11, topic: "가을", type: "프로그램", access: "무료", points: 0, link: "/clip/87027", thumbnail: "이미지/오감퍼포먼스.png", baseThumbnail: "이미지/오감퍼포먼스.png", visible: true, source: "manual" },
+    "87028": { id: "87028", title: "바깥놀이 체력 측정 데이", displayTitle: "바깥놀이 체력 측정 데이", month: 5, topic: "건강과 안전", type: "행사자료", access: "유료", points: 400, link: "/clip/87028", thumbnail: "이미지/체력 측정 검사.png", baseThumbnail: "이미지/체력 측정 검사.png", visible: true, source: "recommended" },
+    "87029": { id: "87029", title: "가족과 함께하는 자동차 극장", displayTitle: "가족과 함께하는 자동차 극장", month: 5, topic: "나와 가족", type: "영상", access: "무료", points: 0, link: "/clip/87029", thumbnail: "이미지/시네마 자동차 극장.png", baseThumbnail: "이미지/시네마 자동차 극장.png", visible: false, source: "manual" }
   };
+  const clipSeedTaxonomy = {
+    "87021": { materialTypeCode: "활동지", materialTypeLabel: "활동지", topicCode: "가을", topicLabel: "가을", memberPolicyCode: "정회원", memberPolicyLabel: "정회원", access: "유료", points: 300 },
+    "87022": { materialTypeCode: "활동지", materialTypeLabel: "활동지", topicCode: "가을", topicLabel: "가을", memberPolicyCode: "FREE", memberPolicyLabel: "FREE", access: "무료", points: 0 },
+    "87023": { materialTypeCode: "컷&도안", materialTypeLabel: "컷&도안", topicCode: "가을", topicLabel: "가을", memberPolicyCode: "일반(포인트50)", memberPolicyLabel: "일반(포인트50)", access: "포인트", points: 50 },
+    "87024": { materialTypeCode: "사진", materialTypeLabel: "사진", topicCode: "동식물과 자연", topicLabel: "동식물과 자연", memberPolicyCode: "멀티회원", memberPolicyLabel: "멀티회원", access: "유료", points: 500 },
+    "87025": { materialTypeCode: "애니메이션/동영상", materialTypeLabel: "애니메이션/동영상", topicCode: "우리나라", topicLabel: "우리나라", memberPolicyCode: "정회원", memberPolicyLabel: "정회원", access: "유료", points: 300 },
+    "87026": { materialTypeCode: "예문/서식", materialTypeLabel: "예문/서식", topicCode: "우리나라", topicLabel: "우리나라", memberPolicyCode: "멀티회원", memberPolicyLabel: "멀티회원", access: "유료", points: 700 },
+    "87027": { materialTypeCode: "오디오클립", materialTypeLabel: "오디오클립", topicCode: "가을", topicLabel: "가을", memberPolicyCode: "FREE", memberPolicyLabel: "FREE", access: "무료", points: 0 },
+    "87028": { materialTypeCode: "학습지", materialTypeLabel: "학습지", topicCode: "건강과 안전", topicLabel: "건강과 안전", memberPolicyCode: "정회원", memberPolicyLabel: "정회원", access: "유료", points: 400 },
+    "87029": { materialTypeCode: "애니메이션/동영상", materialTypeLabel: "애니메이션/동영상", topicCode: "나와 가족", topicLabel: "나와 가족", memberPolicyCode: "FREE", memberPolicyLabel: "FREE", access: "무료", points: 0 }
+  };
+  Object.entries(clipSeedTaxonomy).forEach(([id, taxonomy]) => {
+    Object.assign(clipSeeds[id], taxonomy, {
+      type: taxonomy.materialTypeLabel,
+      topic: taxonomy.topicLabel,
+      memberPolicy: taxonomy.memberPolicyLabel
+    });
+  });
+
+  function createUrlLinkExample() {
+    const title = "키드키즈 멤버십 이용 안내";
+    const thumbnail = defaultLinkThumbnail(title);
+    return {
+      id: URL_EXAMPLE_ID,
+      title,
+      displayTitle: title,
+      type: "URL 링크",
+      access: "바로가기",
+      points: 0,
+      link: "./kidkidsmembership.html",
+      urlThumbnailData: "",
+      thumbnail,
+      baseThumbnail: thumbnail,
+      visible: true,
+      openNewWindow: true,
+      recommended: false,
+      isNew: false,
+      source: "url"
+    };
+  }
+
+  function normalizeContentItem(item) {
+    const normalized = { ...clone(clipSeeds[item.id] || {}), ...item };
+    normalized.recommended = item.recommended == null ? normalized.source === "recommended" : Boolean(item.recommended);
+    normalized.isNew = Boolean(item.isNew);
+    return normalized;
+  }
+
+  function normalizeThemeItem(item) {
+    return normalizeContentItem(item);
+  }
+
+  function createThemeGroup(data = {}) {
+    const fallbackImage = data.items?.[0]?.thumbnail || "";
+    return {
+      id: data.id || `theme-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      name: data.name || "새 놀이 테마",
+      image: data.image || fallbackImage,
+      subtitle: data.subtitle || "",
+      ctaLabel: data.ctaLabel || "테마 전체 보기",
+      ctaUrl: data.ctaUrl || "",
+      openNewWindow: Boolean(data.openNewWindow),
+      visible: data.visible !== false,
+      updatedAt: data.updatedAt || nowText(),
+      items: (data.items || []).map(normalizeThemeItem)
+    };
+  }
+
+  function defaultThemeGroups(monthKey, legacyItems = []) {
+    const migratedItems = legacyItems.map(normalizeThemeItem);
+    const samples = [
+      {
+        id: `theme-${monthKey}-squirrel`, name: "다람쥐 놀이터", subtitle: "글자·도안·가을 열매",
+        ctaLabel: "테마 전체 보기", ctaUrl: "/theme/squirrel-playground", visible: true,
+        image: migratedItems[0]?.thumbnail || clipSeeds["87021"].thumbnail,
+        items: migratedItems.length ? migratedItems : [clipSeeds["87021"], clipSeeds["87023"], clipSeeds["87024"]]
+      },
+      {
+        id: `theme-${monthKey}-autumn-fruit`, name: "가을 열매 놀이", subtitle: "오감으로 만나는 계절 놀이",
+        ctaLabel: "테마 전체 보기", ctaUrl: "/theme/autumn-fruit", visible: true,
+        image: clipSeeds["87027"].thumbnail, items: [clipSeeds["87027"], clipSeeds["87022"]]
+      },
+      {
+        id: `theme-${monthKey}-kimchi`, name: "김장 놀이", subtitle: "우리 음식과 문화를 즐기는 놀이",
+        ctaLabel: "테마 전체 보기", ctaUrl: "/theme/kimchi-play", visible: true,
+        image: clipSeeds["87026"].thumbnail, items: [clipSeeds["87026"], clipSeeds["87025"]]
+      }
+    ];
+    return samples.map((sample, index) => createThemeGroup({ ...sample, updatedAt: index === 0 ? "2026-11-18" : index === 1 ? "2026-11-17" : "2026-11-15" }));
+  }
 
   function seedSections(variant) {
     const sections = sectionBlueprints.map(item => ({ ...clone(item), items: [] }));
@@ -165,7 +257,7 @@
       get("program").items = use(["87027", "87028"]);
       get("theme").items = use(["87025", "87029"]);
     } else if (variant === "october") {
-      get("popular").items = use(["87021", "87022", "87025", "87027"]);
+      get("popular").items = [...use(["87021", "87022", "87025", "87027"]), createUrlLinkExample()];
       get("autumn").items = use(["87023", "87024", "87021"]);
       get("special-day").items = use(["87026", "87025", "87029"]);
       get("program").items = use(["87027", "87028"]);
@@ -227,11 +319,80 @@
   function loadState() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
-      if (saved) return normalizeState(JSON.parse(saved));
+      if (saved) {
+        const normalized = normalizeState(JSON.parse(saved));
+        if (!localStorage.getItem(URL_EXAMPLE_MIGRATION_KEY)) {
+          const hasUrlItem = Object.values(normalized.months).some(month => month.sections.some(section => section.items.some(item => item.source === "url")));
+          const targetMonth = normalized.months["2026-10"] || normalized.months[Object.keys(normalized.months).sort().at(-1)];
+          const targetSection = targetMonth?.sections.find(section => section.id === "popular") || targetMonth?.sections[0];
+          if (!hasUrlItem && targetSection) {
+            targetSection.items.push(createUrlLinkExample());
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+          }
+          localStorage.setItem(URL_EXAMPLE_MIGRATION_KEY, "1");
+        }
+        return normalized;
+      }
     } catch (error) {
       console.warn("편성 저장 데이터를 불러오지 못했습니다.", error);
     }
-    return createInitialState();
+    const initialState = normalizeState(createInitialState());
+    try { localStorage.setItem(URL_EXAMPLE_MIGRATION_KEY, "1"); } catch (error) { /* 저장소를 사용할 수 없는 환경에서는 기본 예시만 유지 */ }
+    return initialState;
+  }
+
+  function normalizeCommonSettings(normalized) {
+    const monthKeys = Object.keys(normalized.months).sort();
+    const referenceMonth = normalized.months["2026-10"] || normalized.months[monthKeys.at(-1)];
+    const savedCommon = normalized.commonSettings || {};
+    const basePageSettings = clone(savedCommon.pageSettings || referenceMonth.pageSettings);
+    const discoveredSections = [];
+    const knownSectionIds = new Set();
+    const collectSection = section => {
+      if (!section || knownSectionIds.has(section.id)) return;
+      knownSectionIds.add(section.id);
+      const commonSection = { ...clone(section), items: [] };
+      delete commonSection.themeGroups;
+      discoveredSections.push(commonSection);
+    };
+    (savedCommon.sections || []).forEach(collectSection);
+    Object.values(normalized.months).forEach(month => (month.sections || []).forEach(collectSection));
+
+    const commonModifiedAt = savedCommon.modifiedAt || referenceMonth.modifiedAt || nowText();
+    const normalizedHeroBanners = clone(basePageSettings.heroBanners || referenceMonth.pageSettings.heroBanners).map((banner, index) => ({
+      ...banner,
+      label: banner.label || `히어로 배너 ${index + 1}`,
+      createdAt: banner.createdAt || commonModifiedAt,
+      updatedAt: banner.updatedAt || banner.createdAt || commonModifiedAt
+    }));
+    normalized.commonSettings = {
+      pageSettings: {
+        ...clone(referenceMonth.pageSettings),
+        ...basePageSettings,
+        heroBanners: normalizedHeroBanners,
+        categories: clone(basePageSettings.categories || referenceMonth.pageSettings.categories),
+        programShortcuts: clone(basePageSettings.programShortcuts || referenceMonth.pageSettings.programShortcuts),
+        promotion: normalizePromotion(basePageSettings.promotion, "2026-10")
+      },
+      sections: discoveredSections,
+      modifiedAt: commonModifiedAt,
+      modifiedBy: savedCommon.modifiedBy || referenceMonth.modifiedBy || USER_NAME,
+      history: Array.isArray(savedCommon.history) ? savedCommon.history : []
+    };
+    syncAllMonthsToCommonStructure(normalized);
+  }
+
+  function syncAllMonthsToCommonStructure(targetState = state) {
+    if (!targetState?.commonSettings?.sections) return;
+    Object.values(targetState.months).forEach(month => {
+      const existingById = new Map((month.sections || []).map(section => [section.id, section]));
+      month.sections = targetState.commonSettings.sections.map(commonSection => {
+        const existing = existingById.get(commonSection.id);
+        return existing
+          ? { ...clone(commonSection), ...existing, adminName: commonSection.adminName, layoutTheme: commonSection.layoutTheme, visible: commonSection.visible, items: existing.items || [] }
+          : { ...clone(commonSection), items: [], ...(commonSection.id === "solution" ? { themeGroups: [] } : {}) };
+      });
+    });
   }
 
   function normalizeState(input) {
@@ -273,7 +434,7 @@
         const normalizedTheme = layoutThemes.some(theme => theme.id === section.layoutTheme)
           ? section.layoutTheme
           : (blueprint.layoutTheme || "popular-ranking");
-        return {
+        const normalizedSection = {
           ...clone(blueprint),
           ...section,
           adminName: section.adminName || blueprint.adminName || section.title || `섹션 ${index + 1}`,
@@ -283,10 +444,18 @@
           ctaLabel: section.ctaLabel ?? blueprint.ctaLabel ?? "",
           visible: section.visible !== false,
           layoutTheme: normalizedTheme,
-          items: section.items || []
+          items: (section.items || []).map(normalizeContentItem)
         };
+        if (normalizedSection.id === "solution") {
+          normalizedSection.themeGroups = Array.isArray(section.themeGroups)
+            ? section.themeGroups.map(createThemeGroup)
+            : defaultThemeGroups(monthKey, normalizedSection.items);
+          normalizedSection.items = [];
+        }
+        return normalizedSection;
       });
     });
+    normalizeCommonSettings(normalized);
     return normalized;
   }
 
@@ -296,6 +465,12 @@
   let dirty = false;
   let dragItemId = null;
   let activeClip = null;
+  let contentSourceMode = "clip";
+  let urlThumbnailData = "";
+  let contentDestination = "section";
+  let clipSearchResults = [];
+  let selectedClipIds = new Set();
+  let clipFilterCatalog = null;
   let editingItemId = null;
   let pendingConfirmResolve = null;
   let recommendationFilter = "전체";
@@ -303,7 +478,10 @@
   let selectedRecommendationIds = new Set();
   let sectionSettingsDraft = [];
   let currentAdminView = "main";
-  let activeHeroBannerId = state.months[currentMonthKey].pageSettings.heroBanners[0].id;
+  let activeMainPanelId = "mainHeroSettings";
+  let heroManagerMode = "list";
+  let heroEditorIsNew = false;
+  let activeHeroBannerId = state.commonSettings.pageSettings.heroBanners[0].id;
   let categoryDragId = null;
   let layoutDragId = null;
   let layoutPreviewTargetId = null;
@@ -312,13 +490,38 @@
   let historyViewOpen = false;
   let historyPage = 1;
   let historyResults = [];
+  let copyMonthDirection = "pull";
+  let activeThemeId = null;
   const HISTORY_PAGE_SIZE = 5;
 
   function currentMonth() { return state.months[currentMonthKey]; }
+  function commonSettings() { return state.commonSettings; }
+  function commonPageSettings() { return commonSettings().pageSettings; }
+  function commonSections() { return commonSettings().sections; }
   function currentSection() { return currentMonth().sections.find(section => section.id === currentSectionId) || currentMonth().sections[0]; }
+  function isThemeGroupSection(section = currentSection()) { return section?.id === "solution"; }
+  function currentTheme() {
+    const groups = currentSection().themeGroups || [];
+    return groups.find(theme => theme.id === activeThemeId) || groups[0] || null;
+  }
+  function destinationItems() {
+    return contentDestination === "theme" ? (currentTheme()?.items || []) : currentSection().items;
+  }
+  function touchTheme(theme = currentTheme()) {
+    if (theme) theme.updatedAt = nowText();
+  }
   function currentHeroBanner() {
-    const banners = currentMonth().pageSettings.heroBanners;
+    const banners = commonPageSettings().heroBanners;
     return banners.find(banner => banner.id === activeHeroBannerId) || banners[0];
+  }
+
+  function sectionContentCountAcrossMonths(sectionId) {
+    return Object.values(state.months).reduce((total, month) => {
+      const section = (month.sections || []).find(item => item.id === sectionId);
+      const directCount = section?.items?.length || 0;
+      const themeCount = (section?.themeGroups || []).reduce((sum, theme) => sum + (theme.items?.length || 0), 0);
+      return total + directCount + themeCount;
+    }, 0);
   }
 
   function formatMonth(key) {
@@ -399,7 +602,7 @@
       at: item.at || "-",
       by: item.by || USER_NAME,
       monthKey: item.monthKey || monthKey,
-      monthLabel: formatMonth(item.monthKey || monthKey),
+      monthLabel: (item.monthKey || monthKey) === "common" ? "공통 설정" : formatMonth(item.monthKey || monthKey),
       areaKey: item.areaKey || area.key,
       area: item.area || area.label,
       type,
@@ -410,17 +613,18 @@
   }
 
   function recordHistory(action, details = {}) {
-    const month = currentMonth();
-    month.history = month.history || [];
+    const isCommon = currentAdminView === "main";
+    const target = isCommon ? commonSettings() : currentMonth();
+    target.history = target.history || [];
     const area = details.area && details.areaKey ? { key: details.areaKey, label: details.area } : inferHistoryArea(action);
     const type = details.type || inferHistoryType(action);
     const values = inferHistoryValues(action, type);
-    month.history.unshift({
+    target.history.unshift({
       id: `history-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       action,
       at: nowText(),
       by: USER_NAME,
-      monthKey: currentMonthKey,
+      monthKey: isCommon ? "common" : currentMonthKey,
       areaKey: details.areaKey || area.key,
       area: details.area || area.label,
       type,
@@ -428,8 +632,8 @@
       before: details.before ?? values.before,
       after: details.after ?? values.after
     });
-    month.modifiedAt = month.history[0].at;
-    month.modifiedBy = USER_NAME;
+    target.modifiedAt = target.history[0].at;
+    target.modifiedBy = USER_NAME;
   }
 
   function setDirty(action) {
@@ -489,7 +693,7 @@
       <button class="section-item ${section.id === currentSectionId ? "active" : ""} ${section.visible ? "" : "section-off"}" data-section-id="${escapeHtml(section.id)}" title="Front 타이틀: ${escapeHtml(section.displayTitle)}">
         <span class="section-index">${String(index + 1).padStart(2, "0")}</span>
         <span class="section-name">${escapeHtml(section.adminName)}</span>
-        <span class="section-item-count">${section.visible ? section.items.length : "OFF"}</span>
+        <span class="section-item-count">${section.visible ? (isThemeGroupSection(section) ? `${(section.themeGroups || []).length}테마` : section.items.length) : "OFF"}</span>
       </button>
     `).join("");
     $$(".section-item").forEach(button => button.addEventListener("click", () => switchSection(button.dataset.sectionId)));
@@ -513,13 +717,43 @@
 
   function renderPageSettings() {
     const banner = currentHeroBanner();
-    $("#pageSettingsMonthLabel").textContent = formatMonth(currentMonthKey);
+    if (!banner) return;
+    setCopyValue("heroLabelInput", banner.label);
     setCopyValue("heroTitleInput", banner.title);
     setCopyValue("heroSubtitleInput", banner.subtitle);
     setCopyValue("heroBadgeInput", banner.badge);
+    $("#heroTargetUrlInput").value = banner.targetUrl || "";
     $("#heroBannerEditorLabel").textContent = banner.label;
     $("#heroBannerVisibleInput").checked = banner.visible;
     $("#heroBannerVisibleLabel").textContent = banner.visible ? "ON" : "OFF";
+  }
+
+  const mainPanelMeta = {
+    mainHeroSettings: { title: "히어로 배너", description: "등록된 히어로 배너의 순서와 노출 상태를 관리합니다." },
+    sectionLayoutSettings: { title: "카테고리·섹션", description: "상단 카테고리와 연결 섹션, 레이아웃을 관리합니다." },
+    programMenuSettings: { title: "프로그램 메뉴", description: "프로그램 바로가기 메뉴와 노출 순서를 관리합니다." },
+    promotionSettings: { title: "하단 프로모션", description: "하단 프로모션 유형과 이미지, URL, 노출 상태를 관리합니다." }
+  };
+
+  function renderMainPanel() {
+    $$('[data-main-panel]').forEach(panel => { panel.hidden = panel.id !== activeMainPanelId; });
+    $$('[data-main-anchor]').forEach(button => button.classList.toggle("active", button.dataset.mainAnchor === activeMainPanelId));
+    if (activeMainPanelId === "mainHeroSettings") renderHeroBannerManager();
+    const meta = mainPanelMeta[activeMainPanelId] || mainPanelMeta.mainHeroSettings;
+    if (currentAdminView === "main" && !historyViewOpen) {
+      $("#operationTitle").textContent = `메인관리 · ${meta.title}`;
+      $("#operationDescription").textContent = meta.description;
+    }
+  }
+
+  function switchMainPanel(panelId) {
+    if (!mainPanelMeta[panelId] || panelId === activeMainPanelId) return;
+    if (dirty && !window.confirm("저장하지 않은 변경사항이 있습니다. 메뉴를 이동해도 변경 내용은 현재 작업 상태로 유지됩니다.")) return;
+    activeMainPanelId = panelId;
+    heroManagerMode = "list";
+    heroEditorIsNew = false;
+    renderMainPanel();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function renderAdminView() {
@@ -540,44 +774,64 @@
     $("#openHistoryBtn").classList.toggle("active", historyViewOpen);
     $$("[data-main-anchor]").forEach(item => item.classList.toggle("history-inactive", historyViewOpen));
     document.body.classList.toggle("stats-mode", statsVisible);
-    $("#operationTitle").textContent = historyViewOpen ? "멤버십전용관 변경 이력" : isStats ? "멤버십전용관 통계" : "멤버십전용관 편성 관리";
-    $("#copyPreviousLabel").textContent = isMain ? "전월 설정 불러오기" : "전월 편성 불러오기";
+    document.body.classList.toggle("main-mode", isMain && !historyViewOpen);
+    document.body.classList.toggle("content-mode", isContent && !historyViewOpen);
+    $("#operationTitle").textContent = historyViewOpen ? "멤버십전용관 변경 이력" : isStats ? "멤버십전용관 통계" : isMain ? "멤버십전용관 메인 관리" : "멤버십전용관 콘텐츠 편성 관리";
+    $("#copyMonthLabel").textContent = "편성 불러오기";
+    const scopeBadge = $("#managementScopeBadge");
+    scopeBadge.hidden = historyViewOpen || isStats || isMain;
+    scopeBadge.className = `management-scope-badge ${isMain ? "common" : "monthly"}`;
+    scopeBadge.innerHTML = isMain
+      ? "<strong>공통 설정</strong><span>연·월과 무관</span>"
+      : `<strong>${formatMonth(currentMonthKey)}</strong><span>월별 편성</span>`;
+    $("#saveDraftBtn").lastChild.textContent = isMain ? " 공통 설정 저장" : " 임시저장";
+    $("#publishBtn").textContent = isMain ? "공통 설정 적용" : "발행";
     const operationDescription = $("#operationDescription");
     if (operationDescription) operationDescription.textContent = historyViewOpen
       ? "최근 운영 변경사항을 기간·영역·유형·관리자 기준으로 조회합니다."
       : isMain
-      ? "월별 히어로·카테고리·섹션 레이아웃·프로그램 메뉴·프로모션을 관리합니다."
-      : "월별 섹션 문구와 클립 콘텐츠를 편성하고 발행합니다.";
+      ? "연·월과 무관한 히어로·카테고리·섹션 구조·프로그램 메뉴·하단 프로모션을 관리합니다."
+      : "연·월별 섹션 문구와 콘텐츠를 편성하고 다른 월로 복사·발행합니다.";
+    if (isMain && !historyViewOpen) renderMainPanel();
   }
 
   function renderHeroBannerManager() {
-    const settings = currentMonth().pageSettings;
+    const settings = commonPageSettings();
     const banners = settings.heroBanners;
-    if (!banners.some(banner => banner.id === activeHeroBannerId)) activeHeroBannerId = banners[0].id;
+    if (banners.length && !banners.some(banner => banner.id === activeHeroBannerId)) activeHeroBannerId = banners[0].id;
     const activeBanner = currentHeroBanner();
     $("#heroBannerCount").textContent = `${banners.length}개`;
-    $("#heroBannerSetList").innerHTML = banners.map((banner, index) => `
-      <article class="hero-set-row ${banner.id === activeHeroBannerId ? "active" : ""}" data-hero-set="${escapeHtml(banner.id)}">
-        <button class="hero-set-select" data-hero-select="${escapeHtml(banner.id)}"><span>${String(index + 1).padStart(2, "0")}</span><strong>${escapeHtml(banner.label)}</strong><em>${escapeHtml(banner.title.replace(/\n/g, " "))}</em></button>
-        <label class="toggle" title="배너 세트 노출"><input type="checkbox" data-hero-set-visible="${escapeHtml(banner.id)}" ${banner.visible ? "checked" : ""} /><span class="toggle-track"></span></label>
-        <div class="set-tools"><button data-hero-move="up" data-hero-id="${escapeHtml(banner.id)}" ${index === 0 ? "disabled" : ""} title="위로">↑</button><button data-hero-move="down" data-hero-id="${escapeHtml(banner.id)}" ${index === banners.length - 1 ? "disabled" : ""} title="아래로">↓</button><button data-hero-remove="${escapeHtml(banner.id)}" ${banners.length === 1 ? "disabled" : ""} title="삭제">×</button></div>
-      </article>`).join("");
-    $("#heroCompositePreview").innerHTML = activeBanner.image
-      ? `<img src="${escapeHtml(activeBanner.image)}" alt="${escapeHtml(activeBanner.label)} 통이미지" />`
-      : '<span class="empty-image">등록된 통이미지가 없습니다.</span>';
-    $("#heroImageDeleteBtn").disabled = !activeBanner.image;
+    $("#heroBannerListView").hidden = heroManagerMode !== "list";
+    $("#heroBannerEditorView").hidden = heroManagerMode !== "editor";
+    $("#heroBannerSetList").innerHTML = banners.length ? banners.map((banner, index) => `
+      <article class="hero-admin-row" data-hero-set="${escapeHtml(banner.id)}">
+        <div class="hero-admin-order"><strong>${String(index + 1).padStart(2, "0")}</strong><span><button data-hero-move="up" data-hero-id="${escapeHtml(banner.id)}" ${index === 0 ? "disabled" : ""} title="위로">↑</button><button data-hero-move="down" data-hero-id="${escapeHtml(banner.id)}" ${index === banners.length - 1 ? "disabled" : ""} title="아래로">↓</button></span></div>
+        <div class="hero-admin-thumb">${banner.image ? `<img src="${escapeHtml(banner.image)}" alt="" />` : "이미지 없음"}</div>
+        <strong class="hero-admin-name" title="${escapeHtml(banner.label)}">${escapeHtml(banner.label)}${banner.targetUrl ? '<small class="hero-link-badge">LINK</small>' : ""}</strong>
+        <span class="hero-admin-title" title="${escapeHtml(String(banner.title || "").replace(/\n/g, " "))}">${escapeHtml(String(banner.title || "").replace(/\n/g, " ") || "-")}</span>
+        <label class="hero-admin-visible" title="배너 노출"><span class="toggle"><input type="checkbox" data-hero-set-visible="${escapeHtml(banner.id)}" ${banner.visible ? "checked" : ""} /><span class="toggle-track"></span></span><strong>${banner.visible ? "ON" : "OFF"}</strong></label>
+        <span class="hero-admin-date">${escapeHtml(String(banner.updatedAt || banner.createdAt || "-").slice(0, 10))}</span>
+        <div class="hero-admin-actions"><button class="btn small" data-hero-preview="${escapeHtml(banner.id)}">미리보기</button><button class="btn small" data-hero-edit="${escapeHtml(banner.id)}">수정</button><button class="btn small danger" data-hero-remove="${escapeHtml(banner.id)}" ${banners.length === 1 ? "disabled" : ""}>삭제</button></div>
+      </article>`).join("") : '<div class="hero-admin-empty">등록된 히어로 배너가 없습니다.</div>';
 
-    $$('[data-hero-select]').forEach(button => button.addEventListener("click", () => {
-      activeHeroBannerId = button.dataset.heroSelect;
-      renderHeroBannerManager();
+    if (activeBanner && heroManagerMode === "editor") {
+      $("#heroBannerEditorTitle").textContent = heroEditorIsNew ? "히어로 배너 등록" : "히어로 배너 수정";
+      $("#heroEditorDoneBtn").textContent = heroEditorIsNew ? "등록 완료" : "수정 완료";
+      $("#heroCompositePreview").innerHTML = activeBanner.image
+        ? `<img src="${escapeHtml(activeBanner.image)}" alt="${escapeHtml(activeBanner.label)} 통이미지" />`
+        : '<span class="empty-image">등록된 통이미지가 없습니다.</span>';
+      $("#heroImageDeleteBtn").disabled = !activeBanner.image;
       renderPageSettings();
-    }));
+    }
+
+    $$('[data-hero-edit]').forEach(button => button.addEventListener("click", () => openHeroEditor(button.dataset.heroEdit, false)));
+    $$('[data-hero-preview]').forEach(button => button.addEventListener("click", () => previewHeroBanner(button.dataset.heroPreview)));
     $$('[data-hero-set-visible]').forEach(input => input.addEventListener("change", () => {
       const banner = banners.find(item => item.id === input.dataset.heroSetVisible);
       banner.visible = input.checked;
+      banner.updatedAt = nowText();
       setDirty(`${banner.label} 노출 ${input.checked ? "ON" : "OFF"}`);
       renderHeroBannerManager();
-      renderPageSettings();
     }));
     $$('[data-hero-move]').forEach(button => button.addEventListener("click", () => {
       const fromIndex = banners.findIndex(item => item.id === button.dataset.heroId);
@@ -595,8 +849,26 @@
       activeHeroBannerId = banners[Math.max(0, index - 1)].id;
       setDirty(`${removed.label} 삭제`);
       renderHeroBannerManager();
-      renderPageSettings();
     }));
+  }
+
+  function openHeroEditor(bannerId, isNew) {
+    if (!commonPageSettings().heroBanners.some(banner => banner.id === bannerId)) return;
+    activeHeroBannerId = bannerId;
+    heroEditorIsNew = Boolean(isNew);
+    heroManagerMode = "editor";
+    renderHeroBannerManager();
+  }
+
+  function closeHeroEditor() {
+    heroManagerMode = "list";
+    heroEditorIsNew = false;
+    renderHeroBannerManager();
+  }
+
+  function touchCurrentHeroBanner() {
+    const banner = currentHeroBanner();
+    if (banner) banner.updatedAt = nowText();
   }
 
   function themeIconMarkup(theme) {
@@ -605,8 +877,8 @@
   }
 
   function syncNavigationRows() {
-    const settings = currentMonth().pageSettings;
-    const sections = currentMonth().sections;
+    const settings = commonPageSettings();
+    const sections = commonSections();
     const categories = settings.categories || [];
     const topCategory = categories.find(category => category.targetSectionId === "top") || { id: `category-top-${Date.now()}`, label: "전체", targetSectionId: "top", visible: true };
     const unused = categories.filter(category => category !== topCategory);
@@ -647,7 +919,7 @@
   }
 
   function renderSectionLayouts() {
-    const sections = currentMonth().sections;
+    const sections = commonSections();
     const categories = syncNavigationRows();
     const topCategory = categories[0];
     const themeOptions = selected => layoutThemes.map(theme => `<option value="${theme.id}" ${theme.id === selected ? "selected" : ""}>${escapeHtml(theme.label)}</option>`).join("");
@@ -672,7 +944,7 @@
           <select class="copy-input" data-layout-theme="${escapeHtml(section.id)}" aria-label="레이아웃 테마">${themeOptions(section.layoutTheme)}</select>
           <label class="layout-visible"><span class="toggle"><input type="checkbox" data-category-visible="${escapeHtml(category.id)}" ${category.visible ? "checked" : ""} /><span class="toggle-track"></span></span><span>${category.visible ? "ON" : "OFF"}</span></label>
           <label class="layout-visible"><span class="toggle"><input type="checkbox" data-layout-visible="${escapeHtml(section.id)}" ${section.visible ? "checked" : ""} /><span class="toggle-track"></span></span><span>${section.visible ? "ON" : "OFF"}</span></label>
-          <div class="layout-actions"><button class="btn small preview-layout-btn" data-layout-preview="${escapeHtml(section.id)}">미리보기</button><button class="btn small danger" data-layout-delete="${escapeHtml(section.id)}" ${section.items.length ? "disabled" : ""}>삭제</button></div>
+          <div class="layout-actions"><button class="btn small preview-layout-btn" data-layout-preview="${escapeHtml(section.id)}">미리보기</button><button class="btn small danger" data-layout-delete="${escapeHtml(section.id)}" ${sectionContentCountAcrossMonths(section.id) ? "disabled" : ""} title="${sectionContentCountAcrossMonths(section.id) ? "월별 편성 콘텐츠가 있어 삭제할 수 없습니다." : "모든 월에서 비어 있는 공통 섹션을 삭제합니다."}">삭제</button></div>
         </article>`;
       }).join("")}`;
 
@@ -702,6 +974,7 @@
     $$('[data-layout-theme]').forEach(select => select.addEventListener("change", () => {
       const section = sections.find(item => item.id === select.dataset.layoutTheme);
       section.layoutTheme = select.value;
+      syncAllMonthsToCommonStructure();
       setDirty(`‘${section.adminName}’ 레이아웃 테마 변경`);
       openLayoutPreview(section.layoutTheme, section.id);
     }));
@@ -712,20 +985,12 @@
     $$('[data-layout-visible]').forEach(input => input.addEventListener("change", () => {
       const section = sections.find(item => item.id === input.dataset.layoutVisible);
       section.visible = input.checked;
+      syncAllMonthsToCommonStructure();
       setDirty(`‘${section.adminName}’ 섹션 노출 ${input.checked ? "ON" : "OFF"}`);
       renderSectionLayouts();
       renderSections();
     }));
-    $$('[data-layout-delete]').forEach(button => button.addEventListener("click", () => {
-      const section = sections.find(item => item.id === button.dataset.layoutDelete);
-      if (section.items.length) { toast("콘텐츠가 편성된 섹션은 삭제할 수 없습니다.", "error"); return; }
-      if (sections.length === 1 || !window.confirm(`‘${section.adminName}’ 섹션과 연결 카테고리를 삭제할까요?`)) return;
-      currentMonth().sections = sections.filter(item => item.id !== section.id);
-      currentMonth().pageSettings.categories = categories.filter(category => category.targetSectionId !== section.id);
-      if (currentSectionId === section.id) currentSectionId = currentMonth().sections[0].id;
-      setDirty(`‘${section.adminName}’ 섹션 영역 삭제`);
-      renderAll();
-    }));
+    $$('[data-layout-delete]').forEach(button => button.addEventListener("click", () => deleteSectionById(button.dataset.layoutDelete)));
     $$("#layoutSectionList [data-layout-section]").forEach(row => {
       row.addEventListener("dragstart", () => { layoutDragId = row.dataset.layoutSection; row.classList.add("dragging"); });
       row.addEventListener("dragend", () => { layoutDragId = null; row.classList.remove("dragging"); $$("#layoutSectionList .drag-over").forEach(item => item.classList.remove("drag-over")); });
@@ -740,7 +1005,8 @@
         const [moved] = sections.splice(fromIndex, 1);
         sections.splice(toIndex, 0, moved);
         const categoryByTarget = new Map(categories.map(category => [category.targetSectionId, category]));
-        currentMonth().pageSettings.categories = [categories[0], ...sections.map(section => categoryByTarget.get(section.id))];
+        commonPageSettings().categories = [categories[0], ...sections.map(section => categoryByTarget.get(section.id))];
+        syncAllMonthsToCommonStructure();
         setDirty("상단 카테고리와 Front 섹션 순서 변경");
         renderSectionLayouts();
         renderSections();
@@ -749,7 +1015,7 @@
   }
 
   function renderProgramShortcuts() {
-    const programs = currentMonth().pageSettings.programShortcuts;
+    const programs = commonPageSettings().programShortcuts;
     $("#programShortcutList").innerHTML = programs.map((program, index) => `
       <article class="program-shortcut-row" draggable="true" data-program-id="${escapeHtml(program.id)}">
         <div class="program-order"><button class="drag-handle" aria-label="프로그램 순서 변경">${dragIcon()}</button><span>${String(index + 1).padStart(2, "0")}</span></div>
@@ -788,7 +1054,7 @@
     $$('[data-program-delete]').forEach(button => button.addEventListener("click", () => {
       const item = programs.find(program => program.id === button.dataset.programDelete);
       if (programs.length <= 1 || !window.confirm(`‘${item.label}’ 프로그램 메뉴를 삭제할까요?`)) return;
-      currentMonth().pageSettings.programShortcuts = programs.filter(program => program.id !== item.id);
+      commonPageSettings().programShortcuts = programs.filter(program => program.id !== item.id);
       setDirty(`‘${item.label}’ 프로그램 메뉴 삭제`);
       renderProgramShortcuts();
     }));
@@ -812,7 +1078,7 @@
   }
 
   function addProgramShortcut() {
-    const programs = currentMonth().pageSettings.programShortcuts;
+    const programs = commonPageSettings().programShortcuts;
     const next = programs.length + 1;
     const item = { id: `program-shortcut-${Date.now()}`, label: `새 프로그램 ${next}`, badge: "NEW", color: "#4057bd", icon: "", url: "#", visible: true };
     programs.push(item);
@@ -824,7 +1090,7 @@
   function renderCategoryMenus() {}
 
   function renderPromotionLivePreview() {
-    const promo = currentMonth().pageSettings.promotion;
+    const promo = commonPageSettings().promotion;
     const preview = $("#promoLivePreview");
     const isImage = promo.bannerType === "image";
     const preset = promotionPresets.find(item => item.id === promo.design.colorPreset) || promotionPresets.find(item => item.id === "brown");
@@ -840,7 +1106,7 @@
   }
 
   function renderPromotionSettings() {
-    const promo = currentMonth().pageSettings.promotion;
+    const promo = commonPageSettings().promotion;
     $("#promoTypeDesign").checked = promo.bannerType === "design";
     $("#promoTypeImage").checked = promo.bannerType === "image";
     $("#promoDesignSettings").hidden = promo.bannerType !== "design";
@@ -873,6 +1139,8 @@
     currentAdminView = nextView;
     historyViewOpen = false;
     renderAdminView();
+    renderStatus();
+    renderAudit();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -888,6 +1156,15 @@
     setCopyValue("sectionCtaInput", section.ctaLabel);
     $("#sectionVisibleInput").checked = section.visible;
     $("#sectionVisibleLabel").textContent = section.visible ? "ON" : "OFF";
+    const deleteButton = $("#deleteCurrentSectionBtn");
+    const totalContentCount = sectionContentCountAcrossMonths(section.id);
+    const canDelete = commonSections().length > 1 && totalContentCount === 0;
+    deleteButton.disabled = !canDelete;
+    deleteButton.title = commonSections().length <= 1
+      ? "마지막 섹션은 삭제할 수 없습니다."
+      : totalContentCount
+        ? `전체 월에 편성된 콘텐츠 ${totalContentCount}건을 먼저 삭제해 주세요.`
+        : "모든 월에서 콘텐츠가 없는 공통 섹션을 삭제합니다.";
 
     const hasFeaturedCard = section.layoutTheme === "event-showcase";
     $("#featuredCardSettings").hidden = !hasFeaturedCard;
@@ -911,46 +1188,109 @@
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>';
   }
 
+  function curationRowMarkup(item, order, scope = "section") {
+    const isTheme = scope === "theme";
+    const attributePrefix = isTheme ? "theme-content-" : "";
+    const rowAttribute = isTheme ? "data-theme-item-id" : "data-item-id";
+    const isUrl = item.source === "url";
+    const originClass = isUrl ? "url" : (item.source === "recommended" ? "recommended" : "");
+    const originLabel = isUrl ? "URL" : (item.source === "recommended" ? "추천" : "수동");
+    const itemIdentifier = isUrl ? `URL ${item.link || "-"}` : `ID ${item.id}`;
+    const accessClass = item.access === "무료" ? "access-free" : (isUrl ? "access-link" : "access-paid");
+    return `
+      <tr draggable="true" ${rowAttribute}="${escapeHtml(item.id)}">
+        <td class="col-order"><div class="order-cell"><button class="drag-handle" aria-label="순서 변경">${dragIcon()}</button><span class="order-number">${String(order).padStart(2, "0")}</span></div></td>
+        <td><img class="thumb" src="${escapeHtml(item.thumbnail || "")}" alt="" /></td>
+        <td><strong class="content-name" title="${escapeHtml(item.displayTitle || item.title)}">${escapeHtml(item.displayTitle || item.title)}</strong><div class="content-meta"><span title="${escapeHtml(itemIdentifier)}">${escapeHtml(itemIdentifier)}</span><span class="origin-badge ${originClass}">${originLabel}</span></div></td>
+        <td><span class="type-badge">${escapeHtml(item.type || "-")}</span></td>
+        <td><span class="${accessClass}">${escapeHtml(item.access || "-")}</span></td>
+        <td><span class="point">${item.points ? `${Number(item.points).toLocaleString("ko-KR")}P` : "-"}</span></td>
+        <td class="col-flag"><label class="toggle" title="추천 콘텐츠"><input type="checkbox" data-${attributePrefix}recommended-id="${escapeHtml(item.id)}" ${item.recommended ? "checked" : ""} /><span class="toggle-track"></span></label></td>
+        <td class="col-flag"><label class="toggle" title="신규 콘텐츠"><input type="checkbox" data-${attributePrefix}new-id="${escapeHtml(item.id)}" ${item.isNew ? "checked" : ""} /><span class="toggle-track"></span></label></td>
+        <td class="col-visible"><label class="toggle" title="Front 노출"><input type="checkbox" data-${attributePrefix}visible-id="${escapeHtml(item.id)}" ${item.visible !== false ? "checked" : ""} /><span class="toggle-track"></span></label></td>
+        <td class="col-manage"><div class="row-actions"><button class="row-action" data-${attributePrefix}edit-id="${escapeHtml(item.id)}" title="수정">${editIcon()}</button><button class="row-action delete" data-${attributePrefix}delete-id="${escapeHtml(item.id)}" title="삭제">${deleteIcon()}</button></div></td>
+      </tr>`;
+  }
+
   function renderTable() {
     const section = currentSection();
     const query = $("#contentSearch").value.trim().toLowerCase();
-    const filtered = section.items.filter(item => !query || item.displayTitle.toLowerCase().includes(query) || item.id.includes(query));
+    const filtered = section.items.filter(item => !query || item.displayTitle.toLowerCase().includes(query) || item.id.includes(query) || String(item.link || "").toLowerCase().includes(query));
     $("#contentCount").textContent = `${section.items.length}개`;
 
     if (!filtered.length) {
       $("#contentTableBody").innerHTML = `
-        <tr><td colspan="8" class="empty-state">
+        <tr><td colspan="10" class="empty-state">
           <div class="empty-icon">＋</div>
           <strong>${query ? "검색 결과가 없습니다." : "아직 편성된 콘텐츠가 없습니다."}</strong>
-          <p>${query ? "다른 클립명이나 ID로 검색해 보세요." : "클립 ID를 조회하거나 추천 후보에서 콘텐츠를 추가해 보세요."}</p>
+          <p>${query ? "다른 콘텐츠명, ID 또는 URL로 검색해 보세요." : "클립을 검색하거나 URL 링크를 등록해 콘텐츠를 추가해 보세요."}</p>
           ${query ? "" : '<button class="btn small primary" data-empty-add>콘텐츠 추가</button>'}
         </td></tr>`;
       const addButton = $("[data-empty-add]");
-      if (addButton) addButton.addEventListener("click", openContentDrawer);
+      if (addButton) addButton.addEventListener("click", () => openContentDrawer("section"));
       return;
     }
 
     $("#contentTableBody").innerHTML = filtered.map(item => {
       const order = section.items.findIndex(candidate => candidate.id === item.id) + 1;
-      return `
-        <tr draggable="true" data-item-id="${escapeHtml(item.id)}">
-          <td class="col-order"><div class="order-cell"><button class="drag-handle" aria-label="순서 변경">${dragIcon()}</button><span class="order-number">${String(order).padStart(2, "0")}</span></div></td>
-          <td><img class="thumb" src="${escapeHtml(item.thumbnail)}" alt="" /></td>
-          <td><strong class="content-name" title="${escapeHtml(item.displayTitle)}">${escapeHtml(item.displayTitle)}</strong><div class="content-meta"><span>ID ${escapeHtml(item.id)}</span><span class="origin-badge ${item.source === "recommended" ? "recommended" : ""}">${item.source === "recommended" ? "추천" : "수동"}</span></div></td>
-          <td><span class="type-badge">${escapeHtml(item.type)}</span></td>
-          <td><span class="${item.access === "무료" ? "access-free" : "access-paid"}">${escapeHtml(item.access)}</span></td>
-          <td><span class="point">${item.points ? `${Number(item.points).toLocaleString("ko-KR")}P` : "-"}</span></td>
-          <td class="col-visible"><label class="toggle"><input type="checkbox" data-visible-id="${escapeHtml(item.id)}" ${item.visible ? "checked" : ""} /><span class="toggle-track"></span></label></td>
-          <td class="col-manage"><div class="row-actions"><button class="row-action" data-edit-id="${escapeHtml(item.id)}" title="수정">${editIcon()}</button><button class="row-action delete" data-delete-id="${escapeHtml(item.id)}" title="삭제">${deleteIcon()}</button></div></td>
-        </tr>`;
+      return curationRowMarkup(item, order, "section");
     }).join("");
 
     bindTableEvents();
   }
 
+  async function deleteSectionById(sectionId) {
+    const sections = commonSections();
+    const sectionIndex = sections.findIndex(section => section.id === sectionId);
+    const section = sections[sectionIndex];
+    if (!section) return false;
+    const totalContentCount = sectionContentCountAcrossMonths(section.id);
+    if (totalContentCount) {
+      toast(`전체 월에 편성된 콘텐츠 ${totalContentCount}건이 있어 삭제할 수 없습니다.`, "error");
+      return false;
+    }
+    if (sections.length <= 1) {
+      toast("섹션은 최소 1개가 필요합니다.", "error");
+      return false;
+    }
+    const accepted = await confirmAction({
+      title: "섹션을 삭제할까요?",
+      body: `‘${section.adminName}’ 섹션과 연결된 상단 카테고리도 함께 삭제합니다.`,
+      okText: "섹션 삭제",
+      danger: true
+    });
+    if (!accepted) return false;
+
+    state.commonSettings.sections = sections.filter(item => item.id !== section.id);
+    commonPageSettings().categories = commonPageSettings().categories.filter(category => category.targetSectionId !== section.id);
+    Object.values(state.months).forEach(month => {
+      month.sections = month.sections.filter(item => item.id !== section.id);
+    });
+    if (currentSectionId === section.id) {
+      currentSectionId = commonSections()[Math.min(sectionIndex, commonSections().length - 1)].id;
+    }
+    setDirty(`‘${section.adminName}’ 섹션 영역 삭제`);
+    renderAll();
+    toast("빈 섹션과 연결 카테고리를 삭제했습니다.", "success");
+    return true;
+  }
+
   function bindTableEvents() {
+    $$('[data-recommended-id]').forEach(input => input.addEventListener("change", () => {
+      const item = currentSection().items.find(candidate => candidate.id === input.dataset.recommendedId);
+      if (!item) return;
+      item.recommended = input.checked;
+      setDirty(`‘${item.displayTitle}’ 추천 ${item.recommended ? "ON" : "OFF"}`);
+    }));
+    $$('[data-new-id]').forEach(input => input.addEventListener("change", () => {
+      const item = currentSection().items.find(candidate => candidate.id === input.dataset.newId);
+      if (!item) return;
+      item.isNew = input.checked;
+      setDirty(`‘${item.displayTitle}’ 신규 ${item.isNew ? "ON" : "OFF"}`);
+    }));
     $$('[data-visible-id]').forEach(input => input.addEventListener("change", () => {
       const item = currentSection().items.find(candidate => candidate.id === input.dataset.visibleId);
+      if (!item) return;
       item.visible = input.checked;
       setDirty(`‘${item.displayTitle}’ 노출 상태 변경`);
     }));
@@ -985,9 +1325,11 @@
   }
 
   function allHistoryEntries() {
-    return Object.entries(state.months).flatMap(([monthKey, month]) =>
+    const monthlyEntries = Object.entries(state.months).flatMap(([monthKey, month]) =>
       (month.history || []).map((item, index) => normalizeHistoryEntry(item, monthKey, index))
-    ).sort((a, b) => (parseHistoryDate(b.at)?.getTime() || 0) - (parseHistoryDate(a.at)?.getTime() || 0));
+    );
+    const commonEntries = (commonSettings().history || []).map((item, index) => normalizeHistoryEntry(item, "common", index));
+    return [...commonEntries, ...monthlyEntries].sort((a, b) => (parseHistoryDate(b.at)?.getTime() || 0) - (parseHistoryDate(a.at)?.getTime() || 0));
   }
 
   function populateHistoryAdminFilter() {
@@ -1122,8 +1464,178 @@
   }
 
   function renderAudit() {
-    $("#lastModifiedAt").textContent = currentMonth().modifiedAt || "-";
-    $("#lastModifiedBy").textContent = currentMonth().modifiedBy || "-";
+    const target = currentAdminView === "main" ? commonSettings() : currentMonth();
+    $("#lastModifiedAt").textContent = target.modifiedAt || "-";
+    $("#lastModifiedBy").textContent = target.modifiedBy || "-";
+  }
+
+  function themeMonthOptions() {
+    return Object.keys(state.months).sort().map(key => `<option value="${key}" ${key === currentMonthKey ? "selected" : ""}>${formatMonth(key)}</option>`).join("");
+  }
+
+  function renderThemeManager() {
+    const card = $("#themeManagementCard");
+    const directCard = $("#directCurationCard");
+    const themeMode = isThemeGroupSection();
+    directCard.hidden = themeMode;
+    card.hidden = !themeMode;
+    if (!themeMode) return;
+
+    const groups = currentSection().themeGroups || (currentSection().themeGroups = []);
+    $("#themeMonthSelect").innerHTML = themeMonthOptions();
+    const active = currentTheme();
+    const editorOpen = Boolean(activeThemeId && active);
+    $("#themeListView").hidden = editorOpen;
+    $("#themeEditorView").hidden = !editorOpen;
+
+    if (editorOpen) {
+      renderThemeEditor(active);
+      return;
+    }
+
+    $("#themeList").innerHTML = groups.length ? groups.map((theme, index) => `
+      <div class="theme-list-row" data-theme-id="${escapeHtml(theme.id)}">
+        <span class="theme-list-order"><span>${String(index + 1).padStart(2, "0")}</span><span class="theme-order-actions"><button type="button" data-theme-up="${escapeHtml(theme.id)}" ${index === 0 ? "disabled" : ""} aria-label="위로 이동">▲</button><button type="button" data-theme-down="${escapeHtml(theme.id)}" ${index === groups.length - 1 ? "disabled" : ""} aria-label="아래로 이동">▼</button></span></span>
+        <span>${theme.image ? `<img class="theme-list-thumb" src="${escapeHtml(theme.image)}" alt="" />` : '<span class="theme-list-thumb"></span>'}</span>
+        <strong title="${escapeHtml(theme.name)}">${escapeHtml(theme.name)}</strong>
+        <span class="theme-content-count">${theme.items.length}개</span>
+        <label class="toggle"><input type="checkbox" data-theme-visible="${escapeHtml(theme.id)}" ${theme.visible ? "checked" : ""} /><span class="toggle-track"></span></label>
+        <span>${escapeHtml(theme.updatedAt || "-")}</span>
+        <span class="theme-row-actions"><button type="button" class="btn small" data-theme-edit="${escapeHtml(theme.id)}">수정</button><button type="button" class="btn small danger" data-theme-delete="${escapeHtml(theme.id)}">삭제</button></span>
+      </div>`).join("") : '<div class="theme-empty"><strong>등록된 놀이 테마가 없습니다.</strong><span>테마를 등록하고 콘텐츠를 그룹으로 편성해 주세요.</span></div>';
+
+    $$('[data-theme-edit]').forEach(button => button.addEventListener("click", () => openThemeEditor(button.dataset.themeEdit)));
+    $$('[data-theme-visible]').forEach(input => input.addEventListener("change", () => {
+      const theme = groups.find(item => item.id === input.dataset.themeVisible);
+      if (!theme) return;
+      theme.visible = input.checked;
+      touchTheme(theme);
+      setDirty(`‘${theme.name}’ 테마 노출 ${theme.visible ? "ON" : "OFF"}`);
+      renderThemeManager();
+    }));
+    $$('[data-theme-up],[data-theme-down]').forEach(button => button.addEventListener("click", () => {
+      const id = button.dataset.themeUp || button.dataset.themeDown;
+      const from = groups.findIndex(item => item.id === id);
+      const to = from + (button.dataset.themeUp ? -1 : 1);
+      if (from < 0 || to < 0 || to >= groups.length) return;
+      const [moved] = groups.splice(from, 1);
+      groups.splice(to, 0, moved);
+      touchTheme(moved);
+      setDirty(`‘${moved.name}’ 테마 순서 변경`);
+      renderThemeManager();
+    }));
+    $$('[data-theme-delete]').forEach(button => button.addEventListener("click", async () => {
+      const theme = groups.find(item => item.id === button.dataset.themeDelete);
+      if (!theme) return;
+      const accepted = await confirmAction({ title: "테마를 삭제할까요?", body: `‘${theme.name}’ 테마와 소속 콘텐츠 편성 ${theme.items.length}건을 삭제합니다. 원본 클립자료는 삭제되지 않습니다.`, okText: "테마 삭제", danger: true });
+      if (!accepted) return;
+      currentSection().themeGroups = groups.filter(item => item.id !== theme.id);
+      setDirty(`‘${theme.name}’ 테마 삭제`);
+      renderThemeManager();
+      renderSections();
+    }));
+  }
+
+  function openThemeEditor(themeId) {
+    activeThemeId = themeId;
+    renderThemeManager();
+  }
+
+  function renderThemeEditor(theme) {
+    $("#themeEditorTitle").textContent = theme.name === "새 놀이 테마" ? "테마 등록" : "테마 수정";
+    $("#themeNameInput").value = theme.name;
+    $("#themeSubtitleInput").value = theme.subtitle || "";
+    $("#themeCtaInput").value = theme.ctaLabel || "";
+    $("#themeUrlInput").value = theme.ctaUrl || "";
+    $("#themeOpenNewWindowInput").checked = Boolean(theme.openNewWindow);
+    $("#themeOpenNewWindowLabel").textContent = theme.openNewWindow ? "ON" : "OFF";
+    $("#themeVisibleInput").checked = theme.visible !== false;
+    $("#themeVisibleLabel").textContent = theme.visible !== false ? "ON" : "OFF";
+    $("#themeImagePreview").innerHTML = theme.image ? `<img src="${escapeHtml(theme.image)}" alt="${escapeHtml(theme.name)} 대표 이미지" />` : "<span>대표 이미지를 등록해주세요.</span>";
+    renderThemeContent(theme);
+  }
+
+  function renderThemeContent(theme) {
+    $("#themeContentCount").textContent = `${theme.items.length}개`;
+    $("#themeContentTableBody").innerHTML = theme.items.length
+      ? theme.items.map((item, index) => curationRowMarkup(item, index + 1, "theme")).join("")
+      : '<tr><td colspan="10" class="theme-content-empty">아직 등록된 콘텐츠가 없습니다. 콘텐츠 추가에서 클립 또는 URL 링크를 편성해 주세요.</td></tr>';
+
+    $$('[data-theme-content-recommended-id]').forEach(input => input.addEventListener("change", () => {
+      const item = theme.items.find(candidate => candidate.id === input.dataset.themeContentRecommendedId);
+      if (!item) return;
+      item.recommended = input.checked;
+      touchTheme(theme);
+      setDirty(`‘${theme.name}’ 테마의 ‘${item.displayTitle}’ 추천 ${item.recommended ? "ON" : "OFF"}`);
+    }));
+    $$('[data-theme-content-new-id]').forEach(input => input.addEventListener("change", () => {
+      const item = theme.items.find(candidate => candidate.id === input.dataset.themeContentNewId);
+      if (!item) return;
+      item.isNew = input.checked;
+      touchTheme(theme);
+      setDirty(`‘${theme.name}’ 테마의 ‘${item.displayTitle}’ 신규 ${item.isNew ? "ON" : "OFF"}`);
+    }));
+    $$('[data-theme-content-visible-id]').forEach(input => input.addEventListener("change", () => {
+      const item = theme.items.find(candidate => candidate.id === input.dataset.themeContentVisibleId);
+      if (!item) return;
+      item.visible = input.checked;
+      touchTheme(theme);
+      setDirty(`‘${theme.name}’ 테마의 ‘${item.displayTitle}’ 노출 ${item.visible ? "ON" : "OFF"}`);
+    }));
+    $$('[data-theme-content-edit-id]').forEach(button => button.addEventListener("click", () => editContent(button.dataset.themeContentEditId, "theme")));
+    $$('[data-theme-content-delete-id]').forEach(button => button.addEventListener("click", async () => {
+      const item = theme.items.find(candidate => candidate.id === button.dataset.themeContentDeleteId);
+      if (!item) return;
+      const accepted = await confirmAction({ title: "테마에서 삭제할까요?", body: `‘${item.displayTitle}’ 콘텐츠를 이 테마 편성에서 삭제합니다.`, okText: "삭제", danger: true });
+      if (!accepted) return;
+      theme.items = theme.items.filter(candidate => candidate.id !== item.id);
+      touchTheme(theme);
+      setDirty(`‘${theme.name}’ 테마에서 ‘${item.displayTitle}’ 삭제`);
+      renderThemeContent(theme);
+    }));
+
+    $$("#themeContentTableBody tr[data-theme-item-id]").forEach(row => {
+      row.addEventListener("dragstart", event => {
+        dragItemId = row.dataset.themeItemId;
+        row.classList.add("dragging");
+        event.dataTransfer.effectAllowed = "move";
+      });
+      row.addEventListener("dragend", () => {
+        dragItemId = null;
+        row.classList.remove("dragging");
+        $$("#themeContentTableBody .drag-over").forEach(element => element.classList.remove("drag-over"));
+      });
+      row.addEventListener("dragover", event => { event.preventDefault(); row.classList.add("drag-over"); });
+      row.addEventListener("dragleave", () => row.classList.remove("drag-over"));
+      row.addEventListener("drop", event => {
+        event.preventDefault();
+        row.classList.remove("drag-over");
+        const fromIndex = theme.items.findIndex(item => item.id === dragItemId);
+        const toIndex = theme.items.findIndex(item => item.id === row.dataset.themeItemId);
+        if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return;
+        const [moved] = theme.items.splice(fromIndex, 1);
+        theme.items.splice(toIndex, 0, moved);
+        touchTheme(theme);
+        setDirty(`‘${theme.name}’ 테마 콘텐츠 순서 변경`);
+        renderThemeContent(theme);
+      });
+    });
+  }
+
+  function addTheme() {
+    const theme = createThemeGroup({ name: "새 놀이 테마", visible: true, items: [] });
+    currentSection().themeGroups.push(theme);
+    activeThemeId = theme.id;
+    setDirty("새 놀이 테마 등록 시작");
+    renderThemeManager();
+    setTimeout(() => $("#themeNameInput").select(), 0);
+  }
+
+  function closeThemeEditor() {
+    activeThemeId = null;
+    contentDestination = "section";
+    renderThemeManager();
+    renderSections();
   }
 
   function renderAll() {
@@ -1139,6 +1651,7 @@
     renderPromotionSettings();
     renderSectionExposureSettings();
     renderTable();
+    renderThemeManager();
     renderHistory();
     renderAudit();
   }
@@ -1147,21 +1660,28 @@
     if (nextId === currentSectionId) return;
     if (dirty && !window.confirm("저장하지 않은 변경사항이 있습니다. 그래도 다른 섹션으로 이동할까요?")) return;
     currentSectionId = nextId;
+    activeThemeId = null;
+    contentDestination = "section";
     $("#contentSearch").value = "";
     renderSections();
     renderSectionExposureSettings();
     renderTable();
+    renderThemeManager();
   }
 
-  function switchMonth(nextKey) {
+  function switchMonth(nextKey, keepSection = false) {
     if (nextKey === currentMonthKey) return;
     if (dirty && !window.confirm("저장하지 않은 변경사항이 있습니다. 그래도 다른 월로 이동할까요?")) {
       $("#monthSelect").value = currentMonthKey;
+      if ($("#themeMonthSelect")) $("#themeMonthSelect").value = currentMonthKey;
       return;
     }
     currentMonthKey = nextKey;
-    currentSectionId = currentMonth().sections[0].id;
-    activeHeroBannerId = currentMonth().pageSettings.heroBanners[0].id;
+    currentSectionId = keepSection && currentMonth().sections.some(section => section.id === currentSectionId)
+      ? currentSectionId
+      : currentMonth().sections[0].id;
+    activeThemeId = null;
+    contentDestination = "section";
     clearDirty();
     $("#contentSearch").value = "";
     renderAll();
@@ -1194,22 +1714,122 @@
     document.body.style.overflow = "";
   }
 
+  function fillClipFilterSelect(id, options) {
+    const select = $(`#${id}`);
+    select.innerHTML = '<option value="all">전체</option>' + (options || []).map(option =>
+      `<option value="${escapeHtml(String(option.code))}">${escapeHtml(option.label)}</option>`
+    ).join("");
+  }
+
+  async function ensureClipFilterCatalog() {
+    if (clipFilterCatalog) return clipFilterCatalog;
+    const catalog = await window.MembershipClipService.getFilterCatalog();
+    clipFilterCatalog = catalog || { materialTypes: [], topics: [], memberPolicies: [], source: "unavailable" };
+    fillClipFilterSelect("clipTypeFilter", clipFilterCatalog.materialTypes);
+    fillClipFilterSelect("clipTopicFilter", clipFilterCatalog.topics);
+    fillClipFilterSelect("clipMemberPolicyFilter", clipFilterCatalog.memberPolicies);
+    fillClipFilterSelect("clipMonthFilter", Array.from({ length: 12 }, (_, index) => ({ code: index + 1, label: `${index + 1}월` })));
+    $("#clipFilterSourceNote").textContent = clipFilterCatalog.source === "mock"
+      ? "프로토타입 분류 데이터입니다. 운영 연동 시 기존 클립자료 관리의 코드값을 그대로 사용합니다."
+      : clipFilterCatalog.source === "interface-fallback"
+        ? "기존 분류 API가 아직 연결되지 않아 인터페이스 기준 목록을 표시합니다."
+        : "기존 클립자료 관리 분류값과 연결되었습니다.";
+    return clipFilterCatalog;
+  }
+
+  function setContentSourceMode(mode) {
+    contentSourceMode = mode === "url" ? "url" : "clip";
+    $$('[data-content-source]').forEach(button => {
+      const active = button.dataset.contentSource === contentSourceMode;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-selected", String(active));
+    });
+    const isUrl = contentSourceMode === "url";
+    $("#clipSearchPanel").hidden = isUrl;
+    $("#urlContentPanel").hidden = !isUrl;
+    $("#clipForm").classList.remove("show");
+    $("#lookupError").classList.remove("show");
+    $("#submitContentBtn").textContent = editingItemId ? (isUrl ? "URL 링크 수정" : "수정 완료") : (isUrl ? "URL 링크 추가" : "편성에 추가");
+    if (isUrl) updateUrlContentPreview();
+    else $("#submitContentBtn").disabled = !activeClip;
+  }
+
+  function updateUrlContentPreview() {
+    const title = $("#urlTitleInput").value.trim();
+    const address = $("#urlLinkInput").value.trim();
+    $("#urlPreviewTitle").textContent = title || "페이지명을 입력해주세요.";
+    $("#urlPreviewAddress").textContent = address || "이동 URL이 표시됩니다.";
+    $("#urlPreviewThumb").style.backgroundImage = urlThumbnailData ? `url("${urlThumbnailData.replace(/"/g, "%22")}")` : "";
+    $("#urlPreviewThumb").querySelector("span").hidden = Boolean(urlThumbnailData);
+    $("#submitContentBtn").disabled = !(title && address);
+  }
+
+  function renderUrlThumbnailChoice() {
+    const hasThumbnail = Boolean(urlThumbnailData);
+    $("#urlThumbnailEmpty").hidden = hasThumbnail;
+    $("#urlThumbnailRegistered").hidden = !hasThumbnail;
+    $("#clearUrlThumbnailBtn").classList.toggle("active", !hasThumbnail);
+    $("#urlThumbnailPreviewImage").src = hasThumbnail ? urlThumbnailData : "";
+    updateUrlContentPreview();
+  }
+
+  function normalizeLinkUrl(value, label) {
+    const url = String(value || "").trim();
+    if (!url) return "";
+    if (/^(https?:\/\/|\/|\.\/|\.\.\/|#)/i.test(url)) return url;
+    throw new Error(`${label}은 http(s):// 또는 /, ./로 시작하는 주소를 입력해 주세요.`);
+  }
+
+  function defaultLinkThumbnail(title) {
+    const safeTitle = String(title || "URL LINK").slice(0, 18).replace(/[<>&"']/g, "");
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#263b69"/><stop offset="1" stop-color="#7894d7"/></linearGradient></defs><rect width="640" height="360" fill="url(#g)"/><text x="320" y="155" text-anchor="middle" fill="#fff" font-family="sans-serif" font-size="64">↗</text><text x="320" y="235" text-anchor="middle" fill="#fff" font-family="sans-serif" font-size="28" font-weight="700">${safeTitle}</text></svg>`;
+    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+  }
+
   function resetContentForm() {
     activeClip = null;
+    clipSearchResults = [];
+    selectedClipIds.clear();
     editingItemId = null;
     $("#contentDrawerTitle").textContent = "콘텐츠 추가";
+    $("#contentSourceTabs").hidden = false;
     $("#submitContentBtn").textContent = "편성에 추가";
+    $("#urlTitleInput").value = "";
+    $("#urlLinkInput").value = "";
+    urlThumbnailData = "";
+    $("#urlThumbnailFileInput").value = "";
+    $("#urlVisibleSelect").value = "true";
+    $("#urlOpenNewWindowInput").checked = true;
     $("#clipIdInput").value = "";
-    $("#clipIdInput").disabled = false;
-    $("#lookupClipBtn").disabled = false;
+    $("#clipNameInput").value = "";
+    ["clipTypeFilter", "clipTopicFilter", "clipMonthFilter", "clipMemberPolicyFilter"].forEach(id => { $(`#${id}`).value = "all"; });
+    $("#searchClipsBtn").disabled = false;
+    $("#searchClipsBtn").textContent = "검색";
+    $("#clipSearchSummary").textContent = "";
+    $("#clipSearchResults").innerHTML = "";
+    $("#clipSearchResults").classList.remove("show");
+    $("#clipActiveFilters").hidden = true;
+    $("#clipActiveFilterList").innerHTML = "";
+    $("#clipBatchActions").hidden = true;
+    $("#selectedClipCount").textContent = "0";
     $("#lookupError").classList.remove("show");
     $("#clipForm").classList.remove("show");
     $("#submitContentBtn").disabled = true;
+    renderUrlThumbnailChoice();
+    setContentSourceMode("clip");
   }
 
-  function openContentDrawer() {
+  async function openContentDrawer(destination = "section") {
+    contentDestination = destination === "theme" ? "theme" : "section";
+    if (contentDestination === "theme" && !currentTheme()) return;
     resetContentForm();
+    $("#contentDrawerTitle").textContent = contentDestination === "theme" ? `테마 콘텐츠 추가 · ${currentTheme().name}` : "콘텐츠 추가";
     openDrawer("#contentDrawerBackdrop");
+    try {
+      await ensureClipFilterCatalog();
+    } catch (error) {
+      showLookupError("클립자료 분류값을 불러오지 못했습니다. 기존 관리자 연동 상태를 확인해 주세요.");
+    }
     setTimeout(() => $("#clipIdInput").focus(), 100);
   }
 
@@ -1222,9 +1842,12 @@
     $("#originalThumb").src = activeClip.baseThumbnail;
     $("#originalTitle").textContent = clip.title;
     $("#originalId").textContent = clip.id;
-    $("#originalType").textContent = clip.type;
+    $("#originalType").textContent = clip.materialTypeLabel || clip.type || "-";
     $("#originalAccess").textContent = clip.access;
     $("#originalPoints").textContent = clip.points ? `${Number(clip.points).toLocaleString("ko-KR")}P` : "무료";
+    $("#originalMonth").textContent = clip.month ? `${clip.month}월` : "-";
+    $("#originalTopic").textContent = clip.topicLabel || clip.topic || "-";
+    $("#originalMemberPolicy").textContent = clip.memberPolicyLabel || clip.memberPolicy || "-";
     $("#displayTitleInput").value = editingItem ? editingItem.displayTitle : clip.title;
     $("#displayVisibleSelect").value = String(editingItem ? editingItem.visible : true);
     $("#baseThumbPreview").src = activeClip.baseThumbnail;
@@ -1232,24 +1855,177 @@
     $("#lookupError").classList.remove("show");
     $("#clipForm").classList.add("show");
     $("#submitContentBtn").disabled = false;
+    $$('[data-clip-row]').forEach(row => row.classList.toggle("selected", row.dataset.clipRow === clip.id));
   }
 
-  async function lookupClip() {
-    const id = $("#clipIdInput").value.trim();
-    if (!id) { showLookupError("클립 ID를 입력해주세요."); return; }
-    $("#lookupClipBtn").disabled = true;
-    $("#lookupClipBtn").textContent = "조회 중";
-    $("#clipForm").classList.remove("show");
-    try {
-      const clip = await window.MembershipClipService.findById(id);
-      if (!clip) { showLookupError(`클립 ID ${id}의 데이터를 찾지 못했습니다. 테스트 ID를 사용해주세요.`); return; }
-      populateClipForm(clip, null);
-    } catch (error) {
-      showLookupError(error.message || "클립정보 조회 중 오류가 발생했습니다.");
-    } finally {
-      $("#lookupClipBtn").disabled = false;
-      $("#lookupClipBtn").textContent = "조회";
+  function clipCostLabel(clip) {
+    if (clip.points) return `${clip.access || "포인트"} · ${Number(clip.points).toLocaleString("ko-KR")}P`;
+    return clip.access || "무료";
+  }
+
+  function renderClipBatchActions() {
+    const selectableIds = new Set(clipSearchResults
+      .filter(clip => !destinationItems().some(item => item.id === clip.id))
+      .map(clip => clip.id));
+    selectedClipIds = new Set([...selectedClipIds].filter(id => selectableIds.has(id)));
+    $("#selectedClipCount").textContent = String(selectedClipIds.size);
+    $("#clipBatchActions").hidden = selectedClipIds.size === 0;
+  }
+
+  function renderClipSearchResults(clips) {
+    clipSearchResults = clips;
+    selectedClipIds.clear();
+    $("#clipSearchSummary").textContent = `검색 결과 ${clips.length}개`;
+    if (!clips.length) {
+      $("#clipSearchResults").innerHTML = "";
+      $("#clipSearchResults").classList.remove("show");
+      showLookupError("검색 조건에 맞는 클립이 없습니다. 클립명, 월 또는 주제를 변경해 보세요.");
+      return;
     }
+    $("#clipSearchResults").innerHTML = clips.map(clip => {
+      const alreadyAdded = destinationItems().some(item => item.id === clip.id);
+      const materialType = clip.materialTypeLabel || clip.type || "-";
+      const topic = clip.topicLabel || clip.topic || "-";
+      const memberPolicy = clip.memberPolicyLabel || clip.memberPolicy || "-";
+      return `
+        <div class="clip-search-result ${alreadyAdded ? "is-added" : ""}" data-clip-row="${escapeHtml(clip.id)}">
+          <input class="clip-search-select" type="checkbox" data-select-clip="${escapeHtml(clip.id)}" aria-label="${escapeHtml(clip.title)} 선택" ${alreadyAdded ? "disabled" : ""} />
+          <img src="${escapeHtml(clip.thumbnail)}" alt="" />
+          <span class="clip-search-result-copy">
+            <span>클립 ID ${escapeHtml(clip.id)}</span>
+            <strong>${escapeHtml(clip.title)}</strong>
+            <span class="clip-search-meta">
+              <em>${escapeHtml(materialType)}</em><em>${escapeHtml(topic)}</em><em>${escapeHtml(String(clip.month || "-"))}월</em><em>${escapeHtml(memberPolicy)}</em>
+            </span>
+          </span>
+          <span class="clip-search-result-actions">
+            <span>${escapeHtml(clipCostLabel(clip))}</span>
+            <button type="button" class="btn small ${alreadyAdded ? "" : "primary"}" data-add-clip="${escapeHtml(clip.id)}" ${alreadyAdded ? "disabled" : ""}>${alreadyAdded ? "편성됨" : "추가"}</button>
+          </span>
+        </div>`;
+    }).join("");
+    $("#clipSearchResults").classList.add("show");
+    $("#lookupError").classList.remove("show");
+    $$('[data-select-clip]').forEach(input => input.addEventListener("change", () => {
+      if (input.checked) selectedClipIds.add(input.dataset.selectClip);
+      else selectedClipIds.delete(input.dataset.selectClip);
+      input.closest("[data-clip-row]").classList.toggle("selected", input.checked);
+      renderClipBatchActions();
+    }));
+    $$('[data-add-clip]').forEach(button => button.addEventListener("click", () => {
+      const clip = clipSearchResults.find(item => item.id === button.dataset.addClip);
+      if (clip) populateClipForm(clip, null);
+    }));
+    renderClipBatchActions();
+  }
+
+  function currentClipSearchCriteria() {
+    return {
+      id: $("#clipIdInput").value.trim(),
+      name: $("#clipNameInput").value.trim(),
+      materialTypeCode: $("#clipTypeFilter").value,
+      topicCode: $("#clipTopicFilter").value,
+      month: $("#clipMonthFilter").value,
+      memberPolicyCode: $("#clipMemberPolicyFilter").value
+    };
+  }
+
+  function selectedOptionLabel(id) {
+    return $(`#${id}`).selectedOptions[0]?.textContent || "";
+  }
+
+  function renderActiveClipFilters(criteria) {
+    const filters = [
+      { key: "id", label: "클립 ID", value: criteria.id },
+      { key: "name", label: "클립명", value: criteria.name },
+      { key: "materialTypeCode", label: "자료유형", value: criteria.materialTypeCode === "all" ? "" : selectedOptionLabel("clipTypeFilter") },
+      { key: "topicCode", label: "주제", value: criteria.topicCode === "all" ? "" : selectedOptionLabel("clipTopicFilter") },
+      { key: "month", label: "월", value: criteria.month === "all" ? "" : selectedOptionLabel("clipMonthFilter") },
+      { key: "memberPolicyCode", label: "회원유형", value: criteria.memberPolicyCode === "all" ? "" : selectedOptionLabel("clipMemberPolicyFilter") }
+    ].filter(filter => filter.value);
+    $("#clipActiveFilters").hidden = filters.length === 0;
+    $("#clipActiveFilterList").innerHTML = filters.map(filter =>
+      `<button type="button" class="clip-filter-chip" data-clear-clip-filter="${filter.key}"><b>${escapeHtml(filter.label)}</b>${escapeHtml(filter.value)} ×</button>`
+    ).join("");
+    $$('[data-clear-clip-filter]').forEach(button => button.addEventListener("click", () => {
+      const controls = {
+        id: "clipIdInput", name: "clipNameInput", materialTypeCode: "clipTypeFilter",
+        topicCode: "clipTopicFilter", month: "clipMonthFilter", memberPolicyCode: "clipMemberPolicyFilter"
+      };
+      const control = $(`#${controls[button.dataset.clearClipFilter]}`);
+      control.value = control.tagName === "SELECT" ? "all" : "";
+      searchClips();
+    }));
+  }
+
+  async function searchClips() {
+    const criteria = currentClipSearchCriteria();
+    activeClip = null;
+    $("#searchClipsBtn").disabled = true;
+    $("#searchClipsBtn").textContent = "검색 중";
+    $("#clipForm").classList.remove("show");
+    $("#submitContentBtn").disabled = true;
+    $("#lookupError").classList.remove("show");
+    renderActiveClipFilters(criteria);
+    try {
+      const clips = await window.MembershipClipService.search(criteria);
+      renderClipSearchResults(clips || []);
+      if (criteria.id && clips?.length === 1) populateClipForm(clips[0], null);
+    } catch (error) {
+      showLookupError(error.message || "클립 통합검색 중 오류가 발생했습니다.");
+    } finally {
+      $("#searchClipsBtn").disabled = false;
+      $("#searchClipsBtn").textContent = "검색";
+    }
+  }
+
+  function resetClipFilters() {
+    $("#clipIdInput").value = "";
+    $("#clipNameInput").value = "";
+    ["clipTypeFilter", "clipTopicFilter", "clipMonthFilter", "clipMemberPolicyFilter"].forEach(id => { $(`#${id}`).value = "all"; });
+    searchClips();
+  }
+
+  function clipToCurationItem(clip) {
+    return {
+      id: clip.id,
+      title: clip.title,
+      displayTitle: clip.title,
+      materialTypeCode: clip.materialTypeCode,
+      materialTypeLabel: clip.materialTypeLabel || clip.type,
+      topicCode: clip.topicCode,
+      topicLabel: clip.topicLabel || clip.topic,
+      memberPolicyCode: clip.memberPolicyCode,
+      memberPolicyLabel: clip.memberPolicyLabel || clip.memberPolicy,
+      type: clip.materialTypeLabel || clip.type,
+      topic: clip.topicLabel || clip.topic,
+      memberPolicy: clip.memberPolicyLabel || clip.memberPolicy,
+      month: clip.month,
+      access: clip.access,
+      points: clip.points,
+      link: clip.link,
+      thumbnail: clip.thumbnail,
+      baseThumbnail: clip.thumbnail,
+      visible: true,
+      recommended: false,
+      isNew: false,
+      source: "manual"
+    };
+  }
+
+  function addSelectedClips() {
+    const targetItems = destinationItems();
+    const existingIds = new Set(targetItems.map(item => item.id));
+    const clips = clipSearchResults.filter(clip => selectedClipIds.has(clip.id) && !existingIds.has(clip.id));
+    if (!clips.length) { toast("추가할 콘텐츠를 선택해 주세요.", "error"); return; }
+    targetItems.push(...clips.map(clipToCurationItem));
+    if (contentDestination === "theme") touchTheme();
+    setDirty(`${contentDestination === "theme" ? `‘${currentTheme().name}’ 테마에 ` : ""}콘텐츠 ${clips.length}건 일괄 등록`);
+    closeDrawer("#contentDrawerBackdrop");
+    if (contentDestination === "theme") renderThemeContent(currentTheme());
+    else renderTable();
+    renderSections();
+    toast(`${clips.length}개 콘텐츠를 편성에 추가했습니다.`, "success");
   }
 
   function showLookupError(message) {
@@ -1258,16 +2034,28 @@
     $("#submitContentBtn").disabled = true;
   }
 
-  function editContent(id) {
-    const item = currentSection().items.find(candidate => candidate.id === id);
+  function editContent(id, destination = "section") {
+    contentDestination = destination === "theme" ? "theme" : "section";
+    const item = destinationItems().find(candidate => candidate.id === id);
     if (!item) return;
+    resetContentForm();
     editingItemId = id;
     $("#contentDrawerTitle").textContent = "콘텐츠 수정";
-    $("#submitContentBtn").textContent = "수정 완료";
-    $("#clipIdInput").value = id;
-    $("#clipIdInput").disabled = true;
-    $("#lookupClipBtn").disabled = true;
-    populateClipForm({ ...clone(item), thumbnail: item.baseThumbnail }, item);
+    $("#contentSourceTabs").hidden = true;
+    if (item.source === "url") {
+      $("#urlTitleInput").value = item.displayTitle || item.title || "";
+      $("#urlLinkInput").value = item.link || "";
+      urlThumbnailData = item.urlThumbnailData || item.urlThumbnail || "";
+      $("#urlVisibleSelect").value = String(item.visible !== false);
+      $("#urlOpenNewWindowInput").checked = item.openNewWindow !== false;
+      renderUrlThumbnailChoice();
+      setContentSourceMode("url");
+    } else {
+      setContentSourceMode("clip");
+      $("#clipSearchPanel").hidden = true;
+      populateClipForm({ ...clone(item), thumbnail: item.baseThumbnail }, item);
+      $("#submitContentBtn").textContent = "수정 완료";
+    }
     openDrawer("#contentDrawerBackdrop");
   }
 
@@ -1283,40 +2071,106 @@
     toast("콘텐츠를 편성에서 삭제했습니다.");
   }
 
+  function submitUrlContent() {
+    const title = $("#urlTitleInput").value.trim();
+    if (!title) { toast("페이지명을 입력해 주세요.", "error"); return; }
+    let link;
+    try {
+      link = normalizeLinkUrl($("#urlLinkInput").value, "이동 URL");
+      if (!link) throw new Error("이동 URL을 입력해 주세요.");
+    } catch (error) {
+      toast(error.message, "error");
+      return;
+    }
+    const targetItems = destinationItems();
+    const previousItem = editingItemId ? targetItems.find(candidate => candidate.id === editingItemId) : null;
+    const thumbnail = urlThumbnailData || defaultLinkThumbnail(title);
+    const item = {
+      id: editingItemId || `url-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      title,
+      displayTitle: title,
+      type: "URL 링크",
+      access: "바로가기",
+      points: 0,
+      link,
+      urlThumbnailData,
+      thumbnail,
+      baseThumbnail: thumbnail,
+      visible: $("#urlVisibleSelect").value === "true",
+      openNewWindow: $("#urlOpenNewWindowInput").checked,
+      recommended: previousItem?.recommended || false,
+      isNew: previousItem?.isNew || false,
+      source: "url"
+    };
+    if (editingItemId) {
+      const index = targetItems.findIndex(candidate => candidate.id === editingItemId);
+      targetItems[index] = item;
+      if (contentDestination === "theme") touchTheme();
+      setDirty(`${contentDestination === "theme" ? `‘${currentTheme().name}’ 테마의 ` : ""}‘${title}’ URL 링크 수정`);
+      toast("URL 링크를 수정했습니다.", "success");
+    } else {
+      targetItems.push(item);
+      if (contentDestination === "theme") touchTheme();
+      setDirty(`${contentDestination === "theme" ? `‘${currentTheme().name}’ 테마에 ` : ""}‘${title}’ URL 링크 등록`);
+      toast("URL 링크를 편성에 추가했습니다.", "success");
+    }
+    closeDrawer("#contentDrawerBackdrop");
+    if (contentDestination === "theme") renderThemeContent(currentTheme());
+    else renderTable();
+    renderSections();
+  }
+
   function submitContent() {
+    if (contentSourceMode === "url") { submitUrlContent(); return; }
     if (!activeClip) return;
     const title = $("#displayTitleInput").value.trim();
     if (!title) { toast("노출 제목을 입력해주세요.", "error"); return; }
+    const targetItems = destinationItems();
+    const previousItem = editingItemId ? targetItems.find(candidate => candidate.id === editingItemId) : null;
     const item = {
       id: activeClip.id,
       title: activeClip.title,
       displayTitle: title,
-      type: activeClip.type,
+      materialTypeCode: activeClip.materialTypeCode,
+      materialTypeLabel: activeClip.materialTypeLabel || activeClip.type,
+      topicCode: activeClip.topicCode,
+      topicLabel: activeClip.topicLabel || activeClip.topic,
+      memberPolicyCode: activeClip.memberPolicyCode,
+      memberPolicyLabel: activeClip.memberPolicyLabel || activeClip.memberPolicy,
+      type: activeClip.materialTypeLabel || activeClip.type,
       access: activeClip.access,
       points: activeClip.points,
+      month: activeClip.month,
+      topic: activeClip.topicLabel || activeClip.topic,
+      memberPolicy: activeClip.memberPolicyLabel || activeClip.memberPolicy,
       link: activeClip.link,
       thumbnail: activeClip.membershipThumbnail,
       baseThumbnail: activeClip.baseThumbnail,
       visible: $("#displayVisibleSelect").value === "true",
-      source: editingItemId ? (currentSection().items.find(candidate => candidate.id === editingItemId)?.source || "manual") : "manual"
+      recommended: previousItem?.recommended || false,
+      isNew: previousItem?.isNew || false,
+      source: previousItem?.source || "manual"
     };
 
     if (editingItemId) {
-      const index = currentSection().items.findIndex(candidate => candidate.id === editingItemId);
-      currentSection().items[index] = item;
-      setDirty(`‘${title}’ 노출정보 수정`);
+      const index = targetItems.findIndex(candidate => candidate.id === editingItemId);
+      targetItems[index] = item;
+      if (contentDestination === "theme") touchTheme();
+      setDirty(`${contentDestination === "theme" ? `‘${currentTheme().name}’ 테마의 ` : ""}‘${title}’ 노출정보 수정`);
       toast("콘텐츠 노출정보를 수정했습니다.", "success");
     } else {
-      if (currentSection().items.some(candidate => candidate.id === item.id)) {
+      if (targetItems.some(candidate => candidate.id === item.id)) {
         toast("현재 섹션에 이미 편성된 클립입니다.", "error");
         return;
       }
-      currentSection().items.push(item);
-      setDirty(`‘${title}’ 등록`);
+      targetItems.push(item);
+      if (contentDestination === "theme") touchTheme();
+      setDirty(`${contentDestination === "theme" ? `‘${currentTheme().name}’ 테마에 ` : ""}‘${title}’ 등록`);
       toast("콘텐츠를 편성에 추가했습니다.", "success");
     }
     closeDrawer("#contentDrawerBackdrop");
-    renderTable();
+    if (contentDestination === "theme") renderThemeContent(currentTheme());
+    else renderTable();
     renderSections();
   }
 
@@ -1415,7 +2269,7 @@
     chosen.forEach(clip => currentSection().items.push({
       id: clip.id, title: clip.title, displayTitle: clip.title, type: clip.type, access: clip.access,
       points: clip.points, link: clip.link, thumbnail: clip.thumbnail, baseThumbnail: clip.thumbnail,
-      visible: true, source: "recommended"
+      visible: true, recommended: true, isNew: false, source: "recommended"
     }));
     setDirty(`추천 콘텐츠 ${chosen.length}개 추가`);
     closeDrawer("#recommendDrawerBackdrop");
@@ -1425,6 +2279,16 @@
   }
 
   function saveDraft() {
+    if (currentAdminView === "main") {
+      commonSettings().modifiedAt = nowText();
+      commonSettings().modifiedBy = USER_NAME;
+      saveStateToStorage();
+      clearDirty();
+      renderHistory();
+      renderAudit();
+      toast("메인 공통 설정을 저장했습니다.", "success");
+      return;
+    }
     currentMonth().status = "draft";
     saveStateToStorage();
     clearDirty();
@@ -1435,6 +2299,17 @@
   }
 
   async function publish() {
+    if (currentAdminView === "main") {
+      const accepted = await confirmAction({ title: "메인 공통 설정을 적용할까요?", body: "히어로, 카테고리·섹션 구조, 프로그램 메뉴와 하단 프로모션 설정이 모든 연·월 화면에 공통 적용됩니다.", okText: "공통 설정 적용" });
+      if (!accepted) return;
+      recordHistory("메인 공통 설정 적용", { area: "메인관리 > 공통 설정", areaKey: "main-common", type: "적용" });
+      saveStateToStorage();
+      clearDirty();
+      renderHistory();
+      renderAudit();
+      toast("메인 공통 설정을 적용했습니다.", "success");
+      return;
+    }
     const accepted = await confirmAction({ title: `${formatMonth(currentMonthKey)} 운영 화면을 발행할까요?`, body: "현재 메인 설정과 콘텐츠 편성 데이터가 합쳐져 멤버십전용관에 노출됩니다.", okText: "발행" });
     if (!accepted) return;
     currentMonth().status = "published";
@@ -1453,39 +2328,180 @@
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
   }
 
-  async function copyPreviousMonth() {
-    const previousKey = monthOffset(currentMonthKey, -1);
-    const previous = state.months[previousKey];
-    if (!previous) { toast("불러올 전월 편성 데이터가 없습니다.", "error"); return; }
-    const isMain = currentAdminView === "main";
-    const accepted = await confirmAction({
-      title: isMain ? "전월 메인 설정을 불러올까요?" : "전월 콘텐츠 편성을 불러올까요?",
-      body: isMain
-        ? "현재 월의 히어로 배너, 카테고리·섹션 순서, 레이아웃 테마, 프로그램 메뉴, 하단 프로모션 설정이 전월 데이터로 교체됩니다. 편성 콘텐츠는 유지됩니다."
-        : "현재 월의 섹션 노출 문구와 콘텐츠 편성이 전월 데이터로 교체됩니다. 메인 설정은 유지됩니다.",
-      okText: "불러오기", danger: true
-    });
-    if (!accepted) return;
-    if (isMain) {
-      const currentSections = currentMonth().sections;
-      const currentById = new Map(currentSections.map(section => [section.id, section]));
-      currentMonth().pageSettings = clone(previous.pageSettings || defaultPageSettings(previousKey));
-      const previousOrder = (previous.sections || []).map(previousSection => {
-        const current = currentById.get(previousSection.id);
-        currentById.delete(previousSection.id);
-        return current
-          ? { ...current, adminName: previousSection.adminName, visible: previousSection.visible, layoutTheme: previousSection.layoutTheme }
-          : { ...clone(previousSection), items: [] };
-      });
-      currentMonth().sections = [...previousOrder, ...currentById.values()];
-      activeHeroBannerId = currentMonth().pageSettings.heroBanners[0].id;
+  function availableCopyMonthKeys() {
+    return Object.keys(state.months).filter(key => key !== currentMonthKey).sort().reverse();
+  }
+
+  function selectedCopyMonthKey() {
+    const year = $("#copySourceYear").value;
+    const month = $("#copySourceMonth").value;
+    return year && month ? `${year}-${month}` : "";
+  }
+
+  function selectedCopyTargetKey() {
+    const year = Number($("#copyTargetYear").value);
+    const month = Number($("#copyTargetMonth").value);
+    if (!Number.isInteger(year) || year < 2000 || year > 2100 || month < 1 || month > 12) return "";
+    return `${year}-${String(month).padStart(2, "0")}`;
+  }
+
+  function renderCopySourceInfo() {
+    const sourceKey = selectedCopyMonthKey();
+    const source = state.months[sourceKey];
+    if (!source) {
+      $("#copyMonthSourceInfo").textContent = "선택한 월에 저장된 편성 데이터가 없습니다.";
+      $("#copyMonthApply").disabled = true;
+      return;
     }
-    else currentMonth().sections = clone(previous.sections);
+    const status = source.status === "published" ? "발행 완료" : "임시저장";
+    $("#copyMonthSourceInfo").textContent = `${formatMonth(sourceKey)} · ${status} · 최종 수정 ${source.modifiedAt || "정보 없음"}`;
+    $("#copyMonthApply").disabled = false;
+  }
+
+  function renderCopySourceMonths(preferredMonth) {
+    const year = $("#copySourceYear").value;
+    const monthKeys = availableCopyMonthKeys().filter(key => key.startsWith(`${year}-`));
+    $("#copySourceMonth").innerHTML = monthKeys.map(key => {
+      const month = key.split("-")[1];
+      return `<option value="${month}">${Number(month)}월</option>`;
+    }).join("");
+    const preferred = String(preferredMonth || "").padStart(2, "0");
+    if (monthKeys.some(key => key.endsWith(`-${preferred}`))) $("#copySourceMonth").value = preferred;
+    renderCopySourceInfo();
+  }
+
+  function renderCopyTargetInfo() {
+    const targetKey = selectedCopyTargetKey();
+    if (!targetKey) {
+      $("#copyMonthSourceInfo").textContent = "대상 연도와 월을 확인해 주세요.";
+      $("#copyMonthApply").disabled = true;
+      return;
+    }
+    if (targetKey === currentMonthKey) {
+      $("#copyMonthSourceInfo").textContent = "현재 작업 중인 월과 다른 대상 월을 선택해 주세요.";
+      $("#copyMonthApply").disabled = true;
+      return;
+    }
+    const target = state.months[targetKey];
+    $("#copyMonthSourceInfo").textContent = target
+      ? `${formatMonth(targetKey)}에 기존 편성이 있습니다. 복사하면 선택 영역이 교체됩니다.`
+      : `${formatMonth(targetKey)} 신규 편성을 만들고 현재 데이터를 복사합니다.`;
+    $("#copyMonthTarget").textContent = `${formatMonth(targetKey)} 콘텐츠 편성`;
+    $("#copyMonthApply").disabled = false;
+  }
+
+  function prepareCopyTargetPicker() {
+    const nextKey = monthOffset(currentMonthKey, 1);
+    const [year, month] = nextKey.split("-");
+    $("#copyTargetYear").value = year;
+    $("#copyTargetMonth").innerHTML = Array.from({ length: 12 }, (_, index) => {
+      const value = String(index + 1).padStart(2, "0");
+      return `<option value="${value}">${index + 1}월</option>`;
+    }).join("");
+    $("#copyTargetMonth").value = month;
+  }
+
+  function setCopyMonthDirection(direction) {
+    copyMonthDirection = direction === "push" ? "push" : "pull";
+    $$('[data-copy-direction]').forEach(button => {
+      const active = button.dataset.copyDirection === copyMonthDirection;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-selected", String(active));
+    });
+    const pushing = copyMonthDirection === "push";
+    $("#copySourcePicker").hidden = pushing;
+    $("#copyTargetPicker").hidden = !pushing;
+    $("#copyMonthTitle").textContent = pushing
+      ? "현재 콘텐츠 편성을 다른 월로 복사"
+      : "콘텐츠 편성 불러오기";
+    $("#copyMonthDescription").textContent = pushing
+      ? "현재 작업 중인 데이터를 복사할 대상 연도와 월을 선택해 주세요."
+      : "복사할 원본 연도와 월을 선택해 주세요.";
+    $("#copyMonthWarning").textContent = pushing
+      ? "대상 월의 기존 콘텐츠 편성을 현재 편성으로 교체합니다. 메인 공통 설정은 복사하지 않으며, 복사 후 대상 월로 이동합니다."
+      : "선택 월의 섹션 문구와 콘텐츠 편성만 복사합니다. 히어로·카테고리 구조·프로그램 메뉴·하단 프로모션 공통 설정은 변경되지 않습니다.";
+    $("#copyMonthApply").textContent = pushing ? "현재 편성 복사하기" : "선택 월 불러오기";
+    if (pushing) {
+      renderCopyTargetInfo();
+      $("#copyTargetYear").focus();
+    } else {
+      $("#copyMonthTarget").textContent = `${formatMonth(currentMonthKey)} 콘텐츠 편성`;
+      renderCopySourceInfo();
+      $("#copySourceYear").focus();
+    }
+  }
+
+  function openCopyMonthModal() {
+    if (currentAdminView !== "content") {
+      toast("편성 불러오기는 콘텐츠 편성관리에서만 사용할 수 있습니다.", "error");
+      return;
+    }
+    const sourceKeys = availableCopyMonthKeys();
+    const previousKey = monthOffset(currentMonthKey, -1);
+    if (sourceKeys.length) {
+      const preferredKey = sourceKeys.includes(previousKey) ? previousKey : sourceKeys[0];
+      const [preferredYear, preferredMonth] = preferredKey.split("-");
+      const years = [...new Set(sourceKeys.map(key => key.split("-")[0]))];
+      $("#copySourceYear").innerHTML = years.map(year => `<option value="${year}">${year}년</option>`).join("");
+      $("#copySourceYear").value = preferredYear;
+      renderCopySourceMonths(preferredMonth);
+    } else {
+      $("#copySourceYear").innerHTML = "";
+      $("#copySourceMonth").innerHTML = "";
+    }
+    prepareCopyTargetPicker();
+    $("#copyMonthBackdrop").classList.add("open");
+    $("#copyMonthBackdrop").setAttribute("aria-hidden", "false");
+    setCopyMonthDirection(sourceKeys.length ? "pull" : "push");
+  }
+
+  function closeCopyMonthModal() {
+    $("#copyMonthBackdrop").classList.remove("open");
+    $("#copyMonthBackdrop").setAttribute("aria-hidden", "true");
+  }
+
+  function copySelectedMonth() {
+    if (copyMonthDirection === "push") {
+      copyCurrentMonthToTarget();
+      return;
+    }
+    const sourceKey = selectedCopyMonthKey();
+    const source = state.months[sourceKey];
+    if (!source || sourceKey === currentMonthKey) { toast("불러올 월의 편성 데이터를 확인해 주세요.", "error"); return; }
+    currentMonth().sections = clone(source.sections);
+    syncAllMonthsToCommonStructure();
     currentMonth().status = "draft";
-    if (!isMain) currentSectionId = currentMonth().sections[0].id;
-    setDirty(`${formatMonth(previousKey)} ${isMain ? "메인 설정" : "콘텐츠 편성"} 불러오기`);
+    currentSectionId = currentMonth().sections[0].id;
+    closeCopyMonthModal();
+    setDirty(`${formatMonth(sourceKey)} 콘텐츠 편성 불러오기`);
     renderAll();
-    toast(`전월 ${isMain ? "메인 설정" : "콘텐츠 편성"}을 불러왔습니다. 필요한 항목만 수정해 주세요.`, "success");
+    toast(`${formatMonth(sourceKey)} 콘텐츠 편성을 불러왔습니다.`, "success");
+  }
+
+  function copyCurrentMonthToTarget() {
+    const targetKey = selectedCopyTargetKey();
+    if (!targetKey || targetKey === currentMonthKey) { toast("복사할 대상 연도와 월을 확인해 주세요.", "error"); return; }
+    const sourceKey = currentMonthKey;
+    const source = clone(currentMonth());
+    const targetExists = Boolean(state.months[targetKey]);
+    const target = state.months[targetKey] || {
+      status: "draft",
+      pageSettings: defaultPageSettings(targetKey),
+      sections: sectionBlueprints.map(section => ({ ...clone(section), items: [] })),
+      modifiedAt: nowText(),
+      modifiedBy: USER_NAME,
+      history: []
+    };
+    target.sections = clone(source.sections);
+    target.status = "draft";
+    state.months[targetKey] = target;
+    currentMonthKey = targetKey;
+    currentSectionId = target.sections[0].id;
+    closeCopyMonthModal();
+    setDirty(`${formatMonth(sourceKey)} 콘텐츠 편성을 ${formatMonth(targetKey)}에 복사`);
+    $("#contentSearch").value = "";
+    renderAll();
+    toast(`${formatMonth(targetKey)}에 현재 콘텐츠 편성을 ${targetExists ? "교체" : "생성"}했습니다.`, "success");
   }
 
   function createNextMonth() {
@@ -1493,14 +2509,13 @@
     const newKey = monthOffset(lastKey, 1);
     state.months[newKey] = {
       status: "draft",
-      pageSettings: defaultPageSettings(newKey),
-      sections: sectionBlueprints.map(section => ({ ...clone(section), items: [] })),
+      pageSettings: clone(commonPageSettings()),
+      sections: commonSections().map(section => ({ ...clone(section), items: [], ...(section.id === "solution" ? { themeGroups: [] } : {}) })),
       modifiedAt: nowText(), modifiedBy: USER_NAME,
       history: [{ action: `${formatMonth(newKey)} 신규 편성 생성`, at: nowText(), by: USER_NAME }]
     };
     currentMonthKey = newKey;
     currentSectionId = state.months[newKey].sections[0].id;
-    activeHeroBannerId = state.months[newKey].pageSettings.heroBanners[0].id;
     clearDirty();
     saveStateToStorage();
     renderAll();
@@ -1508,31 +2523,55 @@
   }
 
   function preview() {
-    const payload = { monthKey: currentMonthKey, month: clone(currentMonth()), selectedSectionId: currentSectionId, generatedAt: nowText() };
+    const previewMonth = clone(currentMonth());
+    const commonById = new Map(commonSections().map(section => [section.id, section]));
+    previewMonth.pageSettings = clone(commonPageSettings());
+    previewMonth.sections = previewMonth.sections.map(section => {
+      const common = commonById.get(section.id) || {};
+      return { ...section, adminName: common.adminName || section.adminName, layoutTheme: common.layoutTheme || section.layoutTheme, visible: common.visible !== false && section.visible !== false };
+    });
+    const payload = { monthKey: currentMonthKey, month: previewMonth, selectedSectionId: currentSectionId, focusSelectedSection: currentAdminView === "content", generatedAt: nowText() };
+    try { localStorage.setItem(PREVIEW_KEY, JSON.stringify(payload)); } catch (error) { console.warn(error); }
+    window.getMembershipPreviewData = () => clone(payload);
+    window.open("membership_admin_preview.html", "_blank", "noopener=false");
+  }
+
+  function previewHeroBanner(bannerId) {
+    const banner = commonPageSettings().heroBanners.find(item => item.id === bannerId);
+    if (!banner) return;
+    const previewMonth = clone(currentMonth());
+    previewMonth.pageSettings = clone(commonPageSettings());
+    previewMonth.pageSettings.heroBanners = [{ ...clone(banner), visible: true }];
+    const payload = { monthKey: currentMonthKey, month: previewMonth, selectedSectionId: currentSectionId, focusSelectedSection: false, generatedAt: nowText() };
     try { localStorage.setItem(PREVIEW_KEY, JSON.stringify(payload)); } catch (error) { console.warn(error); }
     window.getMembershipPreviewData = () => clone(payload);
     window.open("membership_admin_preview.html", "_blank", "noopener=false");
   }
 
   function addHeroBanner() {
-    const banners = currentMonth().pageSettings.heroBanners;
-    const source = currentHeroBanner();
+    const banners = commonPageSettings().heroBanners;
+    const timestamp = nowText();
     const banner = {
-      ...clone(source),
       id: `hero-banner-${Date.now()}`,
-      label: `히어로 배너 ${banners.length + 1}`,
-      visible: true
+      label: `새 히어로 배너 ${banners.length + 1}`,
+      title: "",
+      subtitle: "",
+      badge: "",
+      image: "",
+      targetUrl: "",
+      visible: false,
+      createdAt: timestamp,
+      updatedAt: timestamp
     };
     banners.push(banner);
     activeHeroBannerId = banner.id;
     setDirty(`${banner.label} 추가`);
-    renderHeroBannerManager();
-    renderPageSettings();
-    toast("기존 세트를 복사해 새 히어로 배너를 추가했습니다.", "success");
+    openHeroEditor(banner.id, true);
+    toast("새 히어로 배너 등록 화면을 열었습니다.", "success");
   }
 
   function addLayoutSection() {
-    const sections = currentMonth().sections;
+    const sections = commonSections();
     const nextNumber = sections.length + 1;
     const section = {
       id: `section-${Date.now()}`,
@@ -1546,12 +2585,13 @@
       items: []
     };
     sections.push(section);
-    currentMonth().pageSettings.categories.push({
+    commonPageSettings().categories.push({
       id: `category-${section.id}`,
       label: `새 메뉴 ${nextNumber}`,
       targetSectionId: section.id,
       visible: true
     });
+    Object.values(state.months).forEach(month => month.sections.push({ ...clone(section), items: [] }));
     currentSectionId = section.id;
     setDirty(`‘${section.adminName}’ 섹션 영역 추가`);
     renderSectionLayouts();
@@ -1562,7 +2602,7 @@
   }
 
   function openSectionSettings() {
-    sectionSettingsDraft = currentMonth().sections.map(section => ({ id: section.id, adminName: section.adminName }));
+    sectionSettingsDraft = commonSections().map(section => ({ id: section.id, adminName: section.adminName }));
     renderSectionSettings();
     openDrawer("#sectionSettingsBackdrop");
   }
@@ -1579,8 +2619,8 @@
       item.adminName = input.value;
     }));
     $$('[data-settings-delete]').forEach(button => button.addEventListener("click", () => {
-      const original = currentMonth().sections.find(section => section.id === button.dataset.settingsDelete);
-      if (original && original.items.length) { toast("편성 콘텐츠가 있는 섹션은 삭제할 수 없습니다.", "error"); return; }
+      const original = commonSections().find(section => section.id === button.dataset.settingsDelete);
+      if (original && sectionContentCountAcrossMonths(original.id)) { toast("월별 편성 콘텐츠가 있는 섹션은 삭제할 수 없습니다.", "error"); return; }
       if (sectionSettingsDraft.length <= 1) { toast("섹션은 최소 1개가 필요합니다.", "error"); return; }
       sectionSettingsDraft = sectionSettingsDraft.filter(section => section.id !== button.dataset.settingsDelete);
       renderSectionSettings();
@@ -1596,12 +2636,13 @@
 
   function saveSectionSettings() {
     if (sectionSettingsDraft.some(section => !section.adminName.trim())) { toast("모든 관리용 섹션명을 입력해주세요.", "error"); return; }
-    const previous = currentMonth().sections;
-    currentMonth().sections = sectionSettingsDraft.map(draft => {
+    const previous = commonSections();
+    state.commonSettings.sections = sectionSettingsDraft.map(draft => {
       const existing = previous.find(section => section.id === draft.id);
       return existing ? { ...existing, adminName: draft.adminName.trim() } : { id: draft.id, adminName: draft.adminName.trim(), displayTitle: "새 섹션 타이틀", subtitle: "섹션 보조문구를 입력하세요.", badge: "", ctaLabel: "더보기", visible: true, layoutTheme: "popular-ranking", items: [] };
     });
-    if (!currentMonth().sections.some(section => section.id === currentSectionId)) currentSectionId = currentMonth().sections[0].id;
+    syncAllMonthsToCommonStructure();
+    if (!commonSections().some(section => section.id === currentSectionId)) currentSectionId = commonSections()[0].id;
     setDirty("섹션 구조 변경");
     closeDrawer("#sectionSettingsBackdrop");
     renderAll();
@@ -1639,20 +2680,93 @@
         currentAdminView = "main";
         renderAdminView();
       }
-      $$("[data-main-anchor]").forEach(item => item.classList.toggle("active", item === button));
-      $(`#${button.dataset.mainAnchor}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      switchMainPanel(button.dataset.mainAnchor);
     }));
     $("#monthSelect").addEventListener("change", event => switchMonth(event.target.value));
     $("#createMonthBtn").addEventListener("click", createNextMonth);
-    $("#copyPreviousBtn").addEventListener("click", copyPreviousMonth);
+    $("#copyMonthBtn").addEventListener("click", openCopyMonthModal);
+    $$('[data-copy-direction]').forEach(button => button.addEventListener("click", () => setCopyMonthDirection(button.dataset.copyDirection)));
+    $("#copySourceYear").addEventListener("change", () => renderCopySourceMonths());
+    $("#copySourceMonth").addEventListener("change", renderCopySourceInfo);
+    $("#copyTargetYear").addEventListener("input", renderCopyTargetInfo);
+    $("#copyTargetMonth").addEventListener("change", renderCopyTargetInfo);
+    $("#copyMonthCancel").addEventListener("click", closeCopyMonthModal);
+    $("#copyMonthApply").addEventListener("click", copySelectedMonth);
+    $("#copyMonthBackdrop").addEventListener("click", event => { if (event.target.id === "copyMonthBackdrop") closeCopyMonthModal(); });
     $("#addHeroBannerBtn").addEventListener("click", addHeroBanner);
+    $("#heroEditorBackBtn").addEventListener("click", closeHeroEditor);
+    $("#heroEditorDoneBtn").addEventListener("click", () => {
+      try {
+        currentHeroBanner().targetUrl = normalizeLinkUrl($("#heroTargetUrlInput").value, "타겟 링크");
+      } catch (error) {
+        toast(error.message, "error");
+        $("#heroTargetUrlInput").focus();
+        return;
+      }
+      touchCurrentHeroBanner();
+      const wasNew = heroEditorIsNew;
+      closeHeroEditor();
+      toast(wasNew ? "히어로 배너를 등록했습니다." : "히어로 배너 수정을 완료했습니다.", "success");
+    });
     $("#addLayoutSectionBtn").addEventListener("click", addLayoutSection);
     $("#addProgramShortcutBtn").addEventListener("click", addProgramShortcut);
     $("#previewBtn").addEventListener("click", preview);
     $("#saveDraftBtn").addEventListener("click", saveDraft);
     $("#quickSaveBtn").addEventListener("click", saveDraft);
     $("#publishBtn").addEventListener("click", publish);
-    $("#addContentBtn").addEventListener("click", openContentDrawer);
+    $("#addContentBtn").addEventListener("click", () => openContentDrawer("section"));
+    $("#addThemeBtn").addEventListener("click", addTheme);
+    $("#themeMonthSelect").addEventListener("change", event => switchMonth(event.target.value, true));
+    $("#themeEditorBackBtn").addEventListener("click", closeThemeEditor);
+    $("#themeEditorDoneBtn").addEventListener("click", () => {
+      const theme = currentTheme();
+      if (!theme) return;
+      if (!theme.name.trim()) { toast("테마명을 입력해 주세요.", "error"); $("#themeNameInput").focus(); return; }
+      try { theme.ctaUrl = normalizeLinkUrl($("#themeUrlInput").value, "CTA 연결 URL"); }
+      catch (error) { toast(error.message, "error"); $("#themeUrlInput").focus(); return; }
+      touchTheme(theme);
+      closeThemeEditor();
+      toast("테마 편집을 완료했습니다.", "success");
+    });
+    $("#addThemeContentBtn").addEventListener("click", () => openContentDrawer("theme"));
+    const updateThemeField = (id, key, action) => $(id).addEventListener("input", event => {
+      const theme = currentTheme();
+      if (!theme) return;
+      theme[key] = event.target.value;
+      touchTheme(theme);
+      setDirty(action);
+    });
+    updateThemeField("#themeNameInput", "name", "테마명 수정");
+    updateThemeField("#themeSubtitleInput", "subtitle", "테마 보조문구 수정");
+    updateThemeField("#themeCtaInput", "ctaLabel", "테마 CTA 문구 수정");
+    updateThemeField("#themeUrlInput", "ctaUrl", "테마 CTA URL 수정");
+    $("#themeOpenNewWindowInput").addEventListener("change", event => {
+      const theme = currentTheme(); if (!theme) return;
+      theme.openNewWindow = event.target.checked; touchTheme(theme);
+      $("#themeOpenNewWindowLabel").textContent = theme.openNewWindow ? "ON" : "OFF";
+      setDirty(`‘${theme.name}’ 새창 열기 ${theme.openNewWindow ? "ON" : "OFF"}`);
+    });
+    $("#themeVisibleInput").addEventListener("change", event => {
+      const theme = currentTheme(); if (!theme) return;
+      theme.visible = event.target.checked; touchTheme(theme);
+      $("#themeVisibleLabel").textContent = theme.visible ? "ON" : "OFF";
+      setDirty(`‘${theme.name}’ 테마 노출 ${theme.visible ? "ON" : "OFF"}`);
+    });
+    $("#themeImageUploadBtn").addEventListener("click", () => $("#themeImageFileInput").click());
+    $("#themeImageDeleteBtn").addEventListener("click", () => {
+      const theme = currentTheme(); if (!theme) return;
+      theme.image = ""; touchTheme(theme); setDirty(`‘${theme.name}’ 대표 이미지 삭제`); renderThemeEditor(theme);
+    });
+    $("#themeImageFileInput").addEventListener("change", async event => {
+      const file = event.target.files?.[0]; event.target.value = "";
+      if (!file) return;
+      if (!/^image\/(jpeg|png|webp)$/.test(file.type)) { toast("JPG, PNG, WebP 이미지만 등록할 수 있습니다.", "error"); return; }
+      try {
+        const theme = currentTheme(); if (!theme) return;
+        theme.image = await fileToDataUrl(file); touchTheme(theme); setDirty(`‘${theme.name}’ 대표 이미지 등록`); renderThemeEditor(theme);
+        toast("테마 대표 이미지를 등록했습니다.", "success");
+      } catch (error) { toast("이미지를 읽지 못했습니다.", "error"); }
+    });
     $("#recommendBtn").addEventListener("click", openRecommendations);
     $("#openHistoryBtn").addEventListener("click", openHistoryView);
     $("#historyPeriodFilter").addEventListener("change", event => {
@@ -1664,15 +2778,20 @@
     $("#historyDetailBackdrop").addEventListener("click", event => { if (event.target.id === "historyDetailBackdrop") closeHistoryDetail(); });
     $("#contentSearch").addEventListener("input", renderTable);
 
-    bindCopyInput("heroTitleInput", currentHeroBanner, "title", "히어로 배너 메인 타이틀 수정", renderHeroBannerManager);
-    bindCopyInput("heroSubtitleInput", currentHeroBanner, "subtitle", "히어로 배너 보조문구 수정");
-    bindCopyInput("heroBadgeInput", currentHeroBanner, "badge", "히어로 배너 배지 수정");
-    bindCopyInput("promoBadgeInput", () => currentMonth().pageSettings.promotion.design, "badge", "프로모션 배지 수정", renderPromotionLivePreview);
-    bindCopyInput("promoTitleInput", () => currentMonth().pageSettings.promotion.design, "title", "프로모션 메인 문구 수정", renderPromotionLivePreview);
-    bindCopyInput("promoSubtitleInput", () => currentMonth().pageSettings.promotion.design, "subtitle", "프로모션 보조문구 수정", renderPromotionLivePreview);
-    bindCopyInput("promoCtaInput", () => currentMonth().pageSettings.promotion.design, "ctaLabel", "프로모션 디자인형 CTA 수정", renderPromotionLivePreview);
-    bindCopyInput("promoImageCtaInput", () => currentMonth().pageSettings.promotion.image, "ctaLabel", "프로모션 통이미지형 CTA 수정", renderPromotionLivePreview);
-    bindCopyInput("promoUrlInput", () => currentMonth().pageSettings.promotion.common, "linkUrl", "프로모션 링크 수정");
+    bindCopyInput("heroLabelInput", currentHeroBanner, "label", "히어로 배너명 수정", () => {
+      touchCurrentHeroBanner();
+      $("#heroBannerEditorLabel").textContent = currentHeroBanner().label || "이름 없는 배너";
+    });
+    bindCopyInput("heroTitleInput", currentHeroBanner, "title", "히어로 배너 메인 타이틀 수정", touchCurrentHeroBanner);
+    bindCopyInput("heroSubtitleInput", currentHeroBanner, "subtitle", "히어로 배너 보조문구 수정", touchCurrentHeroBanner);
+    bindCopyInput("heroBadgeInput", currentHeroBanner, "badge", "히어로 배너 배지 수정", touchCurrentHeroBanner);
+    bindCopyInput("heroTargetUrlInput", currentHeroBanner, "targetUrl", "히어로 배너 타겟 링크 수정", touchCurrentHeroBanner);
+    bindCopyInput("promoBadgeInput", () => commonPageSettings().promotion.design, "badge", "프로모션 배지 수정", renderPromotionLivePreview);
+    bindCopyInput("promoTitleInput", () => commonPageSettings().promotion.design, "title", "프로모션 메인 문구 수정", renderPromotionLivePreview);
+    bindCopyInput("promoSubtitleInput", () => commonPageSettings().promotion.design, "subtitle", "프로모션 보조문구 수정", renderPromotionLivePreview);
+    bindCopyInput("promoCtaInput", () => commonPageSettings().promotion.design, "ctaLabel", "프로모션 디자인형 CTA 수정", renderPromotionLivePreview);
+    bindCopyInput("promoImageCtaInput", () => commonPageSettings().promotion.image, "ctaLabel", "프로모션 통이미지형 CTA 수정", renderPromotionLivePreview);
+    bindCopyInput("promoUrlInput", () => commonPageSettings().promotion.common, "linkUrl", "프로모션 링크 수정");
     bindCopyInput("sectionDisplayTitleInput", currentSection, "displayTitle", "섹션 Front 타이틀 수정");
     bindCopyInput("sectionSubtitleInput", currentSection, "subtitle", "섹션 보조문구 수정");
     bindCopyInput("sectionBadgeInput", currentSection, "badge", "섹션 배지 문구 수정");
@@ -1682,23 +2801,23 @@
     bindCopyInput("featuredCtaInput", currentSection, "featuredCta", "대표 카드 CTA 수정");
 
     $$('input[name="promoType"]').forEach(input => input.addEventListener("change", () => {
-      currentMonth().pageSettings.promotion.bannerType = input.value;
+      commonPageSettings().promotion.bannerType = input.value;
       setDirty(`하단 프로모션 배너 유형 ${input.value === "design" ? "디자인형" : "통이미지형"} 선택`);
       renderPromotionSettings();
     }));
     $("#promoOpenNewWindowInput").addEventListener("change", event => {
-      currentMonth().pageSettings.promotion.common.openNewWindow = event.target.checked;
+      commonPageSettings().promotion.common.openNewWindow = event.target.checked;
       setDirty(`하단 프로모션 새창 열기 ${event.target.checked ? "ON" : "OFF"}`);
       renderPromotionSettings();
     });
     $("#promoCommonVisibleInput").addEventListener("change", event => {
-      currentMonth().pageSettings.promotion.common.visible = event.target.checked;
+      commonPageSettings().promotion.common.visible = event.target.checked;
       setDirty(`하단 프로모션 배너 노출 ${event.target.checked ? "ON" : "OFF"}`);
       renderPromotionSettings();
     });
     $("#promoImageChangeBtn").addEventListener("click", () => $("#promoImageFileInput").click());
     $("#promoImageDeleteBtn").addEventListener("click", () => {
-      currentMonth().pageSettings.promotion.image.imageUrl = "";
+      commonPageSettings().promotion.image.imageUrl = "";
       setDirty("하단 프로모션 통이미지 삭제");
       renderPromotionSettings();
     });
@@ -1708,7 +2827,7 @@
       if (!file) return;
       if (!/^image\/(jpeg|png|webp)$/.test(file.type)) { toast("JPG, PNG, WebP 이미지만 등록할 수 있습니다.", "error"); return; }
       try {
-        currentMonth().pageSettings.promotion.image.imageUrl = await fileToDataUrl(file);
+        commonPageSettings().promotion.image.imageUrl = await fileToDataUrl(file);
         setDirty("하단 프로모션 통이미지 등록");
         renderPromotionSettings();
         toast("통이미지 배너를 등록했습니다.", "success");
@@ -1717,6 +2836,7 @@
 
     $("#heroBannerVisibleInput").addEventListener("change", event => {
       currentHeroBanner().visible = event.target.checked;
+      touchCurrentHeroBanner();
       $("#heroBannerVisibleLabel").textContent = event.target.checked ? "ON" : "OFF";
       setDirty(`${currentHeroBanner().label} 노출 ${event.target.checked ? "ON" : "OFF"}`);
       renderHeroBannerManager();
@@ -1725,6 +2845,7 @@
     $("#heroImageDeleteBtn").addEventListener("click", () => {
       const banner = currentHeroBanner();
       banner.image = "";
+      touchCurrentHeroBanner();
       setDirty(`${banner.label} 통이미지 삭제`);
       renderHeroBannerManager();
     });
@@ -1737,6 +2858,7 @@
       try {
         const banner = currentHeroBanner();
         banner.image = await fileToDataUrl(file);
+        touchCurrentHeroBanner();
         setDirty(`${banner.label} 통이미지 교체`);
         renderHeroBannerManager();
         toast("히어로 배너 통이미지를 교체했습니다.", "success");
@@ -1749,7 +2871,7 @@
       if (!file || !programIconTargetId) return;
       if (!file.type.startsWith("image/")) { toast("이미지 파일만 업로드할 수 있습니다.", "error"); return; }
       try {
-        const item = currentMonth().pageSettings.programShortcuts.find(program => program.id === programIconTargetId);
+        const item = commonPageSettings().programShortcuts.find(program => program.id === programIconTargetId);
         if (!item) return;
         item.icon = await fileToDataUrl(file);
         setDirty(`‘${item.label}’ 프로그램 아이콘 교체`);
@@ -1760,11 +2882,14 @@
     });
 
     $("#sectionVisibleInput").addEventListener("change", event => {
-      currentSection().visible = event.target.checked;
+      const commonSection = commonSections().find(section => section.id === currentSectionId);
+      if (commonSection) commonSection.visible = event.target.checked;
+      syncAllMonthsToCommonStructure();
       $("#sectionVisibleLabel").textContent = event.target.checked ? "ON" : "OFF";
       setDirty(`‘${currentSection().adminName}’ 섹션 노출 ${event.target.checked ? "ON" : "OFF"}`);
       renderSections();
     });
+    $("#deleteCurrentSectionBtn").addEventListener("click", () => deleteSectionById(currentSectionId));
 
     $("#changeFeaturedImageBtn").addEventListener("click", () => $("#featuredImageFileInput").click());
     $("#featuredImageFileInput").addEventListener("change", async event => {
@@ -1780,11 +2905,43 @@
       } catch (error) { toast("이미지를 읽지 못했습니다.", "error"); }
     });
 
-    $("#lookupClipBtn").addEventListener("click", lookupClip);
-    $("#clipIdInput").addEventListener("keydown", event => { if (event.key === "Enter") lookupClip(); });
+    $$('[data-content-source]').forEach(button => button.addEventListener("click", () => {
+      setContentSourceMode(button.dataset.contentSource);
+      setTimeout(() => (contentSourceMode === "url" ? $("#urlTitleInput") : $("#clipIdInput")).focus(), 0);
+    }));
+    ["urlTitleInput", "urlLinkInput"].forEach(id => $(`#${id}`).addEventListener("input", updateUrlContentPreview));
+    $("#registerUrlThumbnailBtn").addEventListener("click", () => $("#urlThumbnailFileInput").click());
+    $("#clearUrlThumbnailBtn").addEventListener("click", () => {
+      urlThumbnailData = "";
+      $("#urlThumbnailFileInput").value = "";
+      renderUrlThumbnailChoice();
+    });
+    $("#deleteUrlThumbnailBtn").addEventListener("click", () => {
+      urlThumbnailData = "";
+      $("#urlThumbnailFileInput").value = "";
+      renderUrlThumbnailChoice();
+      toast("등록한 썸네일 이미지를 삭제했습니다.", "success");
+    });
+    $("#urlThumbnailFileInput").addEventListener("change", async event => {
+      const file = event.target.files?.[0];
+      event.target.value = "";
+      if (!file) return;
+      if (!file.type.startsWith("image/")) { toast("이미지 파일만 등록할 수 있습니다.", "error"); return; }
+      try {
+        urlThumbnailData = await fileToDataUrl(file);
+        renderUrlThumbnailChoice();
+        toast("URL 링크 썸네일 이미지를 등록했습니다.", "success");
+      } catch (error) { toast("이미지를 읽지 못했습니다.", "error"); }
+    });
+    $("#searchClipsBtn").addEventListener("click", searchClips);
+    ["clipIdInput", "clipNameInput"].forEach(id => $(`#${id}`).addEventListener("keydown", event => { if (event.key === "Enter") searchClips(); }));
+    $("#resetClipFiltersBtn").addEventListener("click", resetClipFilters);
+    $("#addSelectedClipsBtn").addEventListener("click", addSelectedClips);
     $$('[data-sample-id]').forEach(button => button.addEventListener("click", () => {
       $("#clipIdInput").value = button.dataset.sampleId;
-      lookupClip();
+      $("#clipNameInput").value = "";
+      ["clipTypeFilter", "clipTopicFilter", "clipMonthFilter", "clipMemberPolicyFilter"].forEach(id => { $(`#${id}`).value = "all"; });
+      searchClips();
     }));
     $("#submitContentBtn").addEventListener("click", submitContent);
     $("#changeThumbBtn").addEventListener("click", () => $("#thumbFileInput").click());
@@ -1824,6 +2981,7 @@
     $("#layoutPreviewBackdrop").addEventListener("click", event => { if (event.target.id === "layoutPreviewBackdrop") closeLayoutPreview(); });
     window.addEventListener("keydown", event => {
       if (event.key !== "Escape") return;
+      if ($("#copyMonthBackdrop").classList.contains("open")) closeCopyMonthModal();
       if ($("#layoutPreviewBackdrop").classList.contains("open")) closeLayoutPreview();
       if ($("#historyDetailBackdrop").classList.contains("open")) closeHistoryDetail();
     });

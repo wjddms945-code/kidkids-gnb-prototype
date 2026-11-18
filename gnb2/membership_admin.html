@@ -6,7 +6,7 @@
   <title>멤버십전용관 편성 관리</title>
   <link rel="stylesheet" href="membership-admin.css" />
 </head>
-<body>
+<body class="main-mode">
   <div class="page-shell">
     <header class="topbar">
       <div class="brand">
@@ -33,8 +33,11 @@
       <div class="breadcrumb">콘텐츠 관리 <span>›</span> <b>멤버십전용관</b></div>
       <div class="operation-row">
         <div class="title-block">
-          <h1 id="operationTitle">멤버십전용관 편성 관리</h1>
+          <h1 id="operationTitle">메인관리 · 히어로 배너</h1>
+          <p id="operationDescription">등록된 히어로 배너의 순서와 노출 상태를 관리합니다.</p>
         </div>
+
+        <div id="managementScopeBadge" class="management-scope-badge monthly" hidden><strong>월별 편성</strong><span>연·월 관리</span></div>
 
         <div class="month-control">
           <div class="month-select-wrap">
@@ -52,9 +55,9 @@
         </div>
 
         <div class="operation-actions">
-          <button class="btn" id="copyPreviousBtn">
+          <button class="btn" id="copyMonthBtn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="7" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            <span id="copyPreviousLabel" class="optional-label">전월 설정 불러오기</span>
+            <span id="copyMonthLabel" class="optional-label">편성 불러오기</span>
           </button>
           <button class="btn" id="previewBtn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg>
@@ -116,17 +119,22 @@
         </div>
 
         <div id="mainManagementView" class="admin-view">
-        <section id="mainHeroSettings" class="content-card page-settings-card hero-banner-settings">
-          <div class="settings-card-head">
-            <div>
-              <div class="settings-eyebrow">MAIN HERO BANNER</div>
-              <h2>히어로 배너 관리</h2>
+        <section id="mainHeroSettings" class="content-card page-settings-card hero-banner-settings main-management-panel" data-main-panel="mainHeroSettings">
+          <div id="heroBannerListView">
+            <div class="settings-card-head">
+              <div><div class="settings-eyebrow">MAIN HERO BANNER</div><h2>히어로 배너 관리</h2></div>
+              <button id="addHeroBannerBtn" class="btn primary small">+ 배너 등록</button>
             </div>
-            <div class="settings-head-actions"><span id="pageSettingsMonthLabel" class="settings-month-chip">2026년 10월</span><button id="addHeroBannerBtn" class="btn primary small">+ 배너 세트 추가</button></div>
+            <div class="hero-list-head"><strong>등록된 배너</strong><span id="heroBannerCount">1개</span><em>노출 배너는 등록 순서대로 5초 간격 순환됩니다.</em></div>
+            <div class="hero-admin-list-head"><span>순서</span><span>배너 이미지</span><span>배너명</span><span>메인 타이틀</span><span>노출 상태</span><span>등록/수정일</span><span>관리</span></div>
+            <div id="heroBannerSetList" class="hero-banner-set-list"></div>
           </div>
-          <div class="hero-list-head"><strong>등록된 배너</strong><span id="heroBannerCount">1개</span></div>
-          <div id="heroBannerSetList" class="hero-banner-set-list"></div>
-          <div class="hero-banner-editor">
+          <div id="heroBannerEditorView" hidden>
+            <div class="settings-card-head hero-editor-page-head">
+              <div><div class="settings-eyebrow">HERO BANNER EDITOR</div><h2 id="heroBannerEditorTitle">히어로 배너 수정</h2></div>
+              <div class="settings-head-actions"><button id="heroEditorBackBtn" class="btn">목록으로</button><button id="heroEditorDoneBtn" class="btn primary">수정 완료</button></div>
+            </div>
+            <div class="hero-banner-editor">
             <div class="hero-editor-head"><div><strong id="heroBannerEditorLabel">히어로 배너 1</strong></div><label class="visibility-control compact"><span>배너 노출</span><span class="toggle"><input id="heroBannerVisibleInput" type="checkbox" /><span class="toggle-track"></span></span><strong id="heroBannerVisibleLabel">ON</strong></label></div>
             <div class="hero-editor-grid">
               <div id="heroCompositeImage" class="hero-composite-image">
@@ -135,6 +143,11 @@
                 <div class="hero-composite-actions"><button id="heroImageChangeBtn" class="btn small">이미지 교체</button><button id="heroImageDeleteBtn" class="btn small danger">삭제</button></div>
               </div>
               <div class="hero-copy-fields">
+                <div class="copy-field">
+                  <div class="copy-label-row"><label for="heroLabelInput">배너명</label></div>
+                  <input id="heroLabelInput" class="copy-input" data-copy-limit="30" />
+                  <div class="copy-feedback"><span class="copy-warning">권장 글자수를 초과했습니다.</span><span class="copy-count" data-count-for="heroLabelInput">0 / 30</span></div>
+                </div>
                 <div class="copy-field">
                   <div class="copy-label-row"><label for="heroBadgeInput">히어로 배지</label></div>
                   <input id="heroBadgeInput" class="copy-input" data-copy-limit="20" />
@@ -150,12 +163,18 @@
                   <textarea id="heroSubtitleInput" class="copy-input copy-textarea" rows="2" data-copy-limit="60"></textarea>
                   <div class="copy-feedback"><span class="copy-warning">권장 글자수를 초과했습니다. Front에서 줄바꿈이 발생할 수 있습니다.</span><span class="copy-count" data-count-for="heroSubtitleInput">0 / 60</span></div>
                 </div>
+                <div class="copy-field">
+                  <div class="copy-label-row"><label for="heroTargetUrlInput">타겟 링크 <em class="optional-field-mark">선택</em></label></div>
+                  <input id="heroTargetUrlInput" class="copy-input" placeholder="https:// 또는 /event/..." />
+                  <div class="copy-feedback"><span class="hero-link-guide">외부 주소 또는 내부 페이지 경로를 입력할 수 있습니다.</span></div>
+                </div>
               </div>
+            </div>
             </div>
           </div>
         </section>
 
-        <section id="sectionLayoutSettings" class="content-card management-card navigation-layout-card">
+        <section id="sectionLayoutSettings" class="content-card management-card navigation-layout-card main-management-panel" data-main-panel="sectionLayoutSettings" hidden>
           <div class="settings-card-head">
             <div><div class="settings-eyebrow">CATEGORY · SECTION · LAYOUT</div><h2>카테고리·섹션 통합 관리</h2></div>
             <button id="addLayoutSectionBtn" class="btn primary small">+ 섹션 영역 추가</button>
@@ -166,7 +185,7 @@
           <div id="layoutSectionList" class="layout-section-list"></div>
         </section>
 
-        <section id="programMenuSettings" class="content-card management-card program-menu-settings">
+        <section id="programMenuSettings" class="content-card management-card program-menu-settings main-management-panel" data-main-panel="programMenuSettings" hidden>
           <div class="settings-card-head">
             <div><div class="settings-eyebrow">PROGRAM SHORTCUTS</div><h2>프로그램 원형 메뉴 관리</h2></div>
             <button id="addProgramShortcutBtn" class="btn primary small">+ 프로그램 추가</button>
@@ -175,7 +194,7 @@
           <div id="programShortcutList" class="program-shortcut-list"></div>
         </section>
 
-        <section id="promotionSettings" class="content-card management-card">
+        <section id="promotionSettings" class="content-card management-card main-management-panel" data-main-panel="promotionSettings" hidden>
           <div class="settings-card-head">
             <div><div class="settings-eyebrow">BOTTOM PROMOTION</div><h2>하단 프로모션 배너 관리</h2></div>
           </div>
@@ -208,14 +227,17 @@
         </div>
 
         <div id="contentManagementView" class="admin-view" hidden>
-        <section class="content-card curation-card">
+        <section id="directCurationCard" class="content-card curation-card">
           <div class="exposure-settings">
             <div class="settings-card-head section-settings-head">
               <div>
                 <div class="settings-eyebrow">SECTION <span id="selectedSectionNumber">01</span></div>
                 <h2>섹션 노출 설정 <span id="selectedAdminName" class="admin-name-chip">인기 콘텐츠</span></h2>
               </div>
-              <label class="visibility-control"><span>섹션 노출</span><span class="toggle"><input id="sectionVisibleInput" type="checkbox" /><span class="toggle-track"></span></span><strong id="sectionVisibleLabel">ON</strong></label>
+              <div class="settings-head-actions section-head-actions">
+                <button id="deleteCurrentSectionBtn" type="button" class="btn danger small">섹션 삭제</button>
+                <label class="visibility-control"><span>섹션 노출</span><span class="toggle"><input id="sectionVisibleInput" type="checkbox" /><span class="toggle-track"></span></span><strong id="sectionVisibleLabel">ON</strong></label>
+              </div>
             </div>
 
             <div class="copy-grid section-copy-grid">
@@ -278,7 +300,7 @@
             <div class="toolbar-right">
               <div class="search-box">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
-                <input id="contentSearch" type="search" placeholder="클립명 또는 ID 검색" />
+                <input id="contentSearch" type="search" placeholder="콘텐츠명, ID 또는 URL 검색" />
               </div>
             </div>
           </div>
@@ -289,16 +311,76 @@
                 <tr>
                   <th class="col-order">순서</th>
                   <th class="col-thumb">썸네일</th>
-                  <th class="col-title">클립 정보</th>
+                  <th class="col-title">콘텐츠 정보</th>
                   <th class="col-type">자료유형</th>
                   <th class="col-access">이용조건</th>
                   <th class="col-point">포인트</th>
+                  <th class="col-flag">추천</th>
+                  <th class="col-flag">신규</th>
                   <th class="col-visible">노출</th>
                   <th class="col-manage">관리</th>
                 </tr>
               </thead>
               <tbody id="contentTableBody"></tbody>
             </table>
+          </div>
+        </section>
+
+        <section id="themeManagementCard" class="content-card theme-management-card" hidden>
+          <div id="themeListView">
+            <div class="theme-manager-head">
+              <div><span>MONTHLY THEME GROUP</span><h2>놀이 테마 관리</h2><p>선택한 월의 테마를 그룹 단위로 편성합니다.</p></div>
+              <div class="theme-manager-actions">
+                <select id="themeMonthSelect" class="input" aria-label="테마 관리 월 선택"></select>
+                <button id="addThemeBtn" type="button" class="btn primary">+ 테마 등록</button>
+              </div>
+            </div>
+            <div class="theme-list-head" aria-hidden="true"><span>순서</span><span>대표 이미지</span><span>테마명</span><span>등록 콘텐츠</span><span>노출</span><span>수정일</span><span>관리</span></div>
+            <div id="themeList" class="theme-list"></div>
+          </div>
+
+          <div id="themeEditorView" hidden>
+            <div class="theme-editor-head">
+              <button id="themeEditorBackBtn" type="button" class="btn">← 목록</button>
+              <div><span>THEME DETAIL</span><h2 id="themeEditorTitle">테마 등록</h2></div>
+              <button id="themeEditorDoneBtn" type="button" class="btn primary">편집 완료</button>
+            </div>
+            <div class="theme-editor-grid">
+              <div class="theme-image-editor">
+                <span class="field-label">대표 이미지</span>
+                <div id="themeImagePreview" class="theme-image-preview"><span>대표 이미지를 등록해주세요.</span></div>
+                <div class="theme-image-actions"><button id="themeImageUploadBtn" type="button" class="btn small">이미지 등록</button><button id="themeImageDeleteBtn" type="button" class="btn small danger">삭제</button></div>
+                <input id="themeImageFileInput" type="file" accept="image/jpeg,image/png,image/webp" hidden />
+              </div>
+              <div class="theme-form-grid">
+                <div class="copy-field wide"><div class="copy-label-row"><label for="themeNameInput">테마명</label><span>필수</span></div><input id="themeNameInput" class="copy-input" placeholder="예: 다람쥐 놀이터 자료 모음" /></div>
+                <div class="copy-field wide"><div class="copy-label-row"><label for="themeSubtitleInput">보조문구</label></div><input id="themeSubtitleInput" class="copy-input" placeholder="예: 글자·도안·가을 열매" /></div>
+                <div class="copy-field"><div class="copy-label-row"><label for="themeCtaInput">CTA 문구</label></div><input id="themeCtaInput" class="copy-input" placeholder="예: 테마 전체 보기" /></div>
+                <div class="copy-field"><div class="copy-label-row"><label for="themeUrlInput">CTA 연결 URL</label></div><input id="themeUrlInput" class="copy-input" placeholder="https:// 또는 /theme/..." /></div>
+                <div class="theme-toggle-row">
+                  <label class="visibility-control"><span>새창 열기</span><span class="toggle"><input id="themeOpenNewWindowInput" type="checkbox" /><span class="toggle-track"></span></span><strong id="themeOpenNewWindowLabel">OFF</strong></label>
+                  <label class="visibility-control"><span>노출 여부</span><span class="toggle"><input id="themeVisibleInput" type="checkbox" /><span class="toggle-track"></span></span><strong id="themeVisibleLabel">ON</strong></label>
+                </div>
+              </div>
+            </div>
+            <div class="theme-content-head"><div><span>THEME CONTENT</span><h3>테마별 콘텐츠 <strong id="themeContentCount">0개</strong></h3></div><button id="addThemeContentBtn" type="button" class="btn primary">+ 콘텐츠 추가</button></div>
+            <div id="themeContentList" class="table-wrap theme-content-list">
+              <table class="curation-table theme-curation-table">
+                <thead><tr>
+                  <th class="col-order">순서</th>
+                  <th class="col-thumb">썸네일</th>
+                  <th class="col-title">콘텐츠 정보</th>
+                  <th class="col-type">자료유형</th>
+                  <th class="col-access">이용조건</th>
+                  <th class="col-point">포인트</th>
+                  <th class="col-flag">추천</th>
+                  <th class="col-flag">신규</th>
+                  <th class="col-visible">노출</th>
+                  <th class="col-manage">관리</th>
+                </tr></thead>
+                <tbody id="themeContentTableBody"></tbody>
+              </table>
+            </div>
           </div>
         </section>
         </div>
@@ -445,21 +527,98 @@
   <input id="promoImageFileInput" type="file" accept="image/jpeg,image/png,image/webp" hidden />
 
   <div id="contentDrawerBackdrop" class="drawer-backdrop" aria-hidden="true">
-    <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="contentDrawerTitle">
+    <aside class="drawer wide" role="dialog" aria-modal="true" aria-labelledby="contentDrawerTitle">
       <div class="drawer-head">
         <div><h2 id="contentDrawerTitle">콘텐츠 추가</h2><p>원본 클립정보와 멤버십 노출정보는 별도로 관리됩니다.</p></div>
         <button class="drawer-close" data-close-drawer="content" aria-label="닫기">×</button>
       </div>
       <div class="drawer-body">
-        <div class="step-label"><span>1</span> 클립 ID 조회</div>
-        <div class="lookup-box">
-          <input id="clipIdInput" class="input" inputmode="numeric" placeholder="클립 ID를 입력하세요" />
-          <button id="lookupClipBtn" class="btn dark">조회</button>
+        <div id="contentSourceTabs" class="content-source-tabs" role="tablist" aria-label="콘텐츠 등록 방식">
+          <button type="button" class="active" data-content-source="clip" role="tab" aria-selected="true">클립 콘텐츠</button>
+          <button type="button" data-content-source="url" role="tab" aria-selected="false">URL 링크</button>
         </div>
-        <div class="sample-ids">프로토타입 테스트 ID:
-          <button data-sample-id="87021">87021</button>
-          <button data-sample-id="87025">87025</button>
-          <button data-sample-id="87027">87027</button>
+        <div id="clipSearchPanel">
+          <div class="step-label"><span>1</span> 클립 통합검색</div>
+          <div class="clip-search-grid">
+            <label class="field">
+              <span>클립 ID</span>
+              <input id="clipIdInput" class="input" inputmode="numeric" placeholder="클립 ID" />
+            </label>
+            <label class="field">
+              <span>클립명</span>
+              <input id="clipNameInput" class="input" type="search" placeholder="클립명을 입력해주세요." />
+            </label>
+            <label class="field">
+              <span>자료유형</span>
+              <select id="clipTypeFilter" class="input"><option value="all">전체</option></select>
+            </label>
+            <label class="field">
+              <span>주제</span>
+              <select id="clipTopicFilter" class="input"><option value="all">전체</option></select>
+            </label>
+            <label class="field">
+              <span>월</span>
+              <select id="clipMonthFilter" class="input"><option value="all">전체</option></select>
+            </label>
+            <label class="field">
+              <span>회원유형</span>
+              <select id="clipMemberPolicyFilter" class="input"><option value="all">전체</option></select>
+            </label>
+            <button id="searchClipsBtn" class="btn dark clip-search-button">검색</button>
+          </div>
+          <div id="clipFilterSourceNote" class="clip-filter-source-note"></div>
+          <div class="sample-ids">프로토타입 테스트 ID:
+            <button data-sample-id="87021">87021</button>
+            <button data-sample-id="87025">87025</button>
+            <button data-sample-id="87027">87027</button>
+          </div>
+          <div id="clipActiveFilters" class="clip-active-filters" hidden>
+            <div id="clipActiveFilterList" class="clip-active-filter-list"></div>
+            <button id="resetClipFiltersBtn" type="button">전체 초기화</button>
+          </div>
+          <div id="clipSearchSummary" class="clip-search-summary" aria-live="polite"></div>
+          <div id="clipSearchResults" class="lookup-state clip-search-results"></div>
+          <div id="clipBatchActions" class="clip-batch-actions" hidden>
+            <span><strong id="selectedClipCount">0</strong>개 선택</span>
+            <button id="addSelectedClipsBtn" class="btn primary small">선택 콘텐츠 편성에 추가</button>
+          </div>
+        </div>
+        <div id="urlContentPanel" class="url-content-panel" hidden>
+          <div class="step-label"><span>1</span> URL 링크 정보</div>
+          <div class="url-content-form">
+            <label class="field">
+              <span>페이지명</span>
+              <input id="urlTitleInput" class="input" placeholder="페이지명을 입력해주세요." />
+            </label>
+            <label class="field">
+              <span>이동 URL</span>
+              <input id="urlLinkInput" class="input" type="url" placeholder="https://example.com 또는 /내부경로" />
+            </label>
+            <div class="field url-thumbnail-field">
+              <span>썸네일 이미지</span>
+              <div class="url-thumbnail-options">
+                <div id="urlThumbnailEmpty" class="url-thumbnail-empty">
+                  <button id="registerUrlThumbnailBtn" type="button" class="btn">이미지 등록</button>
+                  <button id="clearUrlThumbnailBtn" type="button" class="btn active">등록 안 함</button>
+                </div>
+                <div id="urlThumbnailRegistered" class="url-thumbnail-registered" hidden>
+                  <img id="urlThumbnailPreviewImage" alt="등록한 썸네일 미리보기" />
+                  <button id="deleteUrlThumbnailBtn" type="button" class="btn danger-light">삭제</button>
+                </div>
+                <input id="urlThumbnailFileInput" type="file" accept="image/*" hidden />
+              </div>
+            </div>
+            <label class="field">
+              <span>노출 상태</span>
+              <select id="urlVisibleSelect" class="input"><option value="true">ON</option><option value="false">OFF</option></select>
+            </label>
+          </div>
+          <label class="url-new-window-option"><input id="urlOpenNewWindowInput" type="checkbox" checked /><span>새 탭에서 열기</span></label>
+          <div id="urlContentPreview" class="url-content-preview">
+            <div id="urlPreviewThumb" class="url-preview-thumb"><span>↗</span></div>
+            <div><span>URL LINK</span><strong id="urlPreviewTitle">페이지명을 입력해주세요.</strong><em id="urlPreviewAddress">이동 URL이 표시됩니다.</em></div>
+          </div>
+          <p class="url-content-note">외부 주소는 https:// 또는 http://, 내부 페이지는 / 또는 ./로 시작하는 경로를 입력할 수 있습니다.</p>
         </div>
         <div id="lookupError" class="lookup-state lookup-error"></div>
 
@@ -474,6 +633,9 @@
                 <div class="original-field"><span>자료유형</span><strong id="originalType"></strong></div>
                 <div class="original-field"><span>이용조건</span><strong id="originalAccess"></strong></div>
                 <div class="original-field"><span>포인트</span><strong id="originalPoints"></strong></div>
+                <div class="original-field"><span>월</span><strong id="originalMonth"></strong></div>
+                <div class="original-field"><span>주제</span><strong id="originalTopic"></strong></div>
+                <div class="original-field"><span>회원유형</span><strong id="originalMemberPolicy"></strong></div>
               </div>
             </div>
           </div>
@@ -548,6 +710,49 @@
         <button id="saveSectionSettingsBtn" class="btn primary">섹션 구조 저장</button>
       </div>
     </aside>
+  </div>
+
+  <div id="copyMonthBackdrop" class="modal-backdrop" aria-hidden="true">
+    <div class="modal copy-month-modal" role="dialog" aria-modal="true" aria-labelledby="copyMonthTitle">
+      <div class="modal-head">
+        <span class="modal-eyebrow">COPY SCHEDULE</span>
+        <h3 id="copyMonthTitle">편성 불러오기</h3>
+      </div>
+      <div class="modal-body copy-month-body">
+        <div class="copy-month-direction" role="tablist" aria-label="편성 복사 방향">
+          <button type="button" class="active" data-copy-direction="pull" role="tab" aria-selected="true">선택 월 → 현재 월</button>
+          <button type="button" data-copy-direction="push" role="tab" aria-selected="false">현재 월 → 다른 월</button>
+        </div>
+        <p id="copyMonthDescription" class="copy-month-description"></p>
+        <div class="copy-month-target"><span>적용 대상</span><strong id="copyMonthTarget"></strong></div>
+        <div id="copySourcePicker" class="copy-month-picker" aria-label="불러올 연도와 월 선택">
+          <label class="field">
+            <span>연도</span>
+            <select id="copySourceYear" class="input" aria-label="불러올 연도"></select>
+          </label>
+          <label class="field">
+            <span>월</span>
+            <select id="copySourceMonth" class="input" aria-label="불러올 월"></select>
+          </label>
+        </div>
+        <div id="copyTargetPicker" class="copy-month-picker" aria-label="복사할 대상 연도와 월 선택" hidden>
+          <label class="field">
+            <span>대상 연도</span>
+            <input id="copyTargetYear" class="input" type="number" inputmode="numeric" min="2000" max="2100" aria-label="복사할 대상 연도" />
+          </label>
+          <label class="field">
+            <span>대상 월</span>
+            <select id="copyTargetMonth" class="input" aria-label="복사할 대상 월"></select>
+          </label>
+        </div>
+        <div id="copyMonthSourceInfo" class="copy-month-source-info" aria-live="polite"></div>
+        <p id="copyMonthWarning" class="copy-month-warning"></p>
+      </div>
+      <div class="modal-foot">
+        <button id="copyMonthCancel" class="btn">취소</button>
+        <button id="copyMonthApply" class="btn danger">선택 월 불러오기</button>
+      </div>
+    </div>
   </div>
 
   <div id="confirmBackdrop" class="modal-backdrop" aria-hidden="true">

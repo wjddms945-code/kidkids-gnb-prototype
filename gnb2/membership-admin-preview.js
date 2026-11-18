@@ -15,6 +15,7 @@
   }
 
   const escapeHtml = value => String(value ?? "").replace(/[&<>'"]/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", "'":"&#39;", '"':"&quot;" }[char]));
+  const safeTargetLink = value => /^(https?:\/\/|\/|\.\/|\.\.\/|#)/i.test(String(value || "").trim()) ? String(value).trim() : "";
   const formatMonth = key => { const [year, month] = key.split("-"); return `${year}년 ${Number(month)}월`; };
   const promotionGradients = {
     red:"linear-gradient(120deg,#5d1016,#b82d36 58%,#e1644f)", pink:"linear-gradient(120deg,#701744,#c12e72 58%,#ee7199)", orange:"linear-gradient(120deg,#7b2d0d,#d2641c 58%,#f39a3c)", yellow:"linear-gradient(120deg,#9d6a05,#e4ad20 55%,#ffd86a)", green:"linear-gradient(120deg,#123d2d,#257c57 58%,#63b67d)", blue:"linear-gradient(120deg,#12386a,#2769b4 58%,#64a5e8)", navy:"linear-gradient(120deg,#111b37,#23345f 58%,#465c8c)", purple:"linear-gradient(120deg,#32164f,#6b3490 58%,#a36ac5)", brown:"linear-gradient(120deg,#4d2c1b,#9a5b28 58%,#c57c3d)", black:"linear-gradient(120deg,#080a0f,#202631 58%,#3b4350)", white:"linear-gradient(120deg,#ffffff,#f0f2f6 58%,#dfe4ec)"
@@ -44,6 +45,12 @@
     document.querySelector("#previewHeroSubtitle").textContent = banner.subtitle || "수업과 놀이에 필요한 프리미엄 콘텐츠를 한곳에서 만나보세요.";
     document.querySelector("#previewHeroBadge").textContent = banner.badge || "MEMBERS ONLY";
     document.querySelector("#previewHeroImage").innerHTML = banner.image ? `<img src="${escapeHtml(banner.image)}" alt="히어로 배너 통이미지 ${activeHeroIndex + 1}" />` : "";
+    const heroElement = document.querySelector(".preview-hero");
+    const targetLink = safeTargetLink(banner.targetUrl);
+    heroElement.dataset.targetLink = targetLink;
+    heroElement.classList.toggle("is-linked", Boolean(targetLink));
+    heroElement.tabIndex = targetLink ? 0 : -1;
+    heroElement.title = targetLink ? "배너 링크로 이동" : "";
     document.querySelectorAll("[data-hero-dot]").forEach((dot, dotIndex) => dot.classList.toggle("active", dotIndex === activeHeroIndex));
   }
 
@@ -54,6 +61,16 @@
     renderHeroBanner(Number(button.dataset.heroDot));
     restartHeroTimer();
   }));
+  const previewHero = document.querySelector(".preview-hero");
+  const followHeroLink = event => {
+    if (event.target.closest("button")) return;
+    const targetLink = safeTargetLink(previewHero.dataset.targetLink);
+    if (targetLink) window.open(targetLink, "_self");
+  };
+  previewHero.addEventListener("click", followHeroLink);
+  previewHero.addEventListener("keydown", event => {
+    if (event.key === "Enter" || event.key === " ") followHeroLink(event);
+  });
   function restartHeroTimer() {
     if (heroTimer) clearInterval(heroTimer);
     if (heroBanners.length > 1) {
@@ -70,11 +87,13 @@
   document.querySelector("#previewSectionNav").innerHTML = categories.map((category, index) => `<button class="section-tab ${index === 0 ? "active" : ""}" data-nav-target="${escapeHtml(category.targetSectionId)}">${escapeHtml(category.label)}</button>`).join("");
 
   function cardMarkup(item) {
-    return `<article class="content-card">
-      <div class="content-thumb-wrap"><img src="${escapeHtml(item.thumbnail)}" alt="" /><span class="content-tag">${escapeHtml(item.type)}</span><span class="content-access">${item.access === "무료" ? "FREE" : "MEM"}</span></div>
+    const target = item.openNewWindow ? ' target="_blank" rel="noopener noreferrer"' : "";
+    const flags = `${item.recommended ? '<em class="recommended">추천</em>' : ""}${item.isNew ? '<em class="new">NEW</em>' : ""}`;
+    return `<a class="content-card" href="${escapeHtml(item.link || "#")}"${target}>
+      <div class="content-thumb-wrap"><img src="${escapeHtml(item.thumbnail)}" alt="" /><span class="content-tag">${escapeHtml(item.type)}</span><span class="content-access">${item.source === "url" ? "LINK" : item.access === "무료" ? "FREE" : "MEM"}</span>${flags ? `<span class="content-flags">${flags}</span>` : ""}</div>
       <h3>${escapeHtml(item.displayTitle)}</h3>
       <div class="content-meta"><span>${escapeHtml(item.type)}</span><span>${escapeHtml(item.access)}</span>${item.points ? `<span>${Number(item.points).toLocaleString("ko-KR")}P</span>` : ""}</div>
-    </article>`;
+    </a>`;
   }
 
   function featuredMarkup(section) {
@@ -83,9 +102,41 @@
     return `<article class="featured-front-card" style="background-image:url('${escapeHtml(image)}')"><span>${escapeHtml(section.badge || "SPECIAL")}</span><h3>${escapeHtml(section.featuredTitle || section.displayTitle)}</h3><p>${escapeHtml(section.featuredDescription || section.subtitle || "")}</p><button>${escapeHtml(section.featuredCta || section.ctaLabel || "자세히 보기")}</button></article>`;
   }
 
-  function monthlyIntroMarkup(section) {
+  function shuffled(items) {
+    const copy = [...items];
+    for (let index = copy.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
+    }
+    return copy;
+  }
+
+  function resolveMonthlyTheme(section) {
+    if (section.id !== "solution" || !Array.isArray(section.themeGroups)) return null;
+    const themes = section.themeGroups.filter(theme => theme.visible !== false);
+    if (!themes.length) return { theme: null, items: [] };
+    const storageKey = `kidkids_membership_monthly_theme_${payload.monthKey}_${section.id}`;
+    let stored = null;
+    try { stored = JSON.parse(sessionStorage.getItem(storageKey) || "null"); } catch (error) { /* 세션 저장소를 사용할 수 없으면 현재 진입에서만 유지 */ }
+    const theme = themes.find(item => item.id === stored?.themeId) || themes[Math.floor(Math.random() * themes.length)];
+    const uniqueItems = [...new Map((theme.items || []).filter(item => item.visible !== false).map(item => [item.id || item.link, item])).values()];
+    let items = [];
+    if (stored?.themeId === theme.id && Array.isArray(stored.itemIds)) {
+      items = stored.itemIds.map(id => uniqueItems.find(item => (item.id || item.link) === id)).filter(Boolean);
+    }
+    const expectedCount = Math.min(5, uniqueItems.length);
+    if (items.length !== expectedCount) items = uniqueItems.length <= 5 ? uniqueItems : shuffled(uniqueItems).slice(0, 5);
+    try { sessionStorage.setItem(storageKey, JSON.stringify({ themeId: theme.id, itemIds: items.map(item => item.id || item.link) })); } catch (error) { /* 저장 실패 시에도 미리보기는 계속 표시 */ }
+    return { theme, items };
+  }
+
+  function monthlyIntroMarkup(section, theme) {
     if (section.layoutTheme !== "monthly-pick") return "";
-    return `<article class="monthly-intro-card"><span>${escapeHtml(section.badge || "MONTHLY PICK")}</span><h3>${escapeHtml(section.displayTitle)}</h3><p>${escapeHtml(section.subtitle || "")}</p><button>${escapeHtml(section.ctaLabel || "바로 보기")}</button></article>`;
+    if (!theme) return '<article class="monthly-intro-card monthly-theme-empty"><span>MONTHLY PLAY</span><h3>노출 가능한 테마가 없습니다.</h3><p>관리자에서 이 달의 놀이 테마를 등록하고 노출을 켜주세요.</p></article>';
+    const target = theme.openNewWindow ? ' target="_blank" rel="noopener noreferrer"' : "";
+    const ctaUrl = safeTargetLink(theme.ctaUrl) || "#";
+    const imageStyle = theme.image ? ` style="background-image:linear-gradient(180deg,rgba(10,20,35,.05),rgba(10,20,35,.78)),url('${escapeHtml(theme.image)}')"` : "";
+    return `<article class="monthly-intro-card monthly-theme-intro"${imageStyle}><span>${escapeHtml(section.badge || "MONTHLY PICK")}</span><h3>${escapeHtml(theme.name)}</h3><p>${escapeHtml(theme.subtitle || "")}</p>${theme.ctaLabel ? `<a href="${escapeHtml(ctaUrl)}"${target}>${escapeHtml(theme.ctaLabel)}</a>` : ""}</article>`;
   }
 
   function programShortcutMarkup(item) {
@@ -93,12 +144,13 @@
   }
 
   document.querySelector("#previewSections").innerHTML = visibleSections.length ? visibleSections.map((section, index) => {
-    const items = (section.items || []).filter(item => item.visible);
+    const monthlyTheme = resolveMonthlyTheme(section);
+    const items = monthlyTheme ? monthlyTheme.items : (section.items || []).filter(item => item.visible);
     const isProgram = section.layoutTheme === "program-circles";
     const programs = (pageSettings.programShortcuts || []).filter(item => item.visible !== false);
     const sectionContent = isProgram
       ? `<div class="program-shortcut-grid">${programs.length ? programs.map(programShortcutMarkup).join("") : '<div class="empty-preview">노출할 프로그램 메뉴가 없습니다.</div>'}</div>`
-      : `<div class="content-grid">${featuredMarkup(section)}${monthlyIntroMarkup(section)}${items.length ? items.map(cardMarkup).join("") : '<div class="empty-preview">이 섹션에 노출 가능한 콘텐츠가 없습니다.</div>'}</div>`;
+      : `<div class="content-grid">${featuredMarkup(section)}${monthlyIntroMarkup(section, monthlyTheme?.theme)}${items.length ? items.map(cardMarkup).join("") : (monthlyTheme?.theme ? '<div class="empty-preview">선택된 테마에 노출 가능한 콘텐츠가 없습니다.</div>' : section.id === "solution" ? "" : '<div class="empty-preview">이 섹션에 노출 가능한 콘텐츠가 없습니다.</div>')}</div>`;
     return `<section id="front-section-${escapeHtml(section.id)}" class="content-section layout-${escapeHtml(section.layoutTheme || "popular-ranking")}">
       <div class="section-head"><div><span class="section-number">${String(index + 1).padStart(2, "0")}</span><span class="front-badge">${escapeHtml(section.badge || "CURATION")}</span><h2>${escapeHtml(section.displayTitle || section.title)}</h2><p>${escapeHtml(section.subtitle || "")}</p></div><div class="section-side-actions"><a href="#front-section-${escapeHtml(section.id)}">${escapeHtml(section.ctaLabel || "더보기")}</a></div></div>
       ${sectionContent}
@@ -111,6 +163,25 @@
     const destination = target === "top" ? document.querySelector(".preview-hero") : document.querySelector(`#front-section-${CSS.escape(target)}`);
     destination?.scrollIntoView({ behavior: "smooth", block: "start" });
   }));
+
+  function focusSelectedSection() {
+    if (!payload.focusSelectedSection) return;
+    const selectedSectionId = String(payload.selectedSectionId || "").trim();
+    if (!selectedSectionId) return;
+    const destination = document.querySelector(`#front-section-${CSS.escape(selectedSectionId)}`);
+    if (!destination) return;
+    document.querySelectorAll("[data-nav-target]").forEach(button => {
+      button.classList.toggle("active", button.dataset.navTarget === selectedSectionId);
+    });
+    destination.scrollIntoView({ behavior: "auto", block: "start" });
+  }
+
+  const scheduleSelectedSectionFocus = () => {
+    const frame = window.requestAnimationFrame || (callback => setTimeout(callback, 0));
+    frame(() => frame(focusSelectedSection));
+  };
+  scheduleSelectedSectionFocus();
+  window.addEventListener("load", focusSelectedSection, { once: true });
 
   const rawPromo = pageSettings.promotion || {};
   const promo = rawPromo.design || rawPromo.common ? rawPromo : {
